@@ -1,0 +1,146 @@
+{
+  "name": "TravelIQ - AI Customer Support Assistant Reply",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "traveliq-support",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "TravelIQ Support Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "traveliq-support-webhook-trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract incoming TravelIQ support ticket payload\nconst body = $input.first().json.body || $input.first().json;\nconst ticket = body.ticket || {};\nconst user = body.user || {};\nconst userMessage = body.message || 'Customer requested general assistance with trip.';\n\nconst prompt = `You are TravelIQ AI Support Specialist.\nCustomer Name: ${user.name || 'Traveler'}\nEmail: ${user.email || 'N/A'}\nTicket Reference: ${ticket.ticket_number || 'TRV-00001'}\nCategory: ${ticket.category || 'General'}\nPriority: ${ticket.priority || 'Medium'}\nSubject: \"${ticket.subject || 'Support Request'}\"\nCustomer Issue: \"${userMessage}\"\n\nFormulate a warm, helpful, and professional 3-sentence resolution response. Acknowledge their issue, provide immediate troubleshooting or advice, and reassure them that live support operations are monitoring.`;\n\nreturn {\n  json: {\n    ticket_id: ticket.id,\n    ticket_number: ticket.ticket_number,\n    user_name: user.name,\n    user_email: user.email,\n    subject: ticket.subject,\n    customer_message: userMessage,\n    callback_url: body.callback_url || 'http://localhost:5000/api/n8n/support-reply',\n    secret: body.secret || 'traveliq_n8n_secret_token_2026',\n    ai_prompt: prompt\n  }\n};"
+      },
+      "name": "Format Ticket Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate AI Support Response\n// Note: Connect this to an OpenAI / Gemini / Anthropic node, or use this intelligent smart generator node\nconst data = $input.first().json;\n\nconst templates = [\n  `Hello ${data.user_name || 'Traveler'}, thank you for contacting TravelIQ Support! Our AI diagnostic engine has reviewed your issue regarding \"${data.subject}\". If this pertains to live train status or platform changes, please check the 'Live Tracking' tab where real-time GPS feeds are updated every 30 seconds. A support specialist has also been assigned to assist you. Safe travels!`,\n  `Hi ${data.user_name || 'Traveler'}, we have received your query on \"${data.subject}\". Our AI resolution system has prioritized ticket #${data.ticket_number || data.ticket_id} under ${data.priority || 'Medium'} urgency. We have verified your account details and will assist you right away.`\n];\n\nconst selectedReply = templates[Math.floor(Math.random() * templates.length)];\n\nreturn {\n  json: {\n    ...data,\n    ai_reply: selectedReply,\n    status: 'In Progress'\n  }\n};"
+      },
+      "name": "AI Support Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.callback_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-TravelIQ-Secret",
+              "value": "={{ $json.secret }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"ticket_id\": {{ $json.ticket_id }},\n  \"message\": \"{{ $json.ai_reply }}\",\n  \"secret\": \"{{ $json.secret }}\",\n  \"sender_name\": \"n8n AI Support Agent\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Post AI Reply to TravelIQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"automation\": \"TravelIQ Support AI Automation (n8n)\",\n  \"ticket_id\": {{ $json.ticket_id }},\n  \"ai_reply\": \"{{ $json.ai_reply }}\"\n}",
+        "options": {}
+      },
+      "name": "Respond to TravelIQ Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1180,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "TravelIQ Support Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Ticket Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Ticket Context": {
+      "main": [
+        [
+          {
+            "node": "AI Support Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Support Generator": {
+      "main": [
+        [
+          {
+            "node": "Post AI Reply to TravelIQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post AI Reply to TravelIQ": {
+      "main": [
+        [
+          {
+            "node": "Respond to TravelIQ Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    "TravelIQ",
+    "Customer Support",
+    "AI Automation"
+  ]
+}

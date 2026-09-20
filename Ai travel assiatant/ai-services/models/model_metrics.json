@@ -1,0 +1,42 @@
+{
+  "delay_model": {
+    "loss": 2106.376953125,
+    "accuracy": 92.4,
+    "samples": 2000
+  },
+  "fare_model": {
+    "loss": 0.10716395825147629,
+    "accuracy": 95.1,
+    "samples": 2000
+  },
+  "crowd_model": {
+    "loss": 1.899301528930664,
+    "accuracy": 89.8,
+    "samples": 2000
+  },
+  "occupancy_model": {
+    "loss": 231.52874755859375,
+    "accuracy": 91.2,
+    "samples": 2000
+  },
+  "route_recommender": {
+    "loss": 1.9103888273239136,
+    "accuracy": 88.5,
+    "samples": 5000
+  },
+  "chatbot_model": {
+    "loss": 0.05341452732682228,
+    "accuracy": 96.8,
+    "samples": 500
+  },
+  "demand_forecaster": {
+    "loss": 0.04689234495162964,
+    "accuracy": 90.1,
+    "samples": 500
+  },
+  "behavior_net": {
+    "loss": 1.1123913526535034,
+    "accuracy": 93.5,
+    "samples": 500
+  }
+}

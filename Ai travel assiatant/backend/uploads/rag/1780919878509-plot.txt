@@ -1,0 +1,4 @@
+x = "insert the value o x axis" 
+y1 and y2 tells different sets of value on the y axis 
+plot(x,y1) # plot the data in x axis at y1
+

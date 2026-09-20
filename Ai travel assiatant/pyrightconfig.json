@@ -1,0 +1,12 @@
+{
+  "include": [
+    "ai-services"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Windows",
+  "extraPaths": [
+    "ai-services"
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

@@ -1,0 +1,147 @@
+{
+  "name": "TravelIQ - Smart AI Delay & Refund Alert Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "traveliq-delay-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "TravelIQ Delay Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "traveliq-delay-webhook-trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract incoming delay & transit disruption event\nconst body = $input.first().json.body || $input.first().json;\nconst trainNumber = body.train_number || '12301';\nconst trainName = body.train_name || 'Rajdhani Express';\nconst delayMinutes = body.delay_minutes || 45;\nconst station = body.current_station || 'NDLS';\nconst PNR = body.pnr || 'TRV-89412';\nconst user = body.user || {};\n\nconst prompt = `You are TravelIQ Real-Time Transit Recovery Assistant.\nTraveler: ${user.name || 'Traveler'}\nTrain: #${trainNumber} (${trainName})\nCurrent Delay: ${delayMinutes} minutes at ${station}\nPNR: ${PNR}\n\nGenerate an immediate 3-step advisory:\n1. Empathetic delay update explaining impact on arrival time.\n2. Refund Rights & TDR Policy (e.g. Full refund option if delay exceeds 3 hours).\n3. Alternative connecting train / metro option recommendation.`;\n\nreturn {\n  json: {\n    pnr: PNR,\n    train_number: trainNumber,\n    train_name: trainName,\n    delay_minutes: delayMinutes,\n    current_station: station,\n    user_name: user.name || 'Traveler',\n    user_email: user.email,\n    callback_url: body.callback_url || 'http://localhost:5000/api/n8n/delay-alert',\n    secret: body.secret || 'traveliq_n8n_secret_token_2026',\n    ai_prompt: prompt\n  }\n};"
+      },
+      "name": "Analyze Disruption Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate AI Delay & Refund Advisory\nconst data = $input.first().json;\nconst delayHrs = Math.floor(data.delay_minutes / 60);\nconst delayMins = data.delay_minutes % 60;\nconst timeStr = delayHrs > 0 ? `${delayHrs}h ${delayMins}m` : `${delayMins} minutes`;\n\nconst advisory = `⚠️ Transit Update for Train #${data.train_number} (${data.train_name})\n\nHello ${data.user_name}, your train is currently running delayed by ${timeStr} near ${data.current_station}.\n\n🤖 AI Recovery Plan & Policies:\n• Arrival Estimate: Updated expected arrival re-calculated with signal priority optimization.\n• Refund Eligibility: If delay exceeds 3 hours, full ticket refund without cancellation fee is available via 1-click TDR in your TravelIQ app.\n• Pantry & Amenities: Station executive lounge access and complimentary refreshments apply for delays over 2 hours.\n\nNeed rerouting? Tap 'Smart Re-route' in your app!`;\n\nreturn {\n  json: {\n    ...data,\n    title: `Delay Alert: Train #${data.train_number} (+${timeStr})`,\n    ai_advisory: advisory\n  }\n};"
+      },
+      "name": "AI Delay Advisory Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.callback_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-TravelIQ-Secret",
+              "value": "={{ $json.secret }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"pnr\": \"{{ $json.pnr }}\",\n  \"train_number\": \"{{ $json.train_number }}\",\n  \"delay_minutes\": {{ $json.delay_minutes }},\n  \"title\": \"{{ $json.title }}\",\n  \"advisory\": \"{{ $json.ai_advisory }}\",\n  \"secret\": \"{{ $json.secret }}\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Send Alert to TravelIQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"automation\": \"TravelIQ Smart AI Delay & Refund Alert Automation (n8n)\",\n  \"train_number\": \"{{ $json.train_number }}\",\n  \"advisory\": \"{{ $json.ai_advisory }}\"\n}",
+        "options": {}
+      },
+      "name": "Respond to Delay Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1180,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "TravelIQ Delay Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analyze Disruption Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Disruption Payload": {
+      "main": [
+        [
+          {
+            "node": "AI Delay Advisory Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Delay Advisory Generator": {
+      "main": [
+        [
+          {
+            "node": "Send Alert to TravelIQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert to TravelIQ": {
+      "main": [
+        [
+          {
+            "node": "Respond to Delay Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    "TravelIQ",
+    "Train Delay",
+    "Refund Alert",
+    "AI Automation"
+  ]
+}
