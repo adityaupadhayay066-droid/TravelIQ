@@ -38,7 +38,10 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const hotelRoutes = require('./routes/hotelRoutes');
 const n8nRoutes = require('./routes/n8nRoutes');
+const apiKeyRoutes = require('./routes/apiKeyRoutes');
+const v1PublicRoutes = require('./routes/v1PublicRoutes');
 const { loadHotelData } = require('./services/hotelService');
+
 
 
 const app = express();
@@ -93,7 +96,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key']
 }));
 
 // ─── Parsers ───
@@ -144,11 +147,14 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/n8n', n8nRoutes);
 
-
+// B2B & Developer Platform Routes
+app.use('/api/developer', apiKeyRoutes);
+app.use('/api/v1/public', v1PublicRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'TravelIQ Backend (MySQL)', uptime: process.uptime() });
 });
+
 
 // ─── 404 handler ───
 app.use((req, res) => {

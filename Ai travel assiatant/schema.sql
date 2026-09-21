@@ -519,6 +519,60 @@ CREATE INDEX `idx_occupancy_pred_train` ON `occupancy_predictions` (`train_numbe
 CREATE INDEX `idx_crowd_pred_station` ON `crowd_predictions` (`station_code`);
 CREATE INDEX `idx_rec_logs_user` ON `recommendation_logs` (`user_id`);
 
+-- 27. Organizations Table (B2B Multi-tenancy)
+CREATE TABLE `organizations` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `owner_id` INT NOT NULL,
+  `plan_tier` ENUM('free', 'starter', 'pro', 'enterprise') DEFAULT 'free',
+  `monthly_quota` INT DEFAULT 100,
+  `used_quota` INT DEFAULT 0,
+  `billing_cycle_start` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `stripe_customer_id` VARCHAR(255) DEFAULT NULL,
+  `stripe_subscription_id` VARCHAR(255) DEFAULT NULL,
+  `is_active` BOOLEAN DEFAULT TRUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_org_owner` FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 28. API Keys Table (Hashed storage)
+CREATE TABLE `api_keys` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `org_id` INT NOT NULL,
+  `name` VARCHAR(100) DEFAULT 'Default API Key',
+  `key_prefix` VARCHAR(20) NOT NULL,
+  `key_hint` VARCHAR(8) NOT NULL,
+  `key_hash` VARCHAR(64) NOT NULL UNIQUE,
+  `rate_limit_per_minute` INT DEFAULT 60,
+  `is_revoked` BOOLEAN DEFAULT FALSE,
+  `last_used_at` TIMESTAMP NULL DEFAULT NULL,
+  `expires_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_apikey_org` FOREIGN KEY (`org_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 29. API Usage Logs Table (Metered Telemetry)
+CREATE TABLE `api_usage_logs` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `org_id` INT NOT NULL,
+  `api_key_id` INT DEFAULT NULL,
+  `endpoint` VARCHAR(255) NOT NULL,
+  `method` VARCHAR(10) DEFAULT 'POST',
+  `status_code` INT NOT NULL,
+  `response_time_ms` INT DEFAULT NULL,
+  `tokens_used` INT DEFAULT 1,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_usage_org` FOREIGN KEY (`org_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_usage_key` FOREIGN KEY (`api_key_id`) REFERENCES `api_keys` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX `idx_api_keys_hash` ON `api_keys` (`key_hash`);
+CREATE INDEX `idx_api_usage_org` ON `api_usage_logs` (`org_id`, `created_at`);
+
+
 -- =========================================================================
 -- Sample Seed Data
 -- =========================================================================

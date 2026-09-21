@@ -41,7 +41,9 @@ const AgenticPlannerPage = lazy(() => import('./pages/AgenticPlannerPage'));
 const AIPredictionsPage = lazy(() => import('./pages/AIPredictionsPage'));
 const DestinationsDirectoryPage = lazy(() => import('./pages/DestinationsDirectoryPage'));
 const DestinationPage = lazy(() => import('./pages/DestinationPage'));
+const DeveloperPortal = lazy(() => import('./pages/DeveloperPortal'));
 import AIVoiceAssistant from './components/AIVoiceAssistant';
+
 
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
@@ -62,6 +64,8 @@ const NotificationsPage = lazy(() => import('./pages/admin/NotificationsPage'));
 const AdminManagementPage = lazy(() => import('./pages/admin/AdminManagementPage'));
 const AuditLogsPage = lazy(() => import('./pages/admin/AuditLogsPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const AdminApiKeysPage = lazy(() => import('./pages/admin/AdminApiKeysPage'));
+
 
 function Loader() {
   return (
@@ -103,9 +107,13 @@ function AnimatedRoutes() {
         <Route path="/admin/dashboard" element={
           <AdminRoute><AdminLayout><PageWrapper><AdminDashboardHome /></PageWrapper></AdminLayout></AdminRoute>
         } />
+        <Route path="/admin/api-keys" element={
+          <AdminRoute><AdminLayout><PageWrapper><AdminApiKeysPage /></PageWrapper></AdminLayout></AdminRoute>
+        } />
         <Route path="/admin/users" element={
           <AdminRoute><AdminLayout><PageWrapper><UsersPage /></PageWrapper></AdminLayout></AdminRoute>
         } />
+
         <Route path="/admin/travel-data" element={
           <AdminRoute><AdminLayout><PageWrapper><TravelDataPage /></PageWrapper></AdminLayout></AdminRoute>
         } />
@@ -229,6 +237,16 @@ function AnimatedRoutes() {
         <Route path="/dashboard/ai-predictions" element={
           <ProtectedRoute><DashboardLayout><PageWrapper><AIPredictionsPage /></PageWrapper></DashboardLayout></ProtectedRoute>
         } />
+        <Route path="/dashboard/developer" element={
+          <ProtectedRoute><DashboardLayout><PageWrapper><DeveloperPortal /></PageWrapper></DashboardLayout></ProtectedRoute>
+        } />
+        <Route path="/dashboard/api-keys" element={
+          <ProtectedRoute><DashboardLayout><PageWrapper><DeveloperPortal /></PageWrapper></DashboardLayout></ProtectedRoute>
+        } />
+        <Route path="/developer" element={
+          <ProtectedRoute><PageWrapper><Navbar /><DeveloperPortal /></PageWrapper></ProtectedRoute>
+        } />
+
 
         {/* 404 Fallback */}
         <Route path="*" element={

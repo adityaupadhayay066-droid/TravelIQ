@@ -175,10 +175,23 @@ router.get('/export/:type', exportReport);
 router.get('/announcements', getAnnouncements);
 router.post('/announcements', createAnnouncement);
 router.put('/announcements/:id/toggle', toggleAnnouncement);
-router.delete('/announcements/:id', deleteAnnouncement);
 router.get('/chatbot/knowledge', getKnowledgeBase);
 router.post('/chatbot/knowledge', addKnowledge);
 router.put('/chatbot/knowledge/:id', updateKnowledge);
 router.delete('/chatbot/knowledge/:id', deleteKnowledge);
 
+// 12. B2B Developer API Key & Organization Governance
+const {
+  adminGetAllApiKeys,
+  adminUpdateApiKey,
+  adminGetAllOrganizations,
+  adminUpdateOrganization
+} = require('../controllers/apiKeyController');
+
+router.get('/developer/keys', adminGetAllApiKeys);
+router.put('/developer/keys/:keyId', adminUpdateApiKey);
+router.get('/developer/organizations', adminGetAllOrganizations);
+router.put('/developer/organizations/:orgId', adminUpdateOrganization);
+
 module.exports = router;
+

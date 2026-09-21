@@ -201,6 +201,23 @@ Report.belongsTo(User, { foreignKey: 'user_id' });
 DocumentChunk.hasOne(Embedding, { foreignKey: 'chunk_id', onDelete: 'CASCADE' });
 Embedding.belongsTo(DocumentChunk, { foreignKey: 'chunk_id' });
 
+// Organization, API Key & B2B Usage telemetry
+const Organization = require('./Organization');
+const ApiKey = require('./ApiKey');
+const ApiUsageLog = require('./ApiUsageLog');
+
+User.hasMany(Organization, { foreignKey: 'owner_id', onDelete: 'CASCADE' });
+Organization.belongsTo(User, { foreignKey: 'owner_id' });
+
+Organization.hasMany(ApiKey, { foreignKey: 'org_id', onDelete: 'CASCADE' });
+ApiKey.belongsTo(Organization, { foreignKey: 'org_id' });
+
+Organization.hasMany(ApiUsageLog, { foreignKey: 'org_id', onDelete: 'CASCADE' });
+ApiUsageLog.belongsTo(Organization, { foreignKey: 'org_id' });
+
+ApiKey.hasMany(ApiUsageLog, { foreignKey: 'api_key_id', onDelete: 'SET NULL' });
+ApiUsageLog.belongsTo(ApiKey, { foreignKey: 'api_key_id' });
+
 module.exports = {
   sequelize,
   User,
@@ -253,5 +270,9 @@ module.exports = {
   UserActivityLog,
   Destination,
   Report,
-  AdminNotification
+  AdminNotification,
+  Organization,
+  ApiKey,
+  ApiUsageLog
 };
+

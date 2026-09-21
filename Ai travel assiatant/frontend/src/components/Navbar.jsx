@@ -4,8 +4,9 @@ import {
   User, Settings, LogOut, Menu, X, Sun, Moon, Sparkles, Train, 
   Compass, Utensils, MapPin, Building2, Navigation, Leaf, Brain, 
   Bot, Mic, Globe2, BarChart3, Network, Cpu, ChevronDown, ChevronRight, 
-  Search, Bell, ArrowRight, Check, Shield, HelpCircle
+  Search, Bell, ArrowRight, Check, Shield, HelpCircle, Key, Code
 } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -521,6 +522,15 @@ export default function Navbar() {
                           <span>Profile & Account</span>
                         </Link>
                         <Link
+                          to="/dashboard/developer"
+                          onClick={() => setActiveDropdown(null)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-md text-[#1F2933] dark:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] transition-colors font-medium"
+                        >
+                          <Key className="w-3.5 h-3.5 text-[#14532D] dark:text-[#EEF2ED]" />
+                          <span>Developer & API Keys</span>
+                          <span className="ml-auto text-[9px] font-bold px-1.5 py-0.2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded">B2B</span>
+                        </Link>
+                        <Link
                           to="/dashboard/settings"
                           onClick={() => setActiveDropdown(null)}
                           className="flex items-center gap-2 px-3 py-2 rounded-md text-[#1F2933] dark:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] transition-colors"
@@ -528,6 +538,7 @@ export default function Navbar() {
                           <Settings className="w-3.5 h-3.5 text-[#14532D] dark:text-[#EEF2ED]" />
                           <span>Settings</span>
                         </Link>
+
                       </div>
 
                       <div className="pt-1 mt-1 border-t border-[#E3DED2] dark:border-[#273E36]">

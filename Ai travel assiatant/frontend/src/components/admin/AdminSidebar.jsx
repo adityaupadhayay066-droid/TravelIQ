@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, Database, Train, MapPin, 
     Bus, Sparkles, Search, Flag, BarChart3, Activity, 
     Bell, Shield, Settings, LogOut, ChevronLeft, ChevronRight, 
-    Compass, X
+    Compass, X, Key
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from './UserAvatar';
@@ -13,6 +13,7 @@ import StatusBadge from './StatusBadge';
 
 export const ADMIN_NAV_ITEMS = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'API Keys & B2B', path: '/admin/api-keys', icon: Key, badge: 'B2B' },
     { label: 'Users', path: '/admin/users', icon: Users },
     { label: 'Travel Data', path: '/admin/travel-data', icon: Database },
     { label: 'Trains', path: '/admin/trains', icon: Train },
@@ -28,6 +29,7 @@ export const ADMIN_NAV_ITEMS = [
     { label: 'Audit Logs', path: '/admin/logs', icon: Database },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
 ];
+
 
 export default function AdminSidebar({
     collapsed,
