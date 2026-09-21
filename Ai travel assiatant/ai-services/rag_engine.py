@@ -182,7 +182,12 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
         return None
         
     api_key = raw_key.strip().strip('"').strip("'")
-    if not api_key or api_key in ["your_google_gemini_api_key_here", "your_actual_google_gemini_api_key_here"]:
+    if not api_key or api_key.startswith("your_") or api_key == "None":
+        return None
+
+    # Google AI Studio API keys start with AIzaSy; OAuth bearer tokens start with ya29.
+    # If the key is an invalid format like AQ.*, skip immediately to prevent 401 loop
+    if api_key.startswith("AQ."):
         return None
 
     context_str = ""
@@ -192,8 +197,20 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
     else:
         prompt = f"You are TravelIQ AI, a helpful senior travel assistant. Answer the user's travel question concisely with top recommendations and helpful details: {query_text}"
 
-    models = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview"]
+    models = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+    ]
+    
     headers = {"Content-Type": "application/json"}
+    if api_key.startswith("ya29."):
+        headers["Authorization"] = f"Bearer {api_key}"
+        base_url_fn = lambda m: f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
+    else:
+        base_url_fn = lambda m: f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={api_key}"
+
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
@@ -201,9 +218,9 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
     }
 
     for model in models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        url = base_url_fn(model)
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=15)
+            res = requests.post(url, headers=headers, json=payload, timeout=8)
             if res.status_code == 200:
                 data = res.json()
                 candidates = data.get("candidates", [])
@@ -211,6 +228,9 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
                     parts = candidates[0].get("content", {}).get("parts", [])
                     if parts:
                         return parts[0].get("text", "").strip()
+            elif res.status_code == 401 or res.status_code == 403:
+                # Stop immediately on auth failure, do not spam retries
+                break
         except Exception as e:
             print(f"Gemini RAG API Call Error ({model}): {e}")
 

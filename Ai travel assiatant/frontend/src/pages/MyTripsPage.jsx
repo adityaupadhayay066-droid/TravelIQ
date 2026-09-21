@@ -67,48 +67,9 @@ export default function MyTripsPage() {
   };
 
   // Generate mock printable PDF Receipt trigger for trains
+  // Generate official IRCTC & TravelIQ E-Ticket Receipt
   const handlePrintReceipt = (booking) => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>TravelIQ_Ticket_Receipt_${booking.id}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
-          <style>
-            body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 30px; background: #fff; color: #1e293b; line-height: 1.4; }
-            .receipt { border: 1.5px solid #CBD5E1; border-radius: 16px; padding: 24px; max-width: 650px; margin: 0 auto; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #14532D; padding-bottom: 14px; margin-bottom: 16px; }
-            .brand { font-size: 20px; font-weight: 800; color: #14532D; }
-            .badge { background: #DCFCE7; color: #15803D; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
-            .row { display: flex; justify-content: space-between; margin: 10px 0; border-bottom: 1px solid #F1F5F9; padding-bottom: 6px; font-size: 13px; }
-            .label { color: #64748B; font-size: 12px; }
-            .value { font-weight: 700; color: #0F172A; font-family: 'JetBrains Mono', monospace; }
-            .footer { text-align: center; margin-top: 24px; font-size: 11px; color: #64748B; border-top: 1px solid #E2E8F0; padding-top: 12px; }
-            @media print { body { padding: 0; } .receipt { box-shadow: none; border: 1px solid #000; } }
-          </style>
-        </head>
-        <body>
-          <div class="receipt">
-            <div class="header">
-              <div class="brand">🚄 TravelIQ Transport Pass</div>
-              <div class="badge">Confirmed & Paid</div>
-            </div>
-            <div class="row"><span class="label">PNR / Ticket Ref:</span><span class="value">#TK-${booking.id}</span></div>
-            <div class="row"><span class="label">Train Number / Name:</span><span class="value">${booking.train_number || '12626'} (Express)</span></div>
-            <div class="row"><span class="label">Journey Route:</span><span class="value">${booking.source_station_code} ➔ ${booking.destination_station_code}</span></div>
-            <div class="row"><span class="label">Travel Class:</span><span class="value">${booking.travel_class || '3A'}</span></div>
-            <div class="row"><span class="label">Seat & Berth Preference:</span><span class="value">${booking.seat_preference || 'No Preference'} (${booking.berth_preference || 'No Preference'})</span></div>
-            <div class="row"><span class="label">Total Paid Fare (GST Incl.):</span><span class="value" style="color: #14532D; font-size: 15px;">₹${booking.ticket_fare}</span></div>
-            <div class="row"><span class="label">Payment Status:</span><span class="value" style="color: #15803D;">${booking.payment_status || 'Paid (Instant Verified)'}</span></div>
-            <div class="footer">
-              <p>TravelIQ Verified Electronic Ticket • 24x7 Helpline: 1800-872-8354</p>
-            </div>
-          </div>
-          <script>window.print();</script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    window.open(`/api/payment/ticket/${booking.id}/pdf`, '_blank');
   };
 
   // Filters

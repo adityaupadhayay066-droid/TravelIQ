@@ -6,11 +6,13 @@ const { User, Session } = require('../models');
  */
 const protect = async (req, res, next) => {
     let token;
-    // Support both HttpOnly cookie and Bearer header (for mobile/API clients)
+    // Support HttpOnly cookie, Bearer header, and query parameter (for direct PDF tab links)
     if (req.cookies && req.cookies.accessToken) {
         token = req.cookies.accessToken;
     } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
+    } else if (req.query && req.query.token) {
+        token = req.query.token;
     }
 
     if (token) {

@@ -510,12 +510,30 @@ def generate_gemini_response(user_message: str) -> str:
         return None
         
     api_key = raw_key.strip().strip('"').strip("'")
-    if not api_key or api_key in ["your_google_gemini_api_key_here", "your_actual_google_gemini_api_key_here"]:
+    if not api_key or api_key.startswith("your_") or api_key == "None":
+        return None
+
+    # Google AI Studio API keys start with AIzaSy; OAuth bearer tokens start with ya29.
+    # If the key is an invalid format like AQ.*, skip immediately to prevent 401 loop
+    if api_key.startswith("AQ."):
+        logger.debug("⚠️ Skipping Gemini API: Provided key is an invalid OAuth token format (starts with AQ.). Using local neural engine.")
         return None
         
-    # Try models in order of verified availability
-    models = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.7-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview"]
+    # Standard official Google Gemini models
+    models = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+    ]
+    
     headers = {"Content-Type": "application/json"}
+    if api_key.startswith("ya29."):
+        headers["Authorization"] = f"Bearer {api_key}"
+        base_url_fn = lambda m: f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent"
+    else:
+        base_url_fn = lambda m: f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={api_key}"
+
     payload = {
         "contents": [{
             "parts": [{
@@ -525,9 +543,9 @@ def generate_gemini_response(user_message: str) -> str:
     }
     
     for model in models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        url = base_url_fn(model)
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=15)
+            res = requests.post(url, headers=headers, json=payload, timeout=8)
             if res.status_code == 200:
                 data = res.json()
                 candidates = data.get("candidates", [])
@@ -535,30 +553,218 @@ def generate_gemini_response(user_message: str) -> str:
                     parts = candidates[0].get("content", {}).get("parts", [])
                     if parts:
                         return parts[0].get("text", "").strip()
+            elif res.status_code == 401 or res.status_code == 403:
+                # Invalid authentication: stop immediately, do not spam retries
+                logger.warning(f"⚠️ Gemini API Authentication Error ({res.status_code}): Invalid or expired API Key. Falling back to built-in TravelIQ neural engine.")
+                break
             else:
-                logger.warning(f"Gemini API model '{model}' HTTP Error {res.status_code}: {res.text}")
+                logger.debug(f"Gemini model {model} returned {res.status_code}: {res.text[:100]}")
         except Exception as e:
-            logger.error(f"Gemini API Call Error ({model}): {e}")
+            logger.debug(f"Gemini API Call Exception ({model}): {e}")
             
+    return None
+
+# ─── TravelIQ Domain Expert Knowledge Engine ───
+CITY_ITINERARIES = {
+    "manali": {
+        "title": "Manali 5-Day Alpine Experience",
+        "budget": "₹14,500",
+        "route": "Delhi → Overnight AC Volvo → Manali",
+        "highlights": "Solang Valley snow sports, Atal Tunnel, Hadimba Temple, Vashisht Hot Springs & Old Manali Cafes",
+        "food": "Authentic Himachali Siddu with ghee, Trout fish, Babru",
+        "tips": "Book evening Volvo from Majnu Ka Tilla Delhi around 7:30 PM. Stay near Old Manali for scenic mountain views."
+    },
+    "goa": {
+        "title": "Goa 4-Day Coastal & Heritage Getaway",
+        "budget": "₹12,000",
+        "route": "Konkan Kanya / Tejas Express from Mumbai to Madgaon (MAO) / Direct Flight",
+        "highlights": "Palolem & Baga beaches, Dudhsagar Waterfalls trek, Old Goa Churches, Chapora Fort sunset",
+        "food": "Goan Fish Curry Thali, Prawn Balchão, Bebinca dessert",
+        "tips": "Rent a scooter at Madgaon station (₹350/day). Visit North Goa for vibrant cafes and South Goa for pristine beaches."
+    },
+    "jaipur": {
+        "title": "Jaipur & Royal Rajasthan 3-Day Heritage Tour",
+        "budget": "₹7,500",
+        "route": "Vande Bharat / Ajmer Shatabdi from Delhi (NDLS → JP)",
+        "highlights": "Amber Fort elephant pass, Hawa Mahal, City Palace, Jal Mahal & Chokhi Dhani ethnic village",
+        "food": "Dal Baati Churma, Pyaaz Kachori at Rawat Mishtan Bhandar, Ghewar",
+        "tips": "Buy a composite entry ticket for forts to skip queues. Early morning 8 AM is the best time for Amber Fort photos."
+    },
+    "kerala": {
+        "title": "Kerala Backwaters & Munnar 5-Day Retreat",
+        "budget": "₹18,000",
+        "route": "Train to Ernakulam (ERS) or Flight to Kochi (COK) → Munnar & Alleppey",
+        "highlights": "Alleppey Houseboat backwater cruise, Munnar Tea Gardens, Mattupetty Dam, Fort Kochi colonial walk",
+        "food": "Kerala Sadhya on banana leaf, Appam with stew, Karimeen Pollichathu",
+        "tips": "Book government DTPC houseboats in Alleppey for certified rates and hygienic onboard dining."
+    },
+    "ladakh": {
+        "title": "Ladakh & Pangong 6-Day High-Altitude Circuit",
+        "budget": "₹28,000",
+        "route": "Flight to Leh (IXL) or Srinagar-Leh Highway",
+        "highlights": "Pangong Tso blue lake, Nubra Valley sand dunes & Bactrian camels, Khardung La Pass (17,582 ft), Magnetic Hill",
+        "food": "Thukpa, Butter tea, Steamed Tingmo with yak cheese",
+        "tips": "Dedicate Day 1 purely for high-altitude acclimatization in Leh. Carry Diamox and valid Inner Line Permits (ILP)."
+    },
+    "kolkata": {
+        "title": "Kolkata 3-Day Culture, Food & Heritage Trail",
+        "budget": "₹6,500",
+        "route": "Howrah Rajdhani / Vande Bharat to Howrah (HWH) / Flight to CCU",
+        "highlights": "Victoria Memorial, Howrah Bridge, Park Street, Dakshineswar Kali Temple & Belur Math river ferry",
+        "food": "Kolkata Biryani with Aloo, Kathi Rolls at Nizam's, Sondesh & Rosogolla at KC Das",
+        "tips": "Take the heritage tram ride through Maidan and enjoy sunset boat rides at Princep Ghat."
+    },
+    "varanasi": {
+        "title": "Varanasi 3-Day Spiritual Ganga Experience",
+        "budget": "₹6,000",
+        "route": "Vande Bharat Express (NDLS → BSB) in 8 hours",
+        "highlights": "Dashashwamedh Ghat Evening Ganga Aarti, Sunrise boat ride, Kashi Vishwanath Corridor, Sarnath Buddhist Stupa",
+        "food": "Banarasi Kachori Sabzi, Blue Lassi, Malaiyyo (winter foam sweet), Banarasi Paan",
+        "tips": "Book Ganga Aarti boat slots at Assi Ghat 1 hour before sunset. Opt for early morning boat rides at 5:30 AM."
+    },
+    "kashmir": {
+        "title": "Kashmir 5-Day Paradise Valley Tour",
+        "budget": "₹22,000",
+        "route": "Flight to Srinagar (SXR) or Vande Bharat to Katra + Onward cab",
+        "highlights": "Dal Lake Shikara ride & Houseboat stay, Gulmarg Gondola Phase 2, Pahalgam Betaab Valley, Sonamarg glaciers",
+        "food": "Traditional Kashmiri Wazwan (Rogan Josh, Gustaba, Rista), Noon Chai with Lavasa",
+        "tips": "Book Gulmarg Gondola tickets online at least 3 weeks in advance; onsite counters sell out quickly."
+    }
+}
+
+def generate_expert_traveliq_response(message: str) -> dict:
+    """Intelligently processes user queries across all TravelIQ product domains."""
+    clean = message.lower().strip()
+    
+    # 1. Developer API Keys / B2B Portal
+    if any(k in clean for k in ["api key", "developer key", "b2b", "x-api-key", "api token", "developer portal", "developer hub", "rate limit", "telemetry", "sdk", "endpoint"]):
+        return {
+            "response": "🔑 **How to Generate & Use TravelIQ Developer API Keys**:\n\n1. **Open Developer Portal**: Click **Explore → B2B Developer Hub** (or navigate to your workspace).\n2. **Generate Key**: Click the **'Generate API Key'** button, name your application/organization, and select your tier (Sandbox or Production).\n3. **Authenticate Requests**: Include the header `X-API-Key: tiq_live_your_key_here` in your HTTP requests.\n4. **Available Endpoints**:\n   • `POST /api/v1/predict/delay` — AI Train Delay Forecast\n   • `POST /api/v1/predict/fare` — Dynamic Multi-Modal Fare Predictor\n   • `POST /api/v1/optimize-route` — Route & Carbon Optimization\n   • `POST /api/v1/predict/crowd` — Live Platform Density Estimation\n\nTrack your live usage, response latency, and rate limits in real-time under the **Telemetry** tab!",
+            "intent": "developer_api_keys",
+            "confidence": 99.0
+        }
+
+    # 2. Train Search & Booking Assistance
+    if any(k in clean for k in ["book in train", "book train", "book ticket", "how to book", "rail booking", "reserve seat", "irctc booking", "tatkal"]):
+        return {
+            "response": "🚆 **Step-by-Step Guide to Booking Train Tickets on TravelIQ**:\n\n1. **Search Route**: Click **Plan Trip** on the top navigation bar and enter your **Origin** (e.g. NDLS) & **Destination** (e.g. CSTM).\n2. **Select Class**: Choose your preferred class — **1A** (First AC), **2A** (2-Tier), **3A** (3-Tier), **CC** (Chair Car), or **SL** (Sleeper).\n3. **Passenger Info**: Fill in traveler names, ages, gender, and preferred berths (Lower, Middle, Upper, Side Lower).\n4. **Sandbox / Instant Payment**: Pay securely via the interactive Dynamic UPI QR code or Card sandbox.\n5. **Official E-Ticket**: Instantly generate and print your **IRCTC Co-Branded Electronic Reservation Slip (ERS)** with confirmed PNR, Coach/Berth allocations, and security QR code!",
+            "intent": "train_booking_guide",
+            "confidence": 98.5
+        }
+
+    # 3. Hotels, Hostels, Capsule Pods & Stays
+    if any(k in clean for k in ["hotel", "hostel", "dorm", "capsule pod", "homestay", "stay in", "book hotel", "room reservation", "e-voucher"]):
+        return {
+            "response": "🏨 **TravelIQ Stays & Backpacker Dorms**:\n\n• **Zero Prepayment**: Reserve verified hotels, homestays, and budget pod hostels with 0% upfront prepayment.\n• **Curated Options**: Filter by backpacker dorms (from ₹499/bed), luxury resorts, and homestays with verified amenities (WiFi, Hot Water, Breakfast).\n• **Free Cancellation**: Cancel anytime up to 24 hours prior to check-in without penalty.\n• **Instant e-Voucher**: Download your official MakeMyTrip / OYO-style Tax Invoice & PDF Voucher under **'My Trips → Hotels & Stays'**!",
+            "intent": "hotel_stays_guide",
+            "confidence": 98.0
+        }
+
+    # 4. Multi-Day Destination Itineraries
+    for city_key, plan in CITY_ITINERARIES.items():
+        if city_key in clean:
+            return {
+                "response": f"🗺️ **Custom {plan['title']}** (Est. Budget: {plan['budget']})\n\n"
+                            f"• **Transit Route**: {plan['route']}\n"
+                            f"• **Top Highlights**: {plan['highlights']}\n"
+                            f"• **Must-Try Local Food**: {plan['food']}\n"
+                            f"• **Insider Pro-Tip**: {plan['tips']}\n\n"
+                            f"💡 *Would you like me to book your train transit or recommend verified stays for this trip?*",
+                "intent": f"itinerary_{city_key}",
+                "confidence": 99.0
+            }
+
+    # 5. Train Delays & Live GPS Tracking
+    if any(k in clean for k in ["delay", "running status", "live status", "train late", "delay predictor", "gps track"]):
+        return {
+            "response": "⏱️ **AI Train Delay & Live Tracking Intelligence**:\n\nTravelIQ uses deep LSTM Recurrent Neural Networks analyzing historical punctuality records, route choke-points, and real-time monsoon/winter fog weather data.\n\n• **Check Live Delays**: Go to **'Live Train GPS Tracker'** and enter any 5-digit Train Number (e.g. 12951, 12004, 22436).\n• **Expected Accuracy**: Up to 94.6% confidence with dynamic arrival and platform predictions!",
+            "intent": "delay_prediction_guide",
+            "confidence": 97.5
+        }
+
+    # 6. Smart Fares & Dynamic Pricing
+    if any(k in clean for k in ["fare", "ticket price", "cheap", "fare prediction", "lowest fare", "price forecast"]):
+        return {
+            "response": "💰 **Smart Fare Predictor & Price Forecast**:\n\n• **Trains**: Sleeper (SL) and 3AC (3A) tickets offer the highest cost efficiency when booked 30–60 days in advance.\n• **Flights**: Dynamic airline algorithms show lowest prices on Tuesday/Wednesday departures when booked 3–4 weeks prior.\n• **Compare All Modes**: Use **Compare Modes** on your dashboard to see side-by-side time vs. cost tradeoffs for Train, Flight, Bus, and Taxi!",
+            "intent": "fare_inquiry_guide",
+            "confidence": 97.0
+        }
+
+    # 7. Food On Berth Delivery
+    if any(k in clean for k in ["food", "meal", "thali", "restaurant", "food delivery", "snacks", "station food"]):
+        return {
+            "response": "🍲 **Station Food Delivery Direct to Berth**:\n\nOrder hot, hygienic meals delivered right to your train seat!\n• **Top Station Delicacies**: Poha & Jalebi (Ratlam/Bhopal), Litti Chokha (Patna), Chenapoda & Dalma (Bhubaneswar), Hyderabadi Dum Biryani (Secunderabad).\n• **Order Now**: Navigate to **Explore → Station Food Delivery**, enter your PNR or Train Number, and pick from certified restaurants along your route!",
+            "intent": "food_delivery_guide",
+            "confidence": 97.5
+        }
+
+    # 8. 3D Station Navigation
+    if any(k in clean for k in ["3d station", "station 3d", "platform navigation", "waiting room", "digital twin", "station map"]):
+        return {
+            "response": "🏢 **3D Digital Twin Station Navigation**:\n\nExplore interactive 3D digital models of major railway terminals including New Delhi (NDLS), Mumbai CSMT, Howrah (HWH), and Bengaluru (SBC).\n• Locate platform stairs, elevators, escalators, cloakrooms, wheelchair ramps, and executive waiting lounges before arriving at the station!",
+            "intent": "3d_station_navigation",
+            "confidence": 98.0
+        }
+
+    # 9. Safety, Emergency & SOS Alerts
+    if any(k in clean for k in ["sos", "emergency", "safety", "helpline", "security", "rpf", "police", "unsafe"]):
+        return {
+            "response": "🛡️ **Travel Safety & SOS Emergency Network**:\n\n• **Indian Railways Helpline**: Dial **139** (24x7 Security, Medical Emergency, Childline, and Complaints).\n• **TravelIQ Live SOS**: Broadcast your real-time GPS coordinates, PNR details, and train coach to emergency contacts via the **Security Hub**.\n• **Women Traveler Safety**: Railway Protection Force (RPF) 'Meri Saheli' squads provide dedicated escorts on late-night transit routes.",
+            "intent": "safety_sos_guide",
+            "confidence": 99.0
+        }
+
+    # 10. Cancellations & Refunds
+    if any(k in clean for k in ["cancel", "refund", "cancellation rules", "refund policy"]):
+        return {
+            "response": "🔄 **Ticket Cancellation & Refund Policy**:\n\n• You can cancel any confirmed booking directly from the **'My Trips'** page with 1-click instant sandbox refund.\n• **Standard Railway Refund Slabs**:\n  - >48 hours before departure: Flat cancellation charge based on class (e.g. ₹240 for 1A/EC, ₹180 for 2A/3A, ₹120 for SL).\n  - 48 to 12 hours: 25% deduction.\n  - 12 to 4 hours: 50% deduction.",
+            "intent": "cancellation_refund_guide",
+            "confidence": 98.0
+        }
+
     return None
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-    # Try Google Gemini API first if configured
+    # 1. Try Google Gemini API first if configured with a valid key
     gemini_reply = generate_gemini_response(req.message)
     if gemini_reply:
         return {
             "response": gemini_reply,
-            "suggestion": "Powered by Google Gemini 3.6 Flash AI ⚡",
+            "suggestion": "Powered by Google Gemini AI ⚡",
             "confidence": 99.0,
             "intent": "gemini_llm"
         }
 
-    # Fallback to PyTorch Intent Classifier Neural Network
+    # 2. Check TravelIQ Specialized Domain Knowledge Engine
+    domain_match = generate_expert_traveliq_response(req.message)
+    if domain_match:
+        return {
+            "response": domain_match["response"],
+            "suggestion": "Explore related tools on your TravelIQ Dashboard!",
+            "confidence": domain_match["confidence"],
+            "intent": domain_match["intent"]
+        }
+
+    # 3. Check RAG Vector Database for uploaded knowledge documents
+    try:
+        from rag_engine import query_rag_engine
+        rag_res = query_rag_engine(req.message)
+        if rag_res and rag_res.get("response") and rag_res.get("confidence", 0) >= 80.0:
+            return {
+                "response": rag_res["response"],
+                "suggestion": "Retrieved from verified TravelIQ Knowledge Base 📚",
+                "confidence": rag_res["confidence"],
+                "intent": "rag_knowledge"
+            }
+    except Exception as rag_err:
+        logger.debug(f"RAG search skipped: {rag_err}")
+
+    # 4. Fallback to PyTorch Intent Classifier Neural Network
     if not model_chatbot:
         return {
-            "response": "Hello! Welcome to TravelIQ. How can I help you plan your journey today?",
-            "suggestion": "Ask about delay predictions or cheap ticket tips!",
+            "response": "Hello! I am your TravelIQ Assistant. I can assist you with Developer API keys, train booking steps, verified hotel stays, multi-day itineraries, delay predictions, station food delivery, and safety alerts!",
+            "suggestion": "Ask 'How to get developer api key' or 'Plan 5-day trip to Manali'",
             "confidence": 80.0,
             "intent": "general_faq"
         }
@@ -575,24 +781,24 @@ def chat(req: ChatRequest):
             prob = float(torch.softmax(logits, dim=-1)[0][intent_idx].item())
             
         intent = INTENT_CLASSES[intent_idx]
-        response_text = TRAVEL_KNOWLEDGE_DYN.get(intent, "TravelIQ is an AI-powered travel intelligence dashboard. You can toggle dark mode, update your profile details, audit booking logs, and request SOS alerts.")
+        response_text = TRAVEL_KNOWLEDGE_DYN.get(intent, "TravelIQ is an AI-powered travel intelligence dashboard. You can plan multimodal routes, check delay forecasts, explore 3D stations, audit booking logs, and request SOS alerts.")
         
-        # Simple dynamic matching for stations
+        # Dynamic matching for route stations
         route_match = re.search(r'(?:from|between)\s+(\w+)\s+(?:to|and)\s+(\w+)', req.message.lower())
         if route_match:
             src, dst = route_match.group(1).title(), route_match.group(2).title()
-            response_text = f"Traveling between {src} and {dst}? Let me optimize this route for you! 🚂 Click 'Route Optimizer' on your dashboard to see time, cost, and eco-impact options. In the meantime: {response_text}"
+            response_text = f"Planning transit between {src} and {dst}? Click 'Plan Trip' or 'Route Optimizer' on your dashboard to see time, cost, and eco-impact options with live booking!"
             
         return {
             "response": response_text,
-            "suggestion": "Ask about delay predictions or cheap ticket tips!",
+            "suggestion": "Ask about developer keys, booking steps, or custom itineraries!",
             "confidence": round(prob * 100, 2),
             "intent": intent
         }
     except Exception as e:
         logger.error(f"Error in chat processing: {e}")
         return {
-            "response": "Hello! I am here to help you plan your journey. Ask me about delays, fares, food, or safety!",
+            "response": "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train tickets, hotel stays, delay predictions, or city itineraries!",
             "suggestion": None,
             "confidence": 75.0,
             "intent": "general_faq"

@@ -22,20 +22,31 @@ const sendMessage = async (req, res) => {
     try {
         let botReply = null;
 
-        // 1. Try Google Gemini API if configured
-        const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-        if (rawApiKey) {
-            const geminiApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
-            if (geminiApiKey && !['your_google_gemini_api_key_here', 'your_actual_google_gemini_api_key_here'].includes(geminiApiKey)) {
-                const models = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.1-pro-preview'];
+        // 1. Try Python AI Service (/chat endpoint) first (Domain Expert + Neural Engine + RAG)
+        try {
+            const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+            const aiRes = await axios.post(`${aiUrl}/chat`, { message }, { timeout: 6000 });
+            if (aiRes.data && aiRes.data.response) {
+                botReply = aiRes.data.response;
+            }
+        } catch (aiErr) {
+            // Fallback if AI service is offline
+        }
+
+        // 2. Try Google Gemini API if configured with a valid key (starts with AIzaSy)
+        if (!botReply) {
+            const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+            if (rawApiKey && rawApiKey.startsWith('AIzaSy')) {
+                const geminiApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
+                const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
                 for (const model of models) {
                     try {
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
                         const gRes = await axios.post(url, {
                             contents: [{
-                                parts: [{ text: `You are TravelIQ AI, a helpful futuristic travel assistant. Answer concisely in 2-3 sentences: ${message}` }]
+                                parts: [{ text: `You are TravelIQ AI, a helpful senior travel assistant. Answer concisely in 2-3 friendly sentences: ${message}` }]
                             }]
-                        }, { timeout: 15000 });
+                        }, { timeout: 8000 });
 
                         if (gRes.data && gRes.data.candidates && gRes.data.candidates.length > 0) {
                             const parts = gRes.data.candidates[0].content?.parts || [];
@@ -45,27 +56,13 @@ const sendMessage = async (req, res) => {
                             }
                         }
                     } catch (gErr) {
-                        const errDetails = gErr.response?.data?.error?.message || gErr.message;
-                        console.error(`[Gemini API Call Failed - Model ${model}]:`, errDetails);
+                        break; // Stop on auth or rate failure
                     }
                 }
             }
         }
 
-        // 2. Try Python AI Service (/chat endpoint)
-        if (!botReply) {
-            try {
-                const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-                const aiRes = await axios.post(`${aiUrl}/chat`, { message }, { timeout: 5000 });
-                if (aiRes.data && aiRes.data.response) {
-                    botReply = aiRes.data.response;
-                }
-            } catch (aiErr) {
-                // Ignore AI service offline
-            }
-        }
-
-        // 3. Fallback to Database Knowledge Base
+        // 3. Fallback to Database Knowledge Base & Context Matcher
         if (!botReply) {
             const knowledgeBase = await ChatbotKnowledge.findAll();
             let bestMatch = null;
@@ -92,7 +89,13 @@ const sendMessage = async (req, res) => {
                 botReply = bestMatch.answer;
             } else {
                 const lowerMsg = cleanMessage.toLowerCase();
-                if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
+                if (/\b(api key|developer|b2b|x-api-key|telemetry|token|endpoint|sdk)\b/i.test(lowerMsg)) {
+                    botReply = "🔑 To get a Developer API Key: 1) Go to 'B2B Developer Hub' from the Explore menu. 2) Click 'Generate API Key' and name your app. 3) Pass the generated key in the 'X-API-Key' header when calling TravelIQ AI endpoints (/api/v1/predict/delay, /api/v1/predict/fare, /api/v1/optimize-route).";
+                } else if (/\b(book in train|book train|book ticket|how to book|rail booking|seat reservation)\b/i.test(lowerMsg)) {
+                    botReply = "🚆 To book a train: 1) Click 'Plan Trip' on top. 2) Enter Origin & Destination (e.g. NDLS to CSTM). 3) Choose your class (1A, 2A, 3A, SL, CC). 4) Enter passenger details & berth preference. 5) Pay via UPI QR sandbox to instantly get your official IRCTC Co-Branded Electronic Reservation Slip (ERS)!";
+                } else if (/\b(hotel|hostel|dorm|homestay|stay in|room)\b/i.test(lowerMsg)) {
+                    botReply = "🏨 TravelIQ Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
+                } else if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
                     botReply = "To check ticket fares and price trends for flights or trains (e.g. IGI Delhi to RNC Ranchi), visit the 'Route Optimizer' or 'Smart Fare Predictor' tab on your TravelIQ dashboard! Direct flight fares typically range between ₹3,500 and ₹6,500.";
                 } else if (/\b(delay|late|time|status|cancel|reschedule)\b/i.test(lowerMsg)) {
                     botReply = "Train delays are monitored using historical weather and route statistics. Enter your train number in our 'Delay Predictor' tab for real-time risk predictions!";
@@ -100,10 +103,8 @@ const sendMessage = async (req, res) => {
                     botReply = "Looking for delicious meals on your trip? Explore regional specialties on the 'Food Recommendations' tab for top station treats!";
                 } else if (/\b(safety|sos|emergency|help|rpf|security)\b/i.test(lowerMsg)) {
                     botReply = "Your safety is our top priority! Use our 'SOS Alerts' feature to share your live PNR itinerary or call Railway Helpline 139.";
-                } else if (/\b(book|booking|irctc|tatkal|seat|reservation)\b/i.test(lowerMsg)) {
-                    botReply = "Train reservations open at 8 AM for General quota and 10 AM/11 AM for Tatkal on IRCTC. Check seat availability predictions on TravelIQ before booking!";
                 } else {
-                    botReply = "Hello! I am your TravelIQ AI assistant. Ask me about train or flight fares, delay predictions, route optimization, local food, or travel safety!";
+                    botReply = "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train booking steps, verified hotel stays, delay forecasts, local food, or custom trip itineraries!";
                 }
             }
         }
