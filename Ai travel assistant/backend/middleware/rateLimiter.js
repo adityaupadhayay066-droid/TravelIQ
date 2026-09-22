@@ -52,9 +52,32 @@ const otpLimiter = rateLimit({
     skip: (req) => isLocalOrDev(req),
 });
 
+// Profile Limiter (general profile read/update operations)
+const profileLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: process.env.NODE_ENV === 'production' ? 60 : 2000,
+    message: { message: 'Too many profile requests. Please slow down.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => isLocalOrDev(req),
+});
+
+// Sensitive Profile Actions Limiter (password change, avatar upload, deactivation, deletion)
+const profileSensitiveLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: process.env.NODE_ENV === 'production' ? 10 : 500,
+    message: { message: 'Too many sensitive account modification attempts. Please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => isLocalOrDev(req),
+});
+
 module.exports = {
     loginLimiter,
     registerLimiter,
     otpLimiter,
-    apiLimiter
+    apiLimiter,
+    profileLimiter,
+    profileSensitiveLimiter
 };
+

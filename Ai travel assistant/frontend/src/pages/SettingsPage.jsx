@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Eye, EyeOff, Sun, Moon, Monitor, Shield, Trash2, Pause, AlertTriangle, Loader2, ChevronRight, LogOut, User } from 'lucide-react';
+import { Lock, Eye, EyeOff, Sun, Moon, Monitor, Shield, Trash2, Pause, AlertTriangle, Loader2, ChevronRight, LogOut, User, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api, getBackendBaseURL } from '../utils/api';
@@ -42,7 +42,7 @@ function ThemeOption({ icon: Icon, label, value, active, onClick }) {
 }
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, sessionTimeoutMinutes, setSessionTimeoutMinutes } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -137,6 +137,50 @@ export default function SettingsPage() {
             <ThemeOption icon={Moon} label="Dark" value="dark" active={theme === 'dark'} onClick={() => setTheme('dark')} />
             <ThemeOption icon={Sun} label="Light" value="light" active={theme === 'light'} onClick={() => setTheme('light')} />
             <ThemeOption icon={Monitor} label="System" value="system" active={theme === 'system'} onClick={() => setTheme('system')} />
+          </div>
+        </SectionCard>
+
+        {/* Session Security & Auto-Logout */}
+        <SectionCard title="Session Security & Auto-Logout" icon={Clock} delay={0.12}>
+          <div className="space-y-3 font-inter">
+            <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">
+              Automatically logs out your account after a period of inactivity to keep your travel data safe.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {[
+                { label: '15 Minutes', value: 15, tag: 'Default' },
+                { label: '30 Minutes', value: 30 },
+                { label: '1 Hour', value: 60 },
+                { label: '2 Hours', value: 120 },
+              ].map((opt) => {
+                const isSelected = (sessionTimeoutMinutes || 15) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      setSessionTimeoutMinutes(opt.value);
+                      toast.success(`Auto-logout timeout set to ${opt.label}`);
+                    }}
+                    className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                      isSelected
+                        ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] font-semibold ring-1 ring-[#173F3A]/30 dark:ring-[#EEF2ED]/30'
+                        : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] hover:border-[#173F3A]/40 dark:hover:border-[#EEF2ED]/40'
+                    }`}
+                  >
+                    <span className="text-xs">{opt.label}</span>
+                    {opt.tag && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED] font-medium">
+                        {opt.tag}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-1.5 pt-1">
+              <Shield className="w-3.5 h-3.5 text-[#4F7D62]" /> A 60-second warning countdown modal will appear before your session expires.
+            </p>
           </div>
         </SectionCard>
 

@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AIChatbot from './components/AIChatbot';
 import ErrorBoundary from './components/ErrorBoundary';
 import AuthModal from './components/AuthModal';
+import SessionTimeoutModal from './components/SessionTimeoutModal';
 import DashboardLayout from './components/DashboardLayout';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
@@ -290,6 +291,7 @@ function App() {
                 }} 
               />
               <AuthModal />
+              <SessionTimeoutModal />
               <Suspense fallback={<Loader />}>
                 <AnimatedRoutes />
               </Suspense>

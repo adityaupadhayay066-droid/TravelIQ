@@ -30,6 +30,24 @@ export const AuthProvider = ({ children }) => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [authModalMode, setAuthModalMode] = useState('login');
 
+    // Auto-Logout Session Timeout (in minutes)
+    const [sessionTimeoutMinutes, setSessionTimeoutMinutesState] = useState(() => {
+        const saved = localStorage.getItem('traveliq_session_timeout_mins');
+        if (saved) {
+            const parsed = parseInt(saved, 10);
+            if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+        return 15; // default 15 mins
+    });
+
+    const setSessionTimeoutMinutes = (mins) => {
+        const parsed = parseInt(mins, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+            setSessionTimeoutMinutesState(parsed);
+            localStorage.setItem('traveliq_session_timeout_mins', parsed.toString());
+        }
+    };
+
     const openAuthModal = (mode = 'login') => {
         setAuthModalMode(mode);
         setIsAuthModalOpen(true);
@@ -229,7 +247,9 @@ export const AuthProvider = ({ children }) => {
             isAuthModalOpen,
             authModalMode,
             openAuthModal,
-            closeAuthModal
+            closeAuthModal,
+            sessionTimeoutMinutes,
+            setSessionTimeoutMinutes
         }}>
             {!loading && children}
         </AuthContext.Provider>
