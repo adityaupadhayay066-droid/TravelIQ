@@ -783,7 +783,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 </div>
                 <h3 className="font-bold text-base text-[#173F3A] dark:text-[#EEF2ED]">Enter One-Time Password (OTP)</h3>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] max-w-sm mx-auto">
-                  A high-security 6-digit OTP has been sent to your registered mobile number <strong className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">+91 ••••••9402</strong>.
+                  A high-security 6-digit OTP has been sent to your registered mobile number <strong className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">{orderData?.phone_hint || '+91 ••••••' + String(org?.id ? org.id * 739 + 1000 : 9402).slice(-4)}</strong> and email <strong className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">{orderData?.email_hint || 'developer•••@platform.com'}</strong>.
                 </p>
               </div>
 

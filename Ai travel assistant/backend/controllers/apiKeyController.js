@@ -262,13 +262,24 @@ exports.initiateDeveloperPayment = async (req, res) => {
 
     pendingPaymentIntents.set(orderId, intentData);
 
+    // Generate dynamic mask for actual logged in user's phone & email
+    const rawPhone = req.user?.phone_number || '';
+    let phoneHint = '+91 ••••••' + String(Math.abs(req.user?.id ? req.user.id * 739 + 1000 : 9402)).slice(-4);
+    if (rawPhone && rawPhone.length >= 4) {
+      const last4 = rawPhone.slice(-4);
+      phoneHint = rawPhone.startsWith('+') ? `${rawPhone.slice(0, 3)} ••••••${last4}` : `+91 ••••••${last4}`;
+    }
+
+    const rawEmail = req.user?.email || 'developer@company.com';
+    const emailHint = rawEmail.replace(/^(.{2})(.*)(@.*)$/, (_, a, b, c) => `${a}•••${c}`);
+
     return res.status(200).json({
       success: true,
       order_id: orderId,
       verification_required: true,
       verification_type: payment_method === 'UPI' ? 'UPI_PIN' : (payment_method === 'NETBANKING' ? 'NETBANKING_AUTH' : '3DS_OTP'),
-      phone_hint: '+91 ••••••9402',
-      email_hint: req.user?.email || 'developer@company.com',
+      phone_hint: phoneHint,
+      email_hint: emailHint,
       test_otp_hint: mockOtp,
       expires_in_seconds: 600,
       amount: intentData.amount
