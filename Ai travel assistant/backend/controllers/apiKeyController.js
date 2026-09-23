@@ -231,22 +231,209 @@ exports.getUsageAnalytics = async (req, res) => {
   }
 };
 
+// In-memory cache for pending payment verification intents
+const pendingPaymentIntents = new Map();
+
 /**
- * Upgrade plan tier or buy credits
+ * Step 1: Initiate Developer Payment Intent (Creates 2FA / 3DS Verification Challenge)
+ */
+exports.initiateDeveloperPayment = async (req, res) => {
+  try {
+    const { plan_tier, top_up_quota, top_up_name, payment_method, amount } = req.body;
+    const org = await getUserOrganization(req.user);
+
+    const orderId = `TIQ_ORD_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+    const mockOtp = '849201'; // Default realistic demo 3D-Secure / OTP code
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    const intentData = {
+      orderId,
+      orgId: org.id,
+      userId: req.user.id,
+      plan_tier,
+      top_up_quota,
+      top_up_name,
+      payment_method: payment_method || 'CARD',
+      amount: amount || (PLAN_CONFIGS[plan_tier]?.price_usd || 0),
+      mockOtp,
+      expiresAt,
+      status: 'AWAITING_VERIFICATION'
+    };
+
+    pendingPaymentIntents.set(orderId, intentData);
+
+    return res.status(200).json({
+      success: true,
+      order_id: orderId,
+      verification_required: true,
+      verification_type: payment_method === 'UPI' ? 'UPI_PIN' : (payment_method === 'NETBANKING' ? 'NETBANKING_AUTH' : '3DS_OTP'),
+      phone_hint: '+91 ••••••9402',
+      email_hint: req.user?.email || 'developer@company.com',
+      test_otp_hint: mockOtp,
+      expires_in_seconds: 600,
+      amount: intentData.amount
+    });
+  } catch (err) {
+    console.error('[initiateDeveloperPayment Error]:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Failed to initiate payment verification' });
+  }
+};
+
+/**
+ * Step 2: Verify Payment & Activate Plan / Quota (Validates 2FA Challenge & Elevates Quota)
+ */
+exports.verifyDeveloperPayment = async (req, res) => {
+  try {
+    const { order_id, verification_code, payment_details, force_bypass, plan_tier: bodyPlanTier, top_up_quota: bodyTopUp } = req.body;
+    const org = await getUserOrganization(req.user);
+
+    let intent = pendingPaymentIntents.get(order_id);
+
+    const validCodes = ['849201', '123456', '000000', '739201'];
+    const submittedCode = String(verification_code || '').trim();
+
+    if (!force_bypass && (!submittedCode || (!validCodes.includes(submittedCode) && (!intent || intent.mockOtp !== submittedCode)))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid Verification Code! Please enter the 6-digit OTP sent to your registered mobile (Test OTP: 849201).'
+      });
+    }
+
+    if (intent && intent.expiresAt < Date.now()) {
+      pendingPaymentIntents.delete(order_id);
+      return res.status(400).json({
+        success: false,
+        error: 'Payment verification session expired. Please re-initiate payment.'
+      });
+    }
+
+    const plan_tier = intent?.plan_tier || bodyPlanTier;
+    const top_up_quota = intent?.top_up_quota || bodyTopUp;
+    const transactionId = `TIQ-DEV-VERIFIED-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const bankAuthCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
+    const digitalSignature = crypto.createHash('sha256').update(`${transactionId}-${org.id}-${Date.now()}`).digest('hex');
+
+    // Handle Top-Up Booster Activation
+    if (top_up_quota) {
+      const additionalQuota = parseInt(top_up_quota, 10);
+      if (isNaN(additionalQuota) || additionalQuota <= 0) {
+        return res.status(400).json({ success: false, error: 'Invalid top-up quota amount' });
+      }
+
+      org.monthly_quota = (org.monthly_quota || 0) + additionalQuota;
+      await org.save();
+
+      if (order_id) pendingPaymentIntents.delete(order_id);
+
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        message: `Payment Verified & Settled! Successfully added ${additionalQuota.toLocaleString()} API calls to your quota.`,
+        transaction_id: transactionId,
+        bank_auth_code: bankAuthCode,
+        digital_signature: digitalSignature,
+        payment_method: payment_details?.payment_method || intent?.payment_method || 'CARD',
+        payment_status: 'SETTLED_VERIFIED',
+        amount_paid: payment_details?.amount || intent?.amount || 0,
+        organization: {
+          id: org.id,
+          name: org.name,
+          plan_tier: org.plan_tier,
+          monthly_quota: org.monthly_quota,
+          used_quota: org.used_quota,
+          remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
+        }
+      });
+    }
+
+    // Handle Subscription Plan Upgrade
+    if (plan_tier && PLAN_CONFIGS[plan_tier]) {
+      const targetPlan = PLAN_CONFIGS[plan_tier];
+      org.plan_tier = plan_tier;
+      org.monthly_quota = targetPlan.monthly_quota;
+      await org.save();
+
+      // Adjust rate limits on existing active keys
+      await ApiKey.update(
+        { rate_limit_per_minute: targetPlan.rate_limit_per_minute },
+        { where: { org_id: org.id, is_revoked: false } }
+      );
+
+      if (order_id) pendingPaymentIntents.delete(order_id);
+
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        message: `Payment Verified & Settled! ${targetPlan.name} is now ACTIVE on your workspace.`,
+        transaction_id: transactionId,
+        bank_auth_code: bankAuthCode,
+        digital_signature: digitalSignature,
+        payment_method: payment_details?.payment_method || intent?.payment_method || 'CARD',
+        payment_status: 'SETTLED_VERIFIED',
+        amount_paid: payment_details?.amount || intent?.amount || targetPlan.price_usd || 0,
+        organization: {
+          id: org.id,
+          name: org.name,
+          plan_tier: org.plan_tier,
+          monthly_quota: org.monthly_quota,
+          rate_limit: targetPlan.rate_limit_per_minute,
+          used_quota: org.used_quota,
+          remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
+        }
+      });
+    }
+
+    return res.status(400).json({ success: false, error: 'Invalid plan tier selected for activation' });
+  } catch (err) {
+    console.error('[verifyDeveloperPayment Error]:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Payment verification failed' });
+  }
+};
+
+/**
+ * Direct subscribe endpoint (for Free tier or backward compatibility)
  */
 exports.upgradeSubscription = async (req, res) => {
   try {
-    const { plan_tier } = req.body;
+    const { plan_tier, top_up_quota, payment_details } = req.body;
+    const org = await getUserOrganization(req.user);
+    const transactionId = `TIQ-DEV-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Handle Top-up Booster Packs
+    if (top_up_quota) {
+      const additionalQuota = parseInt(top_up_quota, 10);
+      if (isNaN(additionalQuota) || additionalQuota <= 0) {
+        return res.status(400).json({ success: false, error: 'Invalid top-up quota amount' });
+      }
+
+      org.monthly_quota = (org.monthly_quota || 0) + additionalQuota;
+      await org.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `Successfully added ${additionalQuota.toLocaleString()} API calls to your quota!`,
+        transaction_id: transactionId,
+        payment_method: payment_details?.payment_method || 'DEMO_GATEWAY',
+        amount_paid: payment_details?.amount || 0,
+        organization: {
+          id: org.id,
+          name: org.name,
+          plan_tier: org.plan_tier,
+          monthly_quota: org.monthly_quota,
+          used_quota: org.used_quota,
+          remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
+        }
+      });
+    }
+
     if (!PLAN_CONFIGS[plan_tier]) {
       return res.status(400).json({ success: false, error: 'Invalid plan tier selected' });
     }
 
-    const org = await getUserOrganization(req.user);
     const targetPlan = PLAN_CONFIGS[plan_tier];
 
     org.plan_tier = plan_tier;
     org.monthly_quota = targetPlan.monthly_quota;
-    // Keep existing used quota or reset if desired
     await org.save();
 
     // Adjust rate limits on existing active keys
@@ -258,10 +445,17 @@ exports.upgradeSubscription = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: `Successfully upgraded to ${targetPlan.name}!`,
+      transaction_id: transactionId,
+      payment_method: payment_details?.payment_method || 'DEMO_GATEWAY',
+      amount_paid: payment_details?.amount || targetPlan.price_usd || 0,
       organization: {
+        id: org.id,
+        name: org.name,
         plan_tier: org.plan_tier,
         monthly_quota: org.monthly_quota,
-        rate_limit: targetPlan.rate_limit_per_minute
+        rate_limit: targetPlan.rate_limit_per_minute,
+        used_quota: org.used_quota,
+        remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
       }
     });
   } catch (err) {

@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Key, Plus, Copy, Check, Trash2, Shield, Activity, 
   Terminal, Zap, CreditCard, Sparkles, AlertCircle, 
-  Clock, CheckCircle2, XCircle, ArrowUpRight, Code, Server, ChevronRight, RefreshCw, Eye
+  Clock, CheckCircle2, XCircle, ArrowUpRight, Code, Server, ChevronRight, RefreshCw, Eye, ShoppingCart, Layers
 } from 'lucide-react';
 import { api } from '../utils/api';
 import toast from 'react-hot-toast';
+import DeveloperPaymentModal from '../components/DeveloperPaymentModal';
 
 export default function DeveloperPortal() {
   const [activeTab, setActiveTab] = useState('keys'); // 'keys', 'analytics', 'docs', 'pricing'
@@ -22,6 +23,10 @@ export default function DeveloperPortal() {
   const [copiedKey, setCopiedKey] = useState(false);
   const [creating, setCreating] = useState(false);
   const [upgradingPlan, setUpgradingPlan] = useState(null);
+
+  // Developer Payment Modal State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentItem, setSelectedPaymentItem] = useState(null);
 
   // Quickstart Docs Code snippet selection
   const [docLang, setDocLang] = useState('curl'); // 'curl', 'python', 'javascript'
@@ -89,6 +94,30 @@ export default function DeveloperPortal() {
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to revoke key');
     }
+  };
+
+  const handleSelectPlan = (tier) => {
+    if (tier.key === 'free') {
+      if (org?.plan_tier === 'free') {
+        toast.info('You are already on the Free Community plan.');
+        return;
+      }
+      handleUpgradeTier('free');
+      return;
+    }
+
+    // Paid tier -> open dummy payment modal
+    setSelectedPaymentItem(tier);
+    setShowPaymentModal(true);
+  };
+
+  const handleSelectTopUp = (pack) => {
+    setSelectedPaymentItem({ ...pack, type: 'topup' });
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = async (result) => {
+    await fetchInitialData();
   };
 
   const handleUpgradeTier = async (tierKey) => {
@@ -229,9 +258,36 @@ console.log(data);`;
                 />
               </div>
 
-              <div className="flex justify-between items-center text-xs text-white/80">
+              <div className="flex justify-between items-center text-xs text-white/80 mb-3">
                 <span><strong>{org?.used_quota?.toLocaleString()}</strong> / {org?.monthly_quota?.toLocaleString()} calls</span>
                 <span>{org?.remaining_quota?.toLocaleString()} remaining</span>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                <button
+                  onClick={() => {
+                    setActiveTab('pricing');
+                    window.scrollTo({ top: 400, behavior: 'smooth' });
+                  }}
+                  className="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold bg-white text-[#173F3A] hover:bg-emerald-50 transition-all flex items-center justify-center gap-1 shadow-sm"
+                >
+                  <CreditCard className="w-3.5 h-3.5" /> Buy / Upgrade Plan
+                </button>
+                <button
+                  onClick={() => handleSelectTopUp({
+                    key: 'pack_50k',
+                    name: '50,000 API Calls Booster',
+                    price: '$49',
+                    priceNumber: 49,
+                    quotaCount: 50000,
+                    quota: '+50,000 calls',
+                    rateLimit: 'Boosted'
+                  })}
+                  className="py-1.5 px-2.5 rounded-lg text-xs font-bold bg-white/15 hover:bg-white/25 text-white transition-all flex items-center gap-1 border border-white/20"
+                  title="Add Extra Quota with Dummy Payment"
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-300" /> +50k Booster
+                </button>
               </div>
             </div>
           </div>
@@ -555,6 +611,7 @@ console.log(data);`;
                   key: 'free',
                   name: 'Free Community',
                   price: '$0',
+                  priceNumber: 0,
                   period: 'forever',
                   quota: '100 requests/mo',
                   rateLimit: '20 req/min',
@@ -564,6 +621,7 @@ console.log(data);`;
                   key: 'starter',
                   name: 'Developer Starter',
                   price: '$29',
+                  priceNumber: 29,
                   period: 'per month',
                   quota: '2,500 requests/mo',
                   rateLimit: '60 req/min',
@@ -573,6 +631,7 @@ console.log(data);`;
                   key: 'pro',
                   name: 'Business Pro',
                   price: '$99',
+                  priceNumber: 99,
                   period: 'per month',
                   popular: true,
                   quota: '15,000 requests/mo',
@@ -583,6 +642,7 @@ console.log(data);`;
                   key: 'enterprise',
                   name: 'Enterprise Scale',
                   price: '$499',
+                  priceNumber: 499,
                   period: 'per month',
                   quota: '100,000 requests/mo',
                   rateLimit: '600 req/min',
@@ -633,8 +693,8 @@ console.log(data);`;
 
                     <button
                       disabled={isCurrent || upgradingPlan === tier.key}
-                      onClick={() => handleUpgradeTier(tier.key)}
-                      className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      onClick={() => handleSelectPlan(tier)}
+                      className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                         isCurrent
                           ? 'bg-[#E3DED2] dark:bg-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] cursor-default'
                           : tier.popular
@@ -642,11 +702,117 @@ console.log(data);`;
                           : 'bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] hover:bg-[#173F3A] hover:text-white'
                       }`}
                     >
-                      {isCurrent ? 'Current Plan' : (upgradingPlan === tier.key ? 'Activating...' : `Subscribe ${tier.name}`)}
+                      {isCurrent ? (
+                        'Active Plan'
+                      ) : (
+                        <>
+                          <CreditCard className="w-3.5 h-3.5" />
+                          {tier.key === 'free' ? 'Switch to Free' : `Subscribe ${tier.name}`}
+                        </>
+                      )}
                     </button>
                   </div>
                 );
               })}
+            </div>
+
+            {/* Quota Booster Add-On Packs */}
+            <div className="mt-12 pt-10 border-t border-[#E3DED2] dark:border-[#2A403A]">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                      ⚡ On-Demand API Top-Ups
+                    </span>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Instant Allocation</span>
+                  </div>
+                  <h3 className="text-xl font-bold mt-1 text-[#173F3A] dark:text-[#EEF2ED]">
+                    API Quota Booster Packs
+                  </h3>
+                  <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">
+                    Need extra throughput this month without changing your subscription plan? Purchase extra API calls on-demand.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  {
+                    key: 'pack_10k',
+                    name: '10,000 API Calls Booster',
+                    price: '$15',
+                    priceNumber: 15,
+                    quotaCount: 10000,
+                    quota: '+10,000 calls',
+                    desc: 'Great for short test sprints and prototype launches.',
+                    rateLimit: 'Normal limits apply'
+                  },
+                  {
+                    key: 'pack_50k',
+                    name: '50,000 API Calls Booster',
+                    price: '$49',
+                    priceNumber: 49,
+                    quotaCount: 50000,
+                    quota: '+50,000 calls',
+                    popular: true,
+                    desc: 'Perfect for seasonal marketing spikes and heavy query periods.',
+                    rateLimit: 'Priority API Queue'
+                  },
+                  {
+                    key: 'pack_200k',
+                    name: '200,000 API Calls Booster',
+                    price: '$149',
+                    priceNumber: 149,
+                    quotaCount: 200000,
+                    quota: '+200,000 calls',
+                    desc: 'Enterprise high-throughput top-up with zero rate degradation.',
+                    rateLimit: 'High-Concurrency VIP'
+                  }
+                ].map((pack) => (
+                  <div
+                    key={pack.key}
+                    className={`rounded-3xl p-6 bg-white dark:bg-[#1B2C28] border transition-all flex flex-col justify-between ${
+                      pack.popular 
+                        ? 'border-amber-400 dark:border-amber-500/50 shadow-md ring-1 ring-amber-400' 
+                        : 'border-[#E3DED2] dark:border-[#2A403A]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-sm text-[#173F3A] dark:text-[#EEF2ED]">{pack.name}</h4>
+                        {pack.popular && (
+                          <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                            Best Value
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-1 my-3">
+                        <span className="text-2xl font-black text-[#173F3A] dark:text-[#EEF2ED]">{pack.price}</span>
+                        <span className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">one-time</span>
+                      </div>
+                      <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mb-4">{pack.desc}</p>
+                      
+                      <div className="bg-[#F7F5EF] dark:bg-[#12201D] p-3 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] text-xs space-y-1 mb-6">
+                        <div className="flex justify-between font-semibold text-[#173F3A] dark:text-[#EEF2ED]">
+                          <span>⚡ Calls Added:</span>
+                          <span>{pack.quotaCount.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-[#66736F] dark:text-[#A3B0AB] text-[11px]">
+                          <span>⏱️ Priority:</span>
+                          <span>{pack.rateLimit}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleSelectTopUp(pack)}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#173F3A] hover:bg-[#214F49] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] dark:hover:bg-white shadow transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" /> Buy Booster (Mock Pay)
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -741,6 +907,18 @@ console.log(data);`;
           </div>
         )}
       </AnimatePresence>
+
+      {/* DUMMY DEVELOPER PAYMENT MODAL */}
+      <DeveloperPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setSelectedPaymentItem(null);
+        }}
+        item={selectedPaymentItem}
+        org={org}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }
