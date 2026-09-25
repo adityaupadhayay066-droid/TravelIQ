@@ -136,6 +136,9 @@ CREATE TABLE `trains` (
   `train_name` VARCHAR(255) NOT NULL,
   `source_station` VARCHAR(50) DEFAULT NULL,
   `destination_station` VARCHAR(50) DEFAULT NULL,
+  `runs_on` JSON DEFAULT NULL,
+  `service_type` VARCHAR(50) DEFAULT 'Regular',
+  `frequency` VARCHAR(50) DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

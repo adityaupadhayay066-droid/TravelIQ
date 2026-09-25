@@ -2,6 +2,7 @@ const { Trip, Route, Analytics, Train, TrainSchedule, SearchAnalytics, Station, 
 const { Op } = require('sequelize');
 const aiService = require('../services/aiService');
 const { discoverMultiModalRoutes } = require('../services/multiModalDiscoveryService');
+const { trainRunsOnDate, getTrainFrequencyLabel, formatRunningDays, findConnectingTrains, getDayOfWeek } = require('../services/routeValidationEngine');
 
 const predictTrip = async (req, res) => {
     try {
@@ -125,8 +126,8 @@ const searchRoutes = async (req, res) => {
             console.warn(`[Backend] Destination Station code/name "${destination}" not found in database.`);
         }
 
-        // 1. Run dynamic multi-modal discovery (with strict airport validation & multi-train generation)
-        const discovery = discoverMultiModalRoutes(sourceStation, destStation, source, destination);
+        // 1. Run dynamic multi-modal discovery with departureDate filtering & multimodal flight alternatives
+        const discovery = discoverMultiModalRoutes(sourceStation, destStation, source, destination, departureDate);
 
         // 2. Query database for direct train schedules if available
         let dbRoutes = [];
@@ -135,6 +136,9 @@ const searchRoutes = async (req, res) => {
                 SELECT 
                     t.train_number, 
                     t.train_name, 
+                    t.runs_on,
+                    t.service_type,
+                    t.frequency,
                     MIN(s1.departure_time) as source_departure, 
                     MIN(s1.day_count) as source_day,
                     MIN(s2.arrival_time) as dest_arrival,
@@ -145,7 +149,7 @@ const searchRoutes = async (req, res) => {
                 WHERE (s1.station_code = :sourceCode OR s1.station_code = :rawSource)
                   AND (s2.station_code = :destCode OR s2.station_code = :rawDest)
                   AND s1.stop_sequence < s2.stop_sequence
-                GROUP BY t.train_number, t.train_name
+                GROUP BY t.train_number, t.train_name, t.runs_on, t.service_type, t.frequency
                 ORDER BY source_departure ASC
                 LIMIT 100
             `;
@@ -163,8 +167,11 @@ const searchRoutes = async (req, res) => {
             console.warn('[Backend] Direct DB query notice:', dbErr.message);
         }
 
+        // Filter direct DB routes by departureDate (day of the week)
+        const validDbRoutes = dbRoutes.filter(route => trainRunsOnDate(route, departureDate));
+
         // Fetch database fares for any found direct DB routes
-        const trainNumbers = dbRoutes.map(r => r.train_number);
+        const trainNumbers = validDbRoutes.map(r => r.train_number);
         let allFares = [];
         if (trainNumbers.length > 0) {
             allFares = await TrainFare.findAll({
@@ -181,7 +188,7 @@ const searchRoutes = async (req, res) => {
         const uniqueTrainNumbers = new Set();
         const processedDbTrains = [];
 
-        for (const route of dbRoutes) {
+        for (const route of validDbRoutes) {
             if (uniqueTrainNumbers.has(route.train_number)) continue;
             uniqueTrainNumbers.add(route.train_number);
 
@@ -203,10 +210,19 @@ const searchRoutes = async (req, res) => {
                 'SL': 480, '3A': 1250, '2A': 1850, '1A': 2900
             };
 
+            const runningDaysFormatted = formatRunningDays(route.runs_on);
+            const frequencyLabel = route.frequency || getTrainFrequencyLabel(route.runs_on);
+
             processedDbTrains.push({
                 ...route,
                 id: route.train_number,
                 type: 'Train',
+                mode: 'Train',
+                route_type: 'Direct',
+                direct: true,
+                validated: true,
+                source_verified: true,
+                departure_date: departureDate || null,
                 name: route.train_name,
                 train_name: route.train_name,
                 number: route.train_number,
@@ -222,7 +238,9 @@ const searchRoutes = async (req, res) => {
                 classes: Object.entries(fares).map(([c, p]) => `${c} - ₹${p}`),
                 fares,
                 available_seats: {},
-                running_days: 'Daily',
+                runs_on: route.runs_on,
+                running_days: runningDaysFormatted,
+                frequency: frequencyLabel,
                 available_classes: Object.keys(fares)
             });
         }
@@ -236,8 +254,20 @@ const searchRoutes = async (req, res) => {
             }
         }
 
+        // If direct trains are few, search for connecting train routes
+        if (finalTrains.length < 3) {
+            const originStnCode = sourceStation ? sourceStation.station_code : sourceCode;
+            const destStnCode = destStation ? destStation.station_code : destCode;
+            const connectingRoutes = await findConnectingTrains(originStnCode, destStnCode, departureDate, sequelize);
+            for (const conn of connectingRoutes) {
+                if (!uniqueTrainNumbers.has(conn.id)) {
+                    uniqueTrainNumbers.add(conn.id);
+                    finalTrains.push(conn);
+                }
+            }
+        }
+
         // Final multimodal collection
-        // CRITICAL: Flights will strictly be empty [] if either source or destination has no airport (e.g. Ballia)!
         const finalFlights = discovery.flights;
         const finalBuses = discovery.buses;
         const allTransports = [...finalTrains, ...finalFlights, ...finalBuses];
@@ -263,6 +293,7 @@ const searchRoutes = async (req, res) => {
             totalResults: allTransports.length,
             distanceKm: discovery.distanceKm,
             hasAirport: discovery.hasAirport,
+            departureDate: departureDate || null,
             source: sourceStation ? sourceStation.toJSON() : discovery.resolvedSource,
             destination: destStation ? destStation.toJSON() : discovery.resolvedDest,
             sourceStation: sourceStation ? sourceStation.toJSON() : discovery.resolvedSource,
@@ -319,11 +350,17 @@ const getLiveTrainStatus = async (req, res) => {
             return res.status(404).json({ message: 'Train not found.' });
         }
 
-        // Removing procedural running days validation, as it is demo data.
-        let runningDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-        if (selectedDay && !runningDays.includes(selectedDay)) {
-            return res.status(400).json({ message: `Train ${train.train_number} does not run on ${selectedDay}s.` });
+        // Validate running days against actual train operating schedule
+        const dateToCheck = journeyDate || (selectedDay ? new Date() : null);
+        if (dateToCheck && !trainRunsOnDate(train, dateToCheck)) {
+            const formattedDays = formatRunningDays(train.runs_on);
+            const freqLabel = getTrainFrequencyLabel(train.runs_on);
+            return res.status(400).json({
+                message: `Train ${train.train_number} (${train.train_name}) does not run on ${journeyDate || selectedDay}. It runs on: ${formattedDays} (${freqLabel}).`,
+                running_days: formattedDays,
+                frequency: freqLabel,
+                operates_today: false
+            });
         }
 
         // Get schedules
@@ -337,7 +374,7 @@ const getLiveTrainStatus = async (req, res) => {
         }
 
         const schedulesWithStation = await Promise.all(schedules.map(async (sch) => {
-            const station = await Station.findByPk(sch.station_code);
+            const station = await Station.findOne({ where: { station_code: sch.station_code } });
             return {
                 stop_sequence: sch.stop_sequence,
                 station_code: sch.station_code,
@@ -349,6 +386,7 @@ const getLiveTrainStatus = async (req, res) => {
                 longitude: station ? station.longitude : null
             };
         }));
+
 
         // Fix Timezone: Indian Railways operates in IST (UTC+5:30). 
         // We do all math in UTC, pretending UTC is IST to avoid server local time issues.

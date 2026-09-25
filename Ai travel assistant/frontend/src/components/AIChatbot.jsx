@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import useScrollShrink from '../hooks/useScrollShrink';
 
 const INITIAL_MSG = { 
   role: 'bot', 
@@ -43,6 +44,7 @@ const PROMPT_SUGGESTIONS = [
 
 export default function AIChatbot() {
   const { user, openAuthModal } = useAuth();
+  const scrollScale = useScrollShrink(0.65, 350);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState(() => {
     try {
@@ -206,7 +208,8 @@ export default function AIChatbot() {
       {/* Floating Concierge Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-[#14532D] hover:bg-[#0F3F22] text-white shadow-xl transition-transform hover:scale-105 cursor-pointer flex items-center justify-center border-2 border-white/20"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-[#14532D] hover:bg-[#0F3F22] text-white shadow-xl cursor-pointer flex items-center justify-center border-2 border-white/20"
+        style={{ transform: `scale(${isOpen ? 1 : scrollScale})`, transformOrigin: 'bottom right', transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)' }}
         title="TravelIQ Assistant Concierge"
       >
         {isOpen ? <X className="w-6 h-6" /> : (

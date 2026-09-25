@@ -5,11 +5,13 @@ import { Mic, MicOff, Volume2, X, RotateCcw, AlertTriangle, MessageSquareCode } 
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { getBackendURL } from '../utils/api';
+import useScrollShrink from '../hooks/useScrollShrink';
 
 const API_URL = getBackendURL();
 
 export default function AIVoiceAssistant() {
     const navigate = useNavigate();
+    const scrollScale = useScrollShrink(0.65, 350);
     const { user, openAuthModal } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [language, setLanguage] = useState('en'); // 'en' or 'hi'
@@ -213,44 +215,158 @@ export default function AIVoiceAssistant() {
     };
 
     return (
-        <div ref={containerRef} className="fixed bottom-36 lg:bottom-22 right-4 lg:right-6 z-50 font-sans">
-            {/* Floating Microphone Action Button */}
-            <button
-                onClick={togglePanel}
-                className={`h-12 w-12 rounded-full flex items-center justify-center cursor-pointer shadow-[0_4px_16px_rgba(23,63,58,0.2)] border transition duration-300 transform hover:scale-105 active:scale-95 ${
-                    isOpen
-                        ? 'bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D]'
-                        : 'bg-[#D96C4F] border-[#D96C4F] text-white hover:bg-[#C75D43]'
-                }`}
-            >
-                {isOpen ? <X className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-            </button>
+        <div 
+            ref={containerRef} 
+            className="fixed bottom-36 lg:bottom-24 right-4 lg:right-6 z-50 pointer-events-auto" 
+            style={{ 
+                fontFamily: "var(--font-sans)", 
+                transform: `scale(${isOpen ? 1 : scrollScale})`, 
+                transformOrigin: 'bottom right', 
+                transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)' 
+            }}
+        >
+            {/* Label + Mic row */}
+            <div className="flex items-center justify-end gap-2.5">
+                {/* Square-bordered label tag */}
+                {!isOpen && (
+                    <button
+                        onClick={togglePanel}
+                        className="hidden sm:flex items-center gap-2 px-3 py-2 cursor-pointer transition-all duration-200 hover:opacity-100"
+                        style={{
+                            background: 'var(--color-surface)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: '3px',
+                            boxShadow: '0 2px 8px rgba(23, 63, 58, 0.08)',
+                            opacity: 0.6,
+                        }}
+                        title="Open TravelIQ Voice Assistant"
+                    >
+                        <span
+                            className="shrink-0"
+                            style={{
+                                width: 6,
+                                height: 6,
+                                background: '#E58A3A',
+                                borderRadius: '1px',
+                                animation: 'pulse 2s ease-in-out infinite',
+                            }}
+                        />
+                        <span
+                            className="whitespace-nowrap"
+                            style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                fontFamily: 'var(--font-heading)',
+                                color: 'var(--color-text)',
+                                letterSpacing: '0.02em',
+                            }}
+                        >
+                            TravelIQ Voice Assistant
+                        </span>
+                    </button>
+                )}
 
-            {/* Assistant Dialog overlay panel */}
+                {/* Mic FAB — matches chatbot's green circle style */}
+                <button
+                    onClick={togglePanel}
+                    aria-label="TravelIQ Voice Assistant"
+                    title="TravelIQ Voice Assistant"
+                    className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 shrink-0 ${
+                        isOpen
+                            ? 'text-[#14532D] dark:text-[#EEF2ED]'
+                            : 'text-white'
+                    }`}
+                    style={{
+                        background: isOpen ? 'var(--color-surface)' : '#14532D',
+                        border: isOpen ? '1px solid var(--color-border)' : '2px solid rgba(255,255,255,0.2)',
+                        boxShadow: '0 4px 16px rgba(20, 83, 45, 0.25)',
+                    }}
+                >
+                    {isOpen ? <X className="h-6 w-6" /> : (
+                        <div className="relative">
+                            <Mic className="h-6 w-6" />
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full" style={{ background: '#E58A3A' }} />
+                        </div>
+                    )}
+                </button>
+            </div>
+
+            {/* Voice assistant dialog panel */}
             {isOpen && (
-                <div className="absolute bottom-16 right-0 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] overflow-hidden flex flex-col transition-all duration-300">
+                <div
+                    className="absolute bottom-16 right-0 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm overflow-hidden flex flex-col"
+                    style={{
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-lg)',
+                        boxShadow: '0 8px 30px rgba(23, 63, 58, 0.1)',
+                    }}
+                >
                     
                     {/* Header */}
-                    <div className="px-4 py-3 bg-[#F7F5EF] dark:bg-[#12201D] border-b border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between">
+                    <div
+                        className="px-4 py-3 flex items-center justify-between"
+                        style={{
+                            background: 'var(--color-cream)',
+                            borderBottom: '1px solid var(--color-border)',
+                        }}
+                    >
                         <div className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4 text-[#173F3A] dark:text-[#EEF2ED]" />
-                            <span className="text-xs font-bold uppercase tracking-wider text-[#173F3A] dark:text-[#EEF2ED] font-manrope">TravelIQ AI</span>
+                            <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                                style={{ background: '#14532D' }}
+                            >
+                                <Volume2 className="h-3.5 w-3.5 text-white" />
+                            </div>
+                            <div>
+                                <span
+                                    className="block"
+                                    style={{
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        fontFamily: 'var(--font-heading)',
+                                        color: 'var(--color-text)',
+                                    }}
+                                >
+                                    Voice Assistant
+                                </span>
+                                <span
+                                    className="flex items-center gap-1"
+                                    style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}
+                                >
+                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#2F7D32' }} />
+                                    TravelIQ AI
+                                </span>
+                            </div>
                         </div>
                         {/* Language Selection */}
-                        <div className="flex items-center gap-1 bg-[#FFFFFF] dark:bg-[#1B2C28] p-1 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                        <div
+                            className="flex items-center gap-0.5 p-0.5"
+                            style={{
+                                background: 'var(--color-surface)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: 'var(--radius-sm)',
+                            }}
+                        >
                             <button
                                 onClick={() => setLanguage('en')}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
-                                    language === 'en' ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A]' : 'text-[#66736F] dark:text-[#A3B0AB]'
-                                }`}
+                                className="px-2 py-0.5 text-[10px] font-bold transition-colors duration-150"
+                                style={{
+                                    borderRadius: '4px',
+                                    background: language === 'en' ? '#14532D' : 'transparent',
+                                    color: language === 'en' ? '#fff' : 'var(--color-text-muted)',
+                                }}
                             >
                                 English
                             </button>
                             <button
                                 onClick={() => setLanguage('hi')}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition ${
-                                    language === 'hi' ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A]' : 'text-[#66736F] dark:text-[#A3B0AB]'
-                                }`}
+                                className="px-2 py-0.5 text-[10px] font-bold transition-colors duration-150"
+                                style={{
+                                    borderRadius: '4px',
+                                    background: language === 'hi' ? '#14532D' : 'transparent',
+                                    color: language === 'hi' ? '#fff' : 'var(--color-text-muted)',
+                                }}
                             >
                                 हिंदी
                             </button>
@@ -260,30 +376,34 @@ export default function AIVoiceAssistant() {
                     {/* Speech State Body */}
                     <div className="p-6 flex flex-col items-center justify-center min-h-[200px] gap-4">
                         
-                        {/* 1. Waveforms and State Animations */}
+                        {/* Waveforms and State Animations */}
                         <div className="h-24 flex items-center justify-center">
                             {status === 'listening' && (
-                                /* Bouncing wave bars */
                                 <div className="flex items-end gap-1 h-12">
                                     {[1, 2, 3, 4, 5, 4, 3, 2, 1].map((h, i) => (
                                         <div
                                             key={i}
                                             style={{ animationDelay: `${i * 0.1}s` }}
-                                            className="w-1.5 bg-[#D96C4F] rounded-full animate-[bounce_0.8s_infinite]"
+                                            className="w-1.5 rounded-full animate-[bounce_0.8s_infinite]"
+                                            style={{ animationDelay: `${i * 0.1}s`, background: '#E58A3A' }}
                                         />
                                     ))}
                                 </div>
                             )}
 
                             {status === 'processing' && (
-                                /* Spinning loading halo */
                                 <div className="relative h-12 w-12 flex items-center justify-center">
-                                    <div className="absolute inset-0 rounded-full border-2 border-[#E3DED2] dark:border-[#2A403A] border-t-[#D96C4F] animate-spin" />
+                                    <div
+                                        className="absolute inset-0 rounded-full animate-spin"
+                                        style={{
+                                            border: '2px solid var(--color-border)',
+                                            borderTopColor: '#E58A3A',
+                                        }}
+                                    />
                                 </div>
                             )}
 
                             {status === 'speaking' && (
-                                /* Active voice soundwave rows */
                                 <div className="flex items-center gap-1.5 h-8">
                                     {[1.5, 3, 1, 4, 2, 4.5, 1].map((scale, i) => (
                                         <div
@@ -291,66 +411,84 @@ export default function AIVoiceAssistant() {
                                             style={{
                                                 height: '100%',
                                                 transform: `scaleY(${scale / 5})`,
-                                                animation: 'pulse 1s ease-in-out infinite'
+                                                animation: 'pulse 1s ease-in-out infinite',
+                                                background: '#14532D',
+                                                width: 4,
+                                                borderRadius: 2,
                                             }}
-                                            className="w-1 bg-[#173F3A] dark:bg-[#EEF2ED] rounded"
                                         />
                                     ))}
                                 </div>
                             )}
 
                             {status === 'idle' && (
-                                /* Inactive microphone circle */
                                 <button
                                     onClick={startListening}
-                                    className="h-16 w-16 rounded-full bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#263238] dark:text-[#F7F5EF] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition"
+                                    className="h-16 w-16 rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
+                                    style={{
+                                        background: 'var(--color-soft)',
+                                        border: '1px solid var(--color-border)',
+                                        color: 'var(--color-text)',
+                                    }}
                                 >
                                     <Mic className="h-7 w-7" />
                                 </button>
                             )}
 
                             {status === 'error' && (
-                                /* Error warning indicator */
-                                <div className="h-14 w-14 rounded-full bg-[#FDF0ED] dark:bg-[#2C1818] border border-[#F2C2C2] dark:border-[#4A2828] flex items-center justify-center text-[#B94A48]">
+                                <div
+                                    className="h-14 w-14 rounded-full flex items-center justify-center"
+                                    style={{
+                                        background: '#FDF0ED',
+                                        border: '1px solid #F2C2C2',
+                                        color: 'var(--color-danger)',
+                                    }}
+                                >
                                     <AlertTriangle className="h-6 w-6" />
                                 </div>
                             )}
                         </div>
 
-                        {/* 2. Text Indicators */}
+                        {/* Text Indicators */}
                         <div className="text-center w-full max-w-[280px]">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">
+                            <p
+                                className="uppercase tracking-wider"
+                                style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)' }}
+                            >
                                 {status === 'listening' ? 'Listening...' :
                                  status === 'processing' ? 'Processing command...' :
                                  status === 'speaking' ? 'Speaking...' :
                                  status === 'error' ? 'Something went wrong' : 'Ready'}
                             </p>
                             
-                            {/* Transcripts */}
                             {transcript && (
-                                <p className="text-[#263238] dark:text-[#F7F5EF] text-sm italic font-medium mt-2 break-words">
+                                <p className="text-sm italic font-medium mt-2 break-words" style={{ color: 'var(--color-text)' }}>
                                     "{transcript}"
                                 </p>
                             )}
 
                             {spokenText && status !== 'listening' && (
-                                <p className="text-[#173F3A] dark:text-[#EEF2ED] text-xs mt-2 font-semibold break-words">
+                                <p className="text-xs mt-2 font-semibold break-words" style={{ color: '#14532D' }}>
                                     {spokenText}
                                 </p>
                             )}
 
                             {errorMsg && (
-                                <p className="text-[#B94A48] text-xs mt-2 break-words">
+                                <p className="text-xs mt-2 break-words" style={{ color: 'var(--color-danger)' }}>
                                     {errorMsg}
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom controls panel & typed keyboard input fallback */}
-                    <div className="px-4 py-3 bg-[#F7F5EF] dark:bg-[#12201D] border-t border-[#E3DED2] dark:border-[#2A403A] flex flex-col gap-2">
-                        
-                        {/* Interactive keyboard input fallback */}
+                    {/* Bottom controls */}
+                    <div
+                        className="px-4 py-3 flex flex-col gap-2"
+                        style={{
+                            background: 'var(--color-cream)',
+                            borderTop: '1px solid var(--color-border)',
+                        }}
+                    >
                         <div className="flex gap-2">
                             <input
                                 type="text"
@@ -363,32 +501,44 @@ export default function AIVoiceAssistant() {
                                         setTypedFallback('');
                                     }
                                 }}
-                                className="flex-1 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-3 py-1.5 text-xs text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition"
+                                className="flex-1 px-3 py-1.5 text-xs outline-none transition-colors duration-150"
+                                style={{
+                                    background: 'var(--color-surface)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    color: 'var(--color-text)',
+                                    fontSize: '12px',
+                                }}
                             />
                             <button
                                 onClick={() => {
                                     handleVoiceSubmit(typedFallback);
                                     setTypedFallback('');
                                 }}
-                                className="px-3 bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-white dark:text-[#12201D] rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                className="px-3 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors duration-150"
+                                style={{
+                                    background: '#14532D',
+                                    color: '#fff',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: 'none',
+                                }}
                             >
                                 <MessageSquareCode className="h-3.5 w-3.5" />
                                 Send
                             </button>
                         </div>
 
-                        {/* Interactive Actions help guide */}
-                        <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] flex items-center justify-between mt-1">
+                        <div className="flex items-center justify-between mt-0.5" style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
                             {status === 'listening' ? (
-                                <button onClick={stopListening} className="text-[#B94A48] font-bold hover:underline">
+                                <button onClick={stopListening} className="font-bold hover:underline cursor-pointer" style={{ color: 'var(--color-danger)' }}>
                                     Stop Listening
                                 </button>
                             ) : (
-                                <button onClick={startListening} className="text-[#173F3A] dark:text-[#EEF2ED] font-bold hover:underline">
+                                <button onClick={startListening} className="font-bold hover:underline cursor-pointer" style={{ color: '#14532D' }}>
                                     Start Listening
                                 </button>
                             )}
-                            <span className="text-[#66736F] dark:text-[#A3B0AB]">Say: "Show trains from Delhi to Patna"</span>
+                            <span style={{ color: 'var(--color-text-muted)' }}>Say: "Show trains from Delhi to Patna"</span>
                         </div>
                     </div>
                 </div>

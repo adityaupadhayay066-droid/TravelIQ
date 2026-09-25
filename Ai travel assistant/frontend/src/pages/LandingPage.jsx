@@ -74,7 +74,7 @@ const POPULAR_DESTINATIONS = [
     budget: 'From ₹8,000',
     bestTime: 'October–April',
     style: 'Waterfalls & Living Roots',
-    image: 'https://images.unsplash.com/photo-1506461883276-594a12b11ce3?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=800&q=80',
     desc: 'Living root bridges, crystal clear Umngot river, and misty rainforest waterfalls.'
   },
   {
@@ -83,7 +83,7 @@ const POPULAR_DESTINATIONS = [
     budget: 'From ₹5,500',
     bestTime: 'November–February',
     style: 'Desert Safari & Forts',
-    image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1609137144822-094119d65751?auto=format&fit=crop&w=800&q=80',
     desc: 'Golden sandstone fortresses, Thar desert camel dunes, and folk music nights.'
   },
   {
@@ -232,62 +232,68 @@ export default function LandingPage() {
           <div className="lg:col-span-7 space-y-6">
             
             {/* Small Label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#14532D]/10 dark:bg-[#EEF2ED]/10 text-[#14532D] dark:text-[#EEF2ED] text-xs font-bold uppercase tracking-wider border border-[#14532D]/20">
-              <span className="w-2 h-2 rounded-full bg-[#2F7D32]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#14532D]/10 dark:bg-[#EEF2ED]/10 text-[#14532D] dark:text-[#EEF2ED] text-xs font-bold uppercase tracking-wider border border-[#14532D]/20 animate-fade-in-up">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2F7D32] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F7D32]"></span>
+              </span>
               <span>SMART TRAVEL PLANNING</span>
             </div>
 
             {/* Large Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#14532D] dark:text-white leading-[1.1] font-heading tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#14532D] dark:text-white leading-[1.1] font-heading tracking-tight animate-fade-in-up delay-75">
               Travel smarter.<br />
-              <span className="text-[#E58A3A]">Explore further.</span>
+              <span className="text-[#E58A3A] relative inline-block">
+                Explore further.
+                <span className="absolute bottom-1 left-0 w-full h-1 bg-[#E58A3A]/20 rounded-full"></span>
+              </span>
             </h1>
 
             {/* Supporting Text */}
-            <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed max-w-xl">
+            <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed max-w-xl animate-fade-in-up delay-150">
               Plan, compare, and personalize your journey with TravelIQ. Discover multi-modal train routes, air connections, comfortable buses, and verified local itineraries across India.
             </p>
 
             {/* Primary & Secondary CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2 animate-fade-in-up delay-225">
               <button
                 onClick={scrollToPlanner}
-                className="px-6 py-3.5 rounded-xl bg-[#14532D] hover:bg-[#0F3F22] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer"
+                className="px-6 py-3.5 rounded-xl bg-[#14532D] hover:bg-[#0F3F22] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
               >
-                <Compass className="w-4 h-4" />
+                <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
                 <span>Plan My Journey</span>
               </button>
 
               <button
                 onClick={scrollToExplore}
-                className="px-6 py-3.5 rounded-xl bg-white dark:bg-[#172722] hover:bg-[#F7F5EF] dark:hover:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] font-bold text-sm border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="px-6 py-3.5 rounded-xl bg-white dark:bg-[#172722] hover:bg-[#F7F5EF] dark:hover:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] font-bold text-sm border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer group shadow-2xs hover:shadow-md"
               >
                 <span>Explore Destinations</span>
-                <ArrowRight className="w-4 h-4 text-[#E58A3A]" />
+                <ArrowRight className="w-4 h-4 text-[#E58A3A] group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </div>
 
             {/* Trust Highlights */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-6 border-t border-[#E3DED2] dark:border-[#273E36] overflow-hidden">
-              <div className="min-w-0">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-6 border-t border-[#E3DED2] dark:border-[#273E36] overflow-hidden animate-fade-in-up delay-300">
+              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
                 <p className="text-xl sm:text-2xl font-extrabold text-[#14532D] dark:text-white font-mono truncate">10,000+</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate">Indian Routes</p>
+                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Indian Routes</p>
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
                 <p className="text-xl sm:text-2xl font-extrabold text-[#2F80A8] font-mono truncate">Real-Time</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate">Seat Availability</p>
+                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Seat Availability</p>
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
                 <p className="text-xl sm:text-2xl font-extrabold text-[#E58A3A] font-mono truncate">Multimodal</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate">Train, Flight, Bus</p>
+                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Train, Flight, Bus</p>
               </div>
             </div>
 
           </div>
 
           {/* RIGHT SIDE (5 COLS): PREMIUM TRAVELIQ BRAND EMBLEM SHOWCASE */}
-          <div className="lg:col-span-5 w-full">
-            <div className="relative rounded-3xl overflow-hidden border border-[#E3DED2] dark:border-[#273E36] bg-[#0A1612] shadow-2xl group">
+          <div className="lg:col-span-5 w-full animate-fade-in-scale delay-150">
+            <div className="relative rounded-3xl overflow-hidden border border-[#E3DED2] dark:border-[#273E36] bg-[#0A1612] shadow-2xl group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(20,83,45,0.2)]">
               
               {/* Main TravelIQ 3D Logo / Visual Asset */}
               <div className="relative h-[400px] sm:h-[480px] lg:h-[520px] overflow-hidden bg-[#0A1612] flex items-center justify-center">
@@ -300,23 +306,26 @@ export default function LandingPage() {
                 {/* Natural Gradient & Aura Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A1612]/90 via-black/25 to-black/30 pointer-events-none" />
 
-                {/* Top Left Badge */}
-                <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] shadow-lg text-xs font-bold text-white">
-                  <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+                {/* Top Left Badge with gentle floating effect */}
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] shadow-lg text-xs font-bold text-white animate-float">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
+                  </span>
                   <span>AI Multimodal Network</span>
                 </div>
 
                 {/* Top Right Floating Badge */}
-                <div className="absolute top-4 right-4 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] text-xs font-bold text-[#E58A3A] flex items-center gap-1.5 shadow-lg">
-                  <Sparkles className="w-3.5 h-3.5 text-[#E58A3A]" />
+                <div className="absolute top-4 right-4 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] text-xs font-bold text-[#E58A3A] flex items-center gap-1.5 shadow-lg animate-float-reverse">
+                  <Sparkles className="w-3.5 h-3.5 text-[#E58A3A] animate-spin" style={{ animationDuration: '8s' }} />
                   <span>TravelIQ Official</span>
                 </div>
 
-                {/* Floating Bottom Card */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 dark:bg-[#172722]/95 backdrop-blur-md border border-[#E3DED2] dark:border-[#273E36] shadow-xl space-y-2.5">
+                {/* Floating Bottom Card with interactive hover */}
+                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 dark:bg-[#172722]/95 backdrop-blur-md border border-[#E3DED2] dark:border-[#273E36] shadow-xl space-y-2.5 transition-transform duration-300 group-hover:-translate-y-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-[#14532D] text-white shadow-sm">
+                      <div className="p-2 rounded-xl bg-[#14532D] text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
                         <Train className="w-4 h-4" />
                       </div>
                       <div>
@@ -597,12 +606,12 @@ export default function LandingPage() {
             return (
               <div
                 key={idx}
-                className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs hover:border-[#C2BBB0] dark:hover:border-[#3E5B53] transition-all flex flex-col justify-between group"
+                className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs card-interactive flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#273E36]">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-xl text-white ${item.bgColor}`}>
+                      <div className={`p-2 rounded-xl text-white ${item.bgColor} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div>
@@ -629,7 +638,7 @@ export default function LandingPage() {
                       <div className="flex flex-col items-center px-3">
                         <span className="text-[10px] font-bold text-[#64748B]">{item.duration}</span>
                         <div className="w-16 h-0.5 bg-[#E3DED2] dark:bg-[#273E36] relative my-1">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute right-0 -top-0.5" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute right-0 -top-0.5 animate-pulse" />
                         </div>
                         <span className="text-[9px] text-[#2F7D32] font-semibold">Direct</span>
                       </div>
@@ -650,13 +659,13 @@ export default function LandingPage() {
                 <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E3DED2] dark:border-[#273E36]">
                   <button
                     onClick={() => navigate('/dashboard')}
-                    className="py-2 rounded-xl text-xs font-bold border border-[#E3DED2] dark:border-[#273E36] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] text-[#1F2933] dark:text-[#F7F5EF] transition-colors cursor-pointer"
+                    className="py-2 rounded-xl text-xs font-bold border border-[#E3DED2] dark:border-[#273E36] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] text-[#1F2933] dark:text-[#F7F5EF] transition-all duration-150 active:scale-95 cursor-pointer"
                   >
                     View Details
                   </button>
                   <button
                     onClick={() => navigate('/dashboard')}
-                    className="py-2 rounded-xl text-xs font-bold bg-[#14532D] hover:bg-[#0F3F22] text-white transition-colors cursor-pointer shadow-2xs"
+                    className="py-2 rounded-xl text-xs font-bold bg-[#14532D] hover:bg-[#0F3F22] text-white transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs hover:shadow-md"
                   >
                     Select
                   </button>
@@ -690,10 +699,10 @@ export default function LandingPage() {
 
             <Link
               to="/destinations"
-              className="text-xs sm:text-sm font-bold text-[#14532D] dark:text-[#EEF2ED] hover:underline flex items-center gap-1 self-start sm:self-auto"
+              className="text-xs sm:text-sm font-bold text-[#14532D] dark:text-[#EEF2ED] hover:underline flex items-center gap-1 self-start sm:self-auto group"
             >
               <span>Explore All Destinations</span>
-              <ArrowRight className="w-4 h-4 text-[#E58A3A]" />
+              <ArrowRight className="w-4 h-4 text-[#E58A3A] group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
           </div>
 
@@ -703,23 +712,27 @@ export default function LandingPage() {
               <Link
                 key={dest.name}
                 to={`/destinations/${encodeURIComponent(dest.name)}`}
-                className="bg-white dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-200 shadow-xs group flex flex-col justify-between"
+                className="bg-white dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl overflow-hidden card-interactive shadow-xs group flex flex-col justify-between"
               >
                 <div>
-                  <div className="h-44 overflow-hidden relative">
+                  <div className="h-44 overflow-hidden relative bg-[#EEF2ED] dark:bg-[#1D322B]">
                     <img 
                       src={dest.image} 
                       alt={dest.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
+                      }}
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
                     />
-                    <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-sm">
                       {dest.style}
                     </div>
                   </div>
 
                   <div className="p-4 space-y-2">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-base text-[#14532D] dark:text-white font-heading group-hover:text-[#E58A3A] transition-colors">
+                      <h3 className="font-bold text-base text-[#14532D] dark:text-white font-heading group-hover:text-[#E58A3A] transition-colors duration-200">
                         {dest.name}
                       </h3>
                       <span className="text-[11px] font-semibold text-[#64748B]">{dest.location}</span>
@@ -811,13 +824,13 @@ export default function LandingPage() {
 
               {/* Concierge Response Card Preview */}
               <div className="lg:col-span-6">
-                <div className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs space-y-3">
+                <div className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs card-interactive space-y-3">
                   <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#273E36]">
                     <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#2F7D32]" />
+                      <span className="w-3 h-3 rounded-full bg-[#2F7D32] animate-pulse" />
                       <span className="text-xs font-bold text-[#14532D] dark:text-white">Structured Plan Output</span>
                     </div>
-                    <span className="font-mono text-xs font-bold text-[#E58A3A]">Total Est: ₹14,200</span>
+                    <span className="font-mono text-xs font-bold text-[#E58A3A] bg-[#E58A3A]/10 px-2.5 py-0.5 rounded-md">Total Est: ₹14,200</span>
                   </div>
 
                   <div className="space-y-2 text-xs">
