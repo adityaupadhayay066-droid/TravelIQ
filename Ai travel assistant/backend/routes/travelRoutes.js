@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
+const { travelLimiter } = require('../middleware/rateLimiter');
 const { 
     predictTrip, 
     optimizeTripRoute, 
@@ -14,12 +15,13 @@ const {
 
 const { searchStations } = require('../controllers/stationController');
 
-router.get('/stations/search', searchStations);
-router.post('/routes/search', searchRoutes);
-router.get('/trains/search', searchTrains);
-router.get('/trains/live-status/:trainNumber', getLiveTrainStatus);
-router.post('/predict', predictTrip);
-router.post('/optimize', optimizeTripRoute);
+// Rate limited travel search & compute endpoints
+router.get('/stations/search', travelLimiter, searchStations);
+router.post('/routes/search', travelLimiter, searchRoutes);
+router.get('/trains/search', travelLimiter, searchTrains);
+router.get('/trains/live-status/:trainNumber', travelLimiter, getLiveTrainStatus);
+router.post('/predict', travelLimiter, predictTrip);
+router.post('/optimize', travelLimiter, optimizeTripRoute);
 
 // Protected routes
 router.post('/save-trip', protect, saveUserTrip);

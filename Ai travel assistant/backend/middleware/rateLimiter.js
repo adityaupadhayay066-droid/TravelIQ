@@ -1,75 +1,144 @@
 const rateLimit = require('express-rate-limit');
 
-// Helper to determine if the request is from a local development environment
-const isLocalOrDev = (req) => {
-    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-        return true;
-    }
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('localhost');
+// 3.5 minutes window in milliseconds (3-4 minutes)
+const THREE_TO_FOUR_MINUTES_MS = 3.5 * 60 * 1000;
+
+// Optional bypass if explicitly disabled via environment variable
+const shouldSkip = (req) => {
+    return process.env.DISABLE_RATE_LIMIT === 'true';
 };
 
-// General API rate limiter (generous for active frontend sessions)
+// General API rate limiter (applied to /api)
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 1000 : 10000,
-    message: { message: 'Too many API requests. Please slow down.' },
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: process.env.NODE_ENV === 'production' ? 300 : 500,
+    message: { 
+        success: false, 
+        message: 'Too many API requests. Please wait 3-4 minutes before trying again.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
 });
 
-// Login limiter (prevents brute-force while allowing legitimate users & admins)
+// Login limiter (prevents brute-force)
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 30 : 1000,
-    skipSuccessfulRequests: true, // Do not count successful logins
-    message: { message: 'Too many login attempts. Please try again in a few minutes.' },
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 10, // 10 failed login attempts allowed in 3-4 minutes
+    skipSuccessfulRequests: true, // Successful logins are not counted
+    message: { 
+        success: false, 
+        message: 'Too many failed login attempts. Please wait 3-4 minutes before trying again.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
 });
 
 // Registration limiter
 const registerLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: process.env.NODE_ENV === 'production' ? 30 : 1000,
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 10,
     skipSuccessfulRequests: true,
-    message: { message: 'Too many registration attempts. Please try again later.' },
+    message: { 
+        success: false, 
+        message: 'Too many registration attempts. Please wait 3-4 minutes before trying again.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
 });
 
 // OTP Limiter
 const otpLimiter = rateLimit({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: process.env.NODE_ENV === 'production' ? 20 : 1000,
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 8,
     skipSuccessfulRequests: true,
-    message: { message: 'Too many OTP attempts. Please wait a few minutes before trying again.' },
+    message: { 
+        success: false, 
+        message: 'Too many OTP requests. Please wait 3-4 minutes before requesting again.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
 });
 
 // Profile Limiter (general profile read/update operations)
 const profileLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 60 : 2000,
-    message: { message: 'Too many profile requests. Please slow down.' },
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 60,
+    message: { 
+        success: false, 
+        message: 'Too many profile requests. Please slow down and try again in 3-4 minutes.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
 });
 
 // Sensitive Profile Actions Limiter (password change, avatar upload, deactivation, deletion)
 const profileSensitiveLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 10 : 500,
-    message: { message: 'Too many sensitive account modification attempts. Please try again later.' },
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 10,
+    message: { 
+        success: false, 
+        message: 'Too many sensitive account modification attempts. Please try again in 3-4 minutes.' 
+    },
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => isLocalOrDev(req),
+    skip: shouldSkip,
+});
+
+// AI & Chatbot Limiter (protects LLM tokens, embeddings, and RAG pipelines)
+const aiLimiter = rateLimit({
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 25,
+    message: { 
+        success: false, 
+        message: 'Too many AI / Chatbot requests in a short window. Please wait 3-4 minutes.' 
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: shouldSkip,
+});
+
+// Travel Search & Route Optimization Limiter
+const travelLimiter = rateLimit({
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 40,
+    message: { 
+        success: false, 
+        message: 'Too many travel queries. Please wait 3-4 minutes before searching again.' 
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: shouldSkip,
+});
+
+// Payment & Checkout Limiter
+const paymentLimiter = rateLimit({
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 15,
+    message: { 
+        success: false, 
+        message: 'Too many checkout transaction requests. Please wait 3-4 minutes before trying again.' 
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: shouldSkip,
+});
+
+// SOS Emergency Limiter
+const sosLimiter = rateLimit({
+    windowMs: THREE_TO_FOUR_MINUTES_MS, // ~3.5 minutes
+    max: 10,
+    message: { 
+        success: false, 
+        message: 'Too many SOS emergency alerts triggered. Please contact authorities directly.' 
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: shouldSkip,
 });
 
 module.exports = {
@@ -78,6 +147,10 @@ module.exports = {
     otpLimiter,
     apiLimiter,
     profileLimiter,
-    profileSensitiveLimiter
+    profileSensitiveLimiter,
+    aiLimiter,
+    travelLimiter,
+    paymentLimiter,
+    sosLimiter
 };
 

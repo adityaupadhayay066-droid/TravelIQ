@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Calendar, Users, Edit3, Train, Plane, Bus, Sparkles, Sliders
+  Search, Calendar, Users, Edit3, Train, Plane, Bus, Sparkles, Sliders, X, RotateCcw, Filter
 } from 'lucide-react';
 import StationAutocomplete from '../components/StationAutocomplete';
 import PassengerSelector from '../components/PassengerSelector';
@@ -33,13 +34,33 @@ export default function Dashboard() {
   const [selectedTrainForBooking, setSelectedTrainForBooking] = useState(null);
   const [expandedResultId, setExpandedResultId] = useState(null);
   const [isEditingSearch, setIsEditingSearch] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Filter States
   const [selectedTransport, setSelectedTransport] = useState(['Train', 'Flight', 'Bus']);
   const [priceMax, setPriceMax] = useState(15000);
   const [selectedStops, setSelectedStops] = useState(['Non-stop', '1 Stop', '2+ Stops']);
   const [selectedClasses, setSelectedClasses] = useState([]);
+
+  // Calculate count of actively customized filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedTransport.length < 3) count += (3 - selectedTransport.length);
+    if (priceMax < 15000) count += 1;
+    if (selectedStops.length < 3) count += (3 - selectedStops.length);
+    if (selectedClasses.length > 0) count += selectedClasses.length;
+    return count;
+  }, [selectedTransport, priceMax, selectedStops, selectedClasses]);
+
+  // Close filter drawer on Escape key press
+  useEffect(() => {
+    if (!isFilterOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsFilterOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFilterOpen]);
 
   const toggleTransport = (mode) => {
     setSelectedTransport(prev => 
@@ -261,60 +282,136 @@ export default function Dashboard() {
         {/* RESULTS TAB */}
         {activeTab === 'results' && (
           <div>
-            {/* Mobile Filter Toggle Button */}
-            <div className="lg:hidden mb-4 flex items-center justify-between">
-              <button
-                onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-                className="btn-secondary h-9 text-xs px-3 py-1.5 inline-flex items-center gap-2 rounded-lg"
-              >
-                <Sliders className="w-3.5 h-3.5 text-[#173F3A] dark:text-[#EEF2ED]" />
-                <span>{isMobileFilterOpen ? 'Hide Filters' : 'Filters & Preferences'}</span>
-              </button>
-              {(selectedClasses.length > 0 || priceMax < 15000 || selectedTransport.length < 3) && (
-                <button 
-                  onClick={resetFilters}
-                  className="text-xs font-bold text-[#D96C4F] hover:underline"
+            {/* Filter & Results Toolbar */}
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => setIsFilterOpen(prev => !prev)}
+                  className={`h-9 px-3.5 py-1.5 inline-flex items-center gap-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs border ${
+                    isFilterOpen || activeFilterCount > 0
+                      ? 'bg-[#14532D] text-white border-[#14532D] hover:bg-[#0F3F22] dark:bg-[#1b5e34] dark:border-[#1b5e34]'
+                      : 'bg-white dark:bg-[#1b2c28] text-[#173F3A] dark:text-[#EEF2ED] border-[#E3DED2] dark:border-[#2a403a] hover:bg-[#EEF2ED] dark:hover:bg-[#213530]'
+                  }`}
+                  title="Open Filter Options"
                 >
-                  Reset Filters
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>{isFilterOpen ? 'Hide Filters' : 'Filters'}</span>
+                  {activeFilterCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-[#E58A3A] text-white text-[10px] font-bold leading-none">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </button>
-              )}
+
+                {activeFilterCount > 0 && (
+                  <button 
+                    onClick={resetFilters}
+                    className="text-xs font-semibold text-[#D96C4F] hover:underline cursor-pointer inline-flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-[#D96C4F]/10 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Filters</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium">
+                Showing <span className="font-bold text-[#173F3A] dark:text-[#EEF2ED]">{filteredResults?.length || 0}</span> travel options
+              </div>
             </div>
 
-            {/* Mobile Collapsible Filter Panel */}
-            {isMobileFilterOpen && (
-              <div className="lg:hidden mb-5 travel-card p-4">
-                <FilterPanel 
-                  selectedTransport={selectedTransport}
-                  onToggleTransport={toggleTransport}
-                  priceMax={priceMax}
-                  onPriceMaxChange={setPriceMax}
-                  selectedStops={selectedStops}
-                  onToggleStop={toggleStop}
-                  selectedClasses={selectedClasses}
-                  onToggleClass={toggleClass}
-                  onReset={() => { resetFilters(); setIsMobileFilterOpen(false); }}
-                />
-              </div>
-            )}
+            {/* Slide-over Filter Drawer */}
+            <AnimatePresence>
+              {isFilterOpen && (
+                <>
+                  {/* Backdrop */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => setIsFilterOpen(false)}
+                    className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50"
+                  />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Left: Desktop Filter Sidebar (3 Cols) */}
-              <div className="lg:col-span-3 hidden lg:block sticky top-20">
-                <FilterPanel 
-                  selectedTransport={selectedTransport}
-                  onToggleTransport={toggleTransport}
-                  priceMax={priceMax}
-                  onPriceMaxChange={setPriceMax}
-                  selectedStops={selectedStops}
-                  onToggleStop={toggleStop}
-                  selectedClasses={selectedClasses}
-                  onToggleClass={toggleClass}
-                  onReset={resetFilters}
-                />
-              </div>
+                  {/* Drawer Panel */}
+                  <motion.div
+                    initial={{ x: '-100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '-100%' }}
+                    transition={{ type: 'spring', damping: 26, stiffness: 260 }}
+                    className="fixed inset-y-0 left-0 z-50 w-full max-w-sm sm:max-w-md bg-white dark:bg-[#1b2c28] border-r border-[#E3DED2] dark:border-[#2a403a] shadow-2xl flex flex-col overflow-hidden"
+                  >
+                    {/* Drawer Header */}
+                    <div className="p-4 border-b border-[#E3DED2] dark:border-[#2a403a] flex items-center justify-between bg-[#FFFDF7] dark:bg-[#152320]">
+                      <div className="flex items-center gap-2">
+                        <Sliders className="w-4 h-4 text-[#14532D] dark:text-[#EEF2ED]" />
+                        <h3 className="font-bold text-sm text-[#173F3A] dark:text-white font-heading">
+                          Filter Options
+                        </h3>
+                        {activeFilterCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-[#E58A3A] text-white text-[10px] font-bold">
+                            {activeFilterCount}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {activeFilterCount > 0 && (
+                          <button
+                            onClick={resetFilters}
+                            className="text-xs font-semibold text-[#D96C4F] hover:underline cursor-pointer"
+                          >
+                            Reset All
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setIsFilterOpen(false)}
+                          className="p-1.5 rounded-lg text-[#66736F] hover:text-[#173F3A] dark:hover:text-white hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors cursor-pointer"
+                          aria-label="Close filters"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
 
-              {/* Right: Horizontal Travel Result Cards (9 Cols) */}
-              <div className="lg:col-span-9 space-y-4">
+                    {/* Drawer Body (Scrollable) */}
+                    <div className="flex-1 overflow-y-auto p-5">
+                      <FilterPanel 
+                        selectedTransport={selectedTransport}
+                        onToggleTransport={toggleTransport}
+                        priceMax={priceMax}
+                        onPriceMaxChange={setPriceMax}
+                        selectedStops={selectedStops}
+                        onToggleStop={toggleStop}
+                        selectedClasses={selectedClasses}
+                        onToggleClass={toggleClass}
+                        onReset={resetFilters}
+                        hideHeader={true}
+                      />
+                    </div>
+
+                    {/* Drawer Footer */}
+                    <div className="p-4 border-t border-[#E3DED2] dark:border-[#2a403a] bg-[#FFFDF7] dark:bg-[#152320] flex items-center gap-3">
+                      <button
+                        onClick={resetFilters}
+                        disabled={activeFilterCount === 0}
+                        className="btn-secondary flex-1 py-2 text-xs font-semibold rounded-xl disabled:opacity-40 cursor-pointer"
+                      >
+                        Clear All
+                      </button>
+                      <button
+                        onClick={() => setIsFilterOpen(false)}
+                        className="btn-primary flex-1 py-2 text-xs font-semibold rounded-xl cursor-pointer"
+                      >
+                        View Results ({filteredResults?.length || 0})
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
+            {/* Horizontal Travel Result Cards (Full Width) */}
+            <div className="w-full space-y-4">
 
               {/* Non-Airport Destination Guidance Banner */}
               {routeMetadata && routeMetadata.hasAirport && !routeMetadata.hasAirport.destination && (
@@ -465,7 +562,6 @@ export default function Dashboard() {
             </div>
 
           </div>
-        </div>
         )}
 
         {/* ITINERARY TAB */}

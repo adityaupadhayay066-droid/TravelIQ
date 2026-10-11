@@ -31,12 +31,53 @@ function shouldSkipRefresh(url) {
   return AUTH_SKIP_REFRESH.some(path => url === path || url.endsWith(path));
 }
 
+// ─── Client Shield Token Generator (Anti-Scraping Protection) ───
+const SHIELD_SECRET = 'traveliq_client_shield_sec_2026';
+
+async function generateClientShieldToken() {
+  const timestamp = Date.now();
+  try {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+      const encoder = new TextEncoder();
+      const msg = `${timestamp}:${SHIELD_SECRET}`;
+      const key = await window.crypto.subtle.importKey(
+        'raw',
+        encoder.encode(SHIELD_SECRET),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const signature = await window.crypto.subtle.sign('HMAC', key, encoder.encode(msg));
+      const hashHex = Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      return `${timestamp}.${hashHex}`;
+    }
+  } catch (err) {
+    // Fallback if subtle crypto is not accessible
+  }
+  return `${timestamp}.client`;
+}
+
 // ─── Backend API (Express on port 5000) ───
 const api = axios.create({
   baseURL: getBackendURL(),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
+});
+
+// Attach Client Shield header to every outgoing API request
+api.interceptors.request.use(async (config) => {
+  try {
+    const token = await generateClientShieldToken();
+    if (token) {
+      config.headers['X-Client-Shield'] = token;
+    }
+  } catch (err) {
+    // Silently proceed
+  }
+  return config;
 });
 
 // Global response error handler & Silent Refresh logic

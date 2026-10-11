@@ -17,7 +17,9 @@ const {
     verifyPasskeyRegister,
     removePasskeys,
     markDeviceAsTrusted,
-    triggerSOS
+    triggerSOS,
+    getScrapingSecurityOverview,
+    unblockScrapingIP
 } = require('../controllers/securityController');
 
 router.get('/login-history', protect, getLoginHistory);
@@ -31,6 +33,10 @@ router.post('/trusted-devices', protect, markDeviceAsTrusted);
 router.get('/alerts', protect, getSecurityAlerts);
 router.post('/alerts/:alertId/resolve', protect, resolveAlert);
 router.post('/sos', protect, triggerSOS);
+
+// Anti-Scraping / Bot Protection Controls
+router.get('/anti-scraping/stats', protect, getScrapingSecurityOverview);
+router.post('/anti-scraping/unblock', protect, unblockScrapingIP);
 
 router.get('/settings', protect, getUserSecuritySettings);
 router.post('/recovery', protect, updateRecoveryOptions);

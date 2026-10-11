@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, Train, Plane, Bus, Armchair } from 'lucide-react';
+import { Filter, Train, Plane, Bus, Armchair, X } from 'lucide-react';
 
 export default function FilterPanel({
   selectedTransport = ['Train', 'Flight', 'Bus'],
@@ -10,7 +10,9 @@ export default function FilterPanel({
   onToggleStop,
   selectedClasses = [],
   onToggleClass,
-  onReset
+  onReset,
+  hideHeader = false,
+  onClose
 }) {
   const travelClassOptions = [
     { id: 'SL', label: 'Sleeper Class (SL)' },
@@ -25,20 +27,33 @@ export default function FilterPanel({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1b2c28] border border-[#E3DED2] dark:border-[#2a403a] rounded-[12px] p-5 space-y-5 text-left">
+    <div className={`space-y-5 text-left ${hideHeader ? 'p-0' : 'bg-white dark:bg-[#1b2c28] border border-[#E3DED2] dark:border-[#2a403a] rounded-[12px] p-5'}`}>
       
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#2a403a]">
-        <h3 className="font-bold text-base text-[#173F3A] dark:text-white flex items-center gap-2 font-heading">
-          <Filter className="w-4 h-4 text-[#D96C4F]" /> Filters
-        </h3>
-        <button 
-          onClick={onReset}
-          className="text-xs font-semibold text-[#D96C4F] hover:underline cursor-pointer"
-        >
-          Reset All
-        </button>
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#2a403a]">
+          <h3 className="font-bold text-base text-[#173F3A] dark:text-white flex items-center gap-2 font-heading">
+            <Filter className="w-4 h-4 text-[#D96C4F]" /> Filters
+          </h3>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={onReset}
+              className="text-xs font-semibold text-[#D96C4F] hover:underline cursor-pointer"
+            >
+              Reset All
+            </button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="p-1 rounded-lg text-[#66736F] hover:text-[#173F3A] dark:hover:text-white hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Transport Type */}
       <div className="space-y-2.5">

@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -269,6 +269,25 @@ function AnimatedRoutes() {
   );
 }
 
+function GlobalAssistants() {
+  const location = useLocation();
+  const { isAuthModalOpen } = useAuth();
+
+  const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
+  const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
+
+  if (authRoutes.includes(currentPath) || isAuthModalOpen) {
+    return null;
+  }
+
+  return (
+    <>
+      <AIChatbot />
+      <AIVoiceAssistant />
+    </>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -295,8 +314,7 @@ function App() {
               <Suspense fallback={<Loader />}>
                 <AnimatedRoutes />
               </Suspense>
-              <AIChatbot />
-              <AIVoiceAssistant />
+              <GlobalAssistants />
             </div>
           </Router>
         </ThemeProvider>

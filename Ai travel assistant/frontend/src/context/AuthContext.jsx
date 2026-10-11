@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
         if (!isNaN(parsed) && parsed > 0) {
             setSessionTimeoutMinutesState(parsed);
             localStorage.setItem('traveliq_session_timeout_mins', parsed.toString());
+            window.dispatchEvent(new Event('storage'));
         }
     };
 

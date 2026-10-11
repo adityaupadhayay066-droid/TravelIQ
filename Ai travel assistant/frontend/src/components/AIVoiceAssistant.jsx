@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Mic, MicOff, Volume2, X, RotateCcw, AlertTriangle, MessageSquareCode } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,8 +11,9 @@ const API_URL = getBackendURL();
 
 export default function AIVoiceAssistant() {
     const navigate = useNavigate();
+    const location = useLocation();
     const scrollScale = useScrollShrink(0.65, 350);
-    const { user, openAuthModal } = useAuth();
+    const { user, openAuthModal, isAuthModalOpen } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [language, setLanguage] = useState('en'); // 'en' or 'hi'
     const [status, setStatus] = useState('idle'); // 'idle', 'listening', 'processing', 'speaking', 'error'
@@ -20,10 +21,29 @@ export default function AIVoiceAssistant() {
     const [spokenText, setSpokenText] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const [typedFallback, setTypedFallback] = useState('');
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     const recognitionRef = useRef(null);
     const synthesisUtteranceRef = useRef(null);
     const containerRef = useRef(null);
+
+    // Sync state with Chatbot so Voice Assistant does not block the chat input/text
+    useEffect(() => {
+        const handleChatState = (e) => {
+            const chatOpen = !!e.detail?.isOpen;
+            setIsChatOpen(chatOpen);
+            if (chatOpen) {
+                stopListening();
+                setIsOpen(false);
+            }
+        };
+        window.addEventListener('traveliq:chatbot_state', handleChatState);
+        return () => window.removeEventListener('traveliq:chatbot_state', handleChatState);
+    }, []);
+
+    useEffect(() => {
+        window.dispatchEvent(new CustomEvent('traveliq:voice_state', { detail: { isOpen } }));
+    }, [isOpen]);
 
     // Auto close when clicking outside or pressing Escape
     useEffect(() => {
@@ -53,6 +73,18 @@ export default function AIVoiceAssistant() {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [isOpen]);
+
+    // Cancel any active speech or recognition on component unmount
+    useEffect(() => {
+        return () => {
+            if (recognitionRef.current) {
+                try { recognitionRef.current.stop(); } catch (e) {}
+            }
+            if (window.speechSynthesis) {
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+            }
+        };
+    }, []);
 
     // Initialize Web Speech API Recognition
     useEffect(() => {
@@ -202,6 +234,8 @@ export default function AIVoiceAssistant() {
             return;
         }
 
+        if (isChatOpen) return null;
+
         if (isOpen) {
             stopListening();
             setIsOpen(false);
@@ -214,10 +248,16 @@ export default function AIVoiceAssistant() {
         }
     };
 
+    const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
+    const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
+    if (authRoutes.includes(currentPath) || isAuthModalOpen || isChatOpen) {
+        return null;
+    }
+
     return (
         <div 
             ref={containerRef} 
-            className="fixed bottom-36 lg:bottom-24 right-4 lg:right-6 z-50 pointer-events-auto" 
+            className="fixed bottom-36 lg:bottom-24 right-4 lg:right-6 z-50 pointer-events-auto transition-all duration-300" 
             style={{ 
                 fontFamily: "var(--font-sans)", 
                 transform: `scale(${isOpen ? 1 : scrollScale})`, 
@@ -383,7 +423,6 @@ export default function AIVoiceAssistant() {
                                     {[1, 2, 3, 4, 5, 4, 3, 2, 1].map((h, i) => (
                                         <div
                                             key={i}
-                                            style={{ animationDelay: `${i * 0.1}s` }}
                                             className="w-1.5 rounded-full animate-[bounce_0.8s_infinite]"
                                             style={{ animationDelay: `${i * 0.1}s`, background: '#E58A3A' }}
                                         />

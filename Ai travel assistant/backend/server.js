@@ -13,6 +13,7 @@ const { seedTrains } = require('./seeders/trainSeeder');
 const { seedChatbotKnowledge } = require('./seeders/chatbotSeeder');
 const { seedAdminPanelData } = require('./seeders/adminPanelSeeder');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const { antiScrapingShield, honeypotTrapHandler } = require('./middleware/antiScrapingMiddleware');
 
 const authRoutes = require('./routes/authRoutes');
 const travelRoutes = require('./routes/travelRoutes');
@@ -96,15 +97,35 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield']
 }));
 
 // ─── Parsers ───
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
-// ─── Global API rate limiter ───
+// ─── Dynamic robots.txt to disallow scrapers and lay honeypot traps ───
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(`User-agent: *
+Disallow: /api/
+Disallow: /api/scrapers/
+Disallow: /api/v1/deals-export
+Disallow: /api/travel/export-all
+Allow: /api/health
+Allow: /api/v1/public
+Sitemap: https://traveliq.com/sitemap.xml
+`);
+});
+
+// ─── Honeypot Traps for Automated Crawlers & Scraping Bots ───
+app.all('/api/scrapers/crawler-trap', honeypotTrapHandler);
+app.all('/api/v1/deals-export', honeypotTrapHandler);
+app.all('/api/travel/export-all', honeypotTrapHandler);
+
+// ─── Global API rate limiter & Anti-Scraping Bot Shield ───
 app.use('/api', apiLimiter);
+app.use('/api', antiScrapingShield);
 
 // ─── Request logger (slow requests) ───
 app.use((req, res, next) => {

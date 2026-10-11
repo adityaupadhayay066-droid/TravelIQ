@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   MessageSquare, X, Send, User, Trash2, Sparkles, Train, Hotel, 
-  Utensils, Compass, ShieldCheck, ArrowRight, Copy, Check
+  Utensils, Compass, ShieldCheck, ArrowRight, Copy, Check, Mic, MicOff
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -43,9 +44,11 @@ const PROMPT_SUGGESTIONS = [
 ];
 
 export default function AIChatbot() {
-  const { user, openAuthModal } = useAuth();
+  const location = useLocation();
+  const { user, openAuthModal, isAuthModalOpen } = useAuth();
   const scrollScale = useScrollShrink(0.65, 350);
   const [isOpen, setIsOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('traveliq_assistant_history_v2');
@@ -58,6 +61,22 @@ export default function AIChatbot() {
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
   const containerRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  // Sync state with Voice Assistant so they don't overlap
+  useEffect(() => {
+    const handleVoiceState = (e) => {
+      if (e.detail?.isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('traveliq:voice_state', handleVoiceState);
+    return () => window.removeEventListener('traveliq:voice_state', handleVoiceState);
+  }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('traveliq:chatbot_state', { detail: { isOpen } }));
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -198,10 +217,45 @@ export default function AIChatbot() {
     toast.success('Conversation reset.');
   };
 
-  const copyPlan = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Plan copied to clipboard!');
+  const toggleListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-IN';
+      rec.onstart = () => setIsListening(true);
+      rec.onresult = (e) => {
+        const text = e.results[0][0].transcript;
+        if (text) {
+          setInput(prev => (prev ? `${prev} ${text}` : text));
+        }
+      };
+      rec.onerror = () => setIsListening(false);
+      rec.onend = () => setIsListening(false);
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err) {
+      setIsListening(false);
+    }
   };
+
+  const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
+  const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
+  if (authRoutes.includes(currentPath) || isAuthModalOpen) {
+    return null;
+  }
 
   return (
     <div ref={containerRef}>
@@ -382,6 +436,18 @@ export default function AIChatbot() {
                 placeholder="Ask e.g. Bhubaneswar to Manali 5 days..."
                 className="flex-1 bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-xl px-3.5 py-2.5 text-xs text-[#1F2933] dark:text-[#F7F5EF] outline-none focus:border-[#14532D]"
               />
+              <button
+                type="button"
+                onClick={toggleListening}
+                title={isListening ? "Stop listening" : "Speak message"}
+                className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                  isListening 
+                    ? 'bg-rose-600 text-white animate-pulse' 
+                    : 'bg-[#EEF2ED] dark:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] hover:bg-[#E3DED2] dark:hover:bg-[#273E36]'
+                }`}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
               <button
                 type="submit"
                 disabled={loading || !input.trim()}

@@ -500,6 +500,38 @@ const triggerSOS = async (req, res) => {
     }
 };
 
+/**
+ * Get Anti-Scraping / Bot Protection status and blocked scraper logs
+ */
+const getScrapingSecurityOverview = async (req, res) => {
+    try {
+        const { getAntiScrapingStats } = require('../middleware/antiScrapingMiddleware');
+        const stats = getAntiScrapingStats();
+        res.json({ success: true, ...stats });
+    } catch (error) {
+        console.error('[Anti-Scraping Stats Error]:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+/**
+ * Manually unblock an IP from the anti-scraping blacklist
+ */
+const unblockScrapingIP = async (req, res) => {
+    try {
+        const { unblockIP } = require('../middleware/antiScrapingMiddleware');
+        const { ip } = req.body;
+        if (!ip) {
+            return res.status(400).json({ success: false, message: 'IP address is required.' });
+        }
+        const success = unblockIP(ip);
+        res.json({ success, message: success ? `IP ${ip} unblocked successfully.` : `IP ${ip} was not in the active blacklist.` });
+    } catch (error) {
+        console.error('[Unblock IP Error]:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getLoginHistory,
     getActiveSessions,
@@ -516,5 +548,7 @@ module.exports = {
     verifyPasskeyRegister,
     removePasskeys,
     markDeviceAsTrusted,
-    triggerSOS
+    triggerSOS,
+    getScrapingSecurityOverview,
+    unblockScrapingIP
 };

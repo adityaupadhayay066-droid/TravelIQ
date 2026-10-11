@@ -152,7 +152,7 @@ function StatCard({ icon: Icon, label, value, color, delay }) {
 }
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout, sessionTimeoutMinutes, setSessionTimeoutMinutes } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -320,6 +320,100 @@ export default function ProfilePage() {
           <StatCard icon={DollarSign} label="Money Saved" value={`₹${(profile?.stats?.money_saved || 0).toLocaleString()}`} delay={0.2} />
           <StatCard icon={Clock} label="Time Saved" value={`${profile?.stats?.time_saved || 0}h`} delay={0.25} />
         </div>
+
+        {/* Session Security & Auto-Logout Feature */}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+          className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)] font-inter">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-[#E3DED2]/60 dark:border-[#2A403A]/60">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED]">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
+                  Session Auto-Logout
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#4F7D62]/15 text-[#4F7D62] dark:text-[#6EA885]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#4F7D62] animate-pulse" /> Active Protection
+                  </span>
+                </h3>
+                <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">
+                  Automatically log out after inactivity to safeguard your private itineraries and bookings.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.setItem('traveliq_last_active_time', Date.now().toString());
+                    window.dispatchEvent(new Event('storage'));
+                    toast.success('Session activity refreshed!');
+                  } catch (e) {
+                    toast.success('Session refreshed!');
+                  }
+                }}
+                className="px-3 py-1.5 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Reset session inactivity timer"
+              >
+                <Clock className="w-3.5 h-3.5" /> Extend Session
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] uppercase tracking-wider font-semibold text-[#66736F] dark:text-[#A3B0AB] mb-2 block">
+              Inactivity Timeout Period
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {[
+                { label: '15 Minutes', value: 15, tag: 'Default' },
+                { label: '30 Minutes', value: 30 },
+                { label: '1 Hour', value: 60 },
+                { label: '2 Hours', value: 120 },
+              ].map((opt) => {
+                const isSelected = (sessionTimeoutMinutes || 15) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      setSessionTimeoutMinutes(opt.value);
+                      toast.success(`Inactivity auto-logout updated to ${opt.label}`);
+                    }}
+                    className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                      isSelected
+                        ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] font-semibold ring-1 ring-[#173F3A]/30 dark:ring-[#EEF2ED]/30 shadow-xs'
+                        : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] hover:border-[#173F3A]/40 dark:hover:border-[#EEF2ED]/40'
+                    }`}
+                  >
+                    <span className="text-xs">{opt.label}</span>
+                    {opt.tag && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED] font-medium">
+                        {opt.tag}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 text-xs text-[#66736F] dark:text-[#A3B0AB]">
+            <span className="flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-[#4F7D62]" />
+              A 60-second warning countdown appears before automatic sign-out.
+            </span>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="text-[#B94A48] hover:underline font-medium flex items-center gap-1 cursor-pointer text-xs"
+            >
+              Sign Out Immediately
+            </button>
+          </div>
+        </motion.div>
 
         {/* Quick Links */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
