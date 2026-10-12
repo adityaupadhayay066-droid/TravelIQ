@@ -78,7 +78,7 @@ export default function AdminSearch({ isOpen, onClose }) {
                             type: 'Train',
                             title: `${t.train_number} - ${t.train_name}`,
                             subtitle: `${t.source_station} → ${t.destination_station}`,
-                            url: `/admin/trains?search=${t.train_number}`,
+                            url: `/admin/trains?track=${t.train_number}&search=${t.train_number}`,
                             icon: Train
                         });
                     });

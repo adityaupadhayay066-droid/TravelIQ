@@ -11,6 +11,7 @@ const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const os = require('os');
 const axios = require('axios');
+const { getTrainTrackingDetails } = require('../services/trainTrackingService');
 
 // 1. DASHBOARD & PLATFORM ANALYTICS
 const getAnalytics = async (req, res) => {
@@ -367,18 +368,23 @@ const getTrains = async (req, res) => {
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
         const whereClause = {};
-        if (search) {
+        if (search && search.trim()) {
+            const query = search.trim();
             whereClause[Op.or] = [
-                { train_number: { [Op.like]: `%${search}%` } },
-                { train_name: { [Op.like]: `%${search}%` } },
-                { source_station: { [Op.like]: `%${search}%` } },
-                { destination_station: { [Op.like]: `%${search}%` } }
+                { train_number: { [Op.like]: `%${query}%` } },
+                { train_name: { [Op.like]: `%${query}%` } },
+                { source_station: { [Op.like]: `%${query}%` } },
+                { destination_station: { [Op.like]: `%${query}%` } }
             ];
         }
 
+        const allowedSort = ['train_number', 'train_name', 'source_station', 'destination_station', 'createdAt', 'updatedAt'];
+        const safeSortBy = allowedSort.includes(sortBy) ? sortBy : 'train_number';
+        const safeOrder = order && order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
         const { count, rows } = await Train.findAndCountAll({
             where: whereClause,
-            order: [[sortBy, order.toUpperCase()]],
+            order: [[safeSortBy, safeOrder]],
             limit: parseInt(limit),
             offset
         });
@@ -386,8 +392,8 @@ const getTrains = async (req, res) => {
         const enrichedTrains = await Promise.all(rows.map(async (t) => {
             const trainObj = t.toJSON();
             const live = await LiveTrainStatus.findOne({ where: { train_number: t.train_number } });
-            trainObj.live_status = live ? live.current_status : 'On Time';
-            trainObj.delay_mins = live ? live.delay_minutes : 0;
+            trainObj.live_status = live ? (live.status || live.current_status || 'On Time') : 'On Time';
+            trainObj.delay_mins = live ? (live.delay_minutes || 0) : 0;
             trainObj.classes = ['1A', '2A', '3A', 'SL'];
             trainObj.days_of_operation = 'Daily (Mon-Sun)';
             trainObj.distance = '1,384 km';
@@ -420,10 +426,13 @@ const createTrain = async (req, res) => {
         }
 
         const train = await Train.create({
-            train_number,
-            train_name,
-            source_station: source_station || 'NDLS',
-            destination_station: destination_station || 'BBS'
+            train_number: train_number.trim(),
+            train_name: train_name.trim(),
+            source_station: (source_station || 'NDLS').trim().toUpperCase(),
+            destination_station: (destination_station || 'BBS').trim().toUpperCase(),
+            runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+            service_type: 'Express',
+            frequency: 'Daily'
         });
 
         return res.status(201).json({ success: true, train, message: 'Train created successfully.' });
@@ -438,6 +447,9 @@ const deleteTrain = async (req, res) => {
         const train = await Train.findOne({ where: { train_number: trainNumber } });
         if (!train) return res.status(404).json({ success: false, message: 'Train not found.' });
 
+        await TrainSchedule.destroy({ where: { train_number: trainNumber } }).catch(() => null);
+        await LiveTrainStatus.destroy({ where: { train_number: trainNumber } }).catch(() => null);
+        await TrainFare.destroy({ where: { train_number: trainNumber } }).catch(() => null);
         await train.destroy();
         return res.json({ success: true, message: `Train #${trainNumber} removed successfully.` });
     } catch (error) {
@@ -448,14 +460,44 @@ const deleteTrain = async (req, res) => {
 const updateLiveTrainStatus = async (req, res) => {
     try {
         const { train_number, current_station, current_status, delay_minutes } = req.body;
+        const statusVal = current_status || 'On Time';
+        const stnVal = (current_station || '').trim().toUpperCase();
+        const delayVal = parseInt(delay_minutes) || 0;
+
         let record = await LiveTrainStatus.findOne({ where: { train_number } });
         if (record) {
-            await record.update({ current_station, current_status, delay_minutes });
+            await record.update({
+                current_station_code: stnVal,
+                status: statusVal,
+                delay_minutes: delayVal,
+                last_updated_at: new Date()
+            });
         } else {
-            record = await LiveTrainStatus.create({ train_number, current_station, current_status, delay_minutes });
+            record = await LiveTrainStatus.create({
+                train_number,
+                current_station_code: stnVal,
+                status: statusVal,
+                delay_minutes: delayVal,
+                last_updated_at: new Date()
+            });
         }
         return res.json({ success: true, record, message: 'Live train status updated.' });
     } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getTrainDetails = async (req, res) => {
+    try {
+        const { trainNumber } = req.params;
+        const { journeyDate, selectedDay } = req.query;
+        const details = await getTrainTrackingDetails({ trainNumber, journeyDate, selectedDay });
+        if (!details) {
+            return res.status(404).json({ success: false, message: 'Train not found.' });
+        }
+        return res.json({ success: true, train: details });
+    } catch (error) {
+        console.error('getTrainDetails error:', error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -1103,6 +1145,7 @@ module.exports = {
     resetUserPassword,
     bulkUpdateUsers,
     getTrains,
+    getTrainDetails,
     createTrain,
     deleteTrain,
     updateLiveTrainStatus,

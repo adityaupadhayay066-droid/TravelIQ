@@ -241,11 +241,13 @@ export default function LiveTrackingPage() {
         else if (num >= 10000 && num <= 11999) trainType = 'Mail Express';
         else if (num >= 50000 && num <= 59999) trainType = 'Passenger';
 
-        let runningDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        if (num % 7 === 1) runningDays = ['Mon', 'Wed', 'Fri'];
-        else if (num % 7 === 2) runningDays = ['Tue', 'Thu', 'Sat'];
-        else if (num % 7 === 3) runningDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        else if (num % 7 === 4) runningDays = ['Wed', 'Fri', 'Sun'];
+        let runningDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        if (trackingData.weekly_running_days) {
+            runningDays = trackingData.weekly_running_days.filter(d => d.operates).map(d => d.name);
+        } else if (trackingData.runs_on && Array.isArray(trackingData.runs_on)) {
+            const map = { MON: 'Monday', TUE: 'Tuesday', WED: 'Wednesday', THU: 'Thursday', FRI: 'Friday', SAT: 'Saturday', SUN: 'Sunday' };
+            runningDays = trackingData.runs_on.map(c => map[c] || c);
+        }
 
         const classes = ['2S', 'SL', '3A', '2A', '1A'];
         if (trainType.includes('Rajdhani') || trainType.includes('Premium')) {

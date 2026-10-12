@@ -34,6 +34,7 @@ export default function DataTable({
     onSearchChange = null,
     filters = null,
     headerActions = null,
+    onRowClick = null,
     className = ''
 }) {
     const handleSelectAll = (e) => {
@@ -156,7 +157,11 @@ export default function DataTable({
                                 return (
                                     <tr
                                         key={rowId}
-                                        className={isSelected ? 'bg-sky-500/5' : ''}
+                                        onClick={(e) => {
+                                            if (e.target.closest('button, input, a')) return;
+                                            if (onRowClick) onRowClick(row, e);
+                                        }}
+                                        className={`${isSelected ? 'bg-sky-500/5' : ''} ${onRowClick ? 'cursor-pointer hover:bg-[var(--color-soft)]/60 transition' : ''}`}
                                     >
                                         {selectable && (
                                             <td className="w-10 px-4">

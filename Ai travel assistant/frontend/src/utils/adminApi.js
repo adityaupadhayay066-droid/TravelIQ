@@ -18,6 +18,7 @@ export const adminApi = {
 
     // 3. Trains & Stations
     getTrains: (params = {}) => api.get('/admin/trains', { params }),
+    getTrainDetails: (trainNumber, params = {}) => api.get(`/admin/trains/${trainNumber}`, { params }),
     createTrain: (data) => api.post('/admin/trains', data),
     deleteTrain: (trainNumber) => api.delete(`/admin/trains/${trainNumber}`),
     updateLiveTrainStatus: (data) => api.post('/admin/trains/live-status', data),

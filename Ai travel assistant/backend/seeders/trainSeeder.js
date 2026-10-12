@@ -229,11 +229,18 @@ const DEFAULT_TRAINS = [
 async function seedDefaultTrains() {
     console.log('Seeding built-in popular trains & schedules...');
     for (const item of DEFAULT_TRAINS) {
+        const src = item.schedule && item.schedule.length > 0 ? item.schedule[0].station_code : 'NDLS';
+        const dst = item.schedule && item.schedule.length > 0 ? item.schedule[item.schedule.length - 1].station_code : 'BBS';
         await Train.findOrCreate({
             where: { train_number: item.train_number },
             defaults: {
                 train_number: item.train_number,
-                train_name: item.train_name
+                train_name: item.train_name,
+                source_station: src,
+                destination_station: dst,
+                runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+                service_type: 'Express',
+                frequency: 'Daily'
             }
         });
 

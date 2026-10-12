@@ -25,6 +25,7 @@ const {
     resetDatabase,
     getAuditLogs,
     getTrains,
+    getTrainDetails,
     createTrain,
     deleteTrain,
     updateLiveTrainStatus,
@@ -116,6 +117,7 @@ router.post('/reset-database', resetDatabase);
 
 // 3. Trains & Stations
 router.get('/trains', getTrains);
+router.get('/trains/:trainNumber', getTrainDetails);
 router.post('/trains', createTrain);
 router.delete('/trains/:trainNumber', deleteTrain);
 router.post('/trains/live-status', updateLiveTrainStatus);

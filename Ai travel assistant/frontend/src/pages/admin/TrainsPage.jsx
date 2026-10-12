@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Train, Plus, Trash2, Edit, Radio, Clock, 
-    Search, RefreshCw, Download, CheckCircle, AlertTriangle 
+    Search, RefreshCw, Download, CheckCircle, AlertTriangle, Navigation
 } from 'lucide-react';
 import DataTable from '../../components/admin/DataTable';
 import StatusBadge from '../../components/admin/StatusBadge';
 import Modal from '../../components/admin/Modal';
 import ConfirmDialog from '../../components/admin/ConfirmDialog';
+import TrainLiveTrackingModal from '../../components/admin/TrainLiveTrackingModal';
 import adminApi from '../../utils/adminApi';
 import toast from 'react-hot-toast';
 
@@ -18,14 +19,43 @@ export default function TrainsPage() {
     const [pages, setPages] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sortBy, setSortBy] = useState('train_number');
     const [sortOrder, setSortOrder] = useState('asc');
+
+    // Debounce search input to avoid spamming the API on every keystroke
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search]);
 
     // Modals
     const [showAddModal, setShowAddModal] = useState(false);
     const [showLiveStatusModal, setShowLiveStatusModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showTrackingModal, setShowTrackingModal] = useState(false);
+    const [trackingTrainNumber, setTrackingTrainNumber] = useState(null);
     const [selectedTrain, setSelectedTrain] = useState(null);
+
+    const handleOpenTracking = (num) => {
+        if (!num) return;
+        setTrackingTrainNumber(num);
+        setShowTrackingModal(true);
+    };
+
+    // Auto-open live tracking if query param has ?track=12802 or search
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const trackParam = params.get('track');
+        const searchParam = params.get('search');
+        if (trackParam) {
+            handleOpenTracking(trackParam);
+        } else if (searchParam) {
+            setSearch(searchParam);
+        }
+    }, []);
 
     // Form inputs
     const [trainNumber, setTrainNumber] = useState('');
@@ -43,7 +73,7 @@ export default function TrainsPage() {
         setLoading(true);
         try {
             const res = await adminApi.getTrains({
-                search,
+                search: debouncedSearch,
                 page,
                 limit: pageSize,
                 sortBy,
@@ -56,7 +86,9 @@ export default function TrainsPage() {
             }
         } catch (err) {
             console.error('fetchTrains error:', err);
-            toast.error('Failed to load trains list.');
+            if (err.response?.status !== 404) {
+                toast.error(err.response?.data?.message || 'Failed to load trains list.');
+            }
         } finally {
             setLoading(false);
         }
@@ -64,7 +96,7 @@ export default function TrainsPage() {
 
     useEffect(() => {
         fetchTrains();
-    }, [page, pageSize, search, sortBy, sortOrder]);
+    }, [page, pageSize, debouncedSearch, sortBy, sortOrder]);
 
     const handleSort = (key) => {
         if (sortBy === key) {
@@ -138,10 +170,16 @@ export default function TrainsPage() {
             key: 'train_number',
             label: 'Train No.',
             sortable: true,
-            render: (val) => (
-                <span className="font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20 text-xs">
-                    {val}
-                </span>
+            render: (val, row) => (
+                <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleOpenTracking(row.train_number); }}
+                    className="font-mono font-bold text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 px-2 py-0.5 rounded border border-sky-500/20 text-xs transition inline-flex items-center gap-1 group/btn cursor-pointer"
+                    title="Click to view Live Route, Status & Weekly Dates"
+                >
+                    <span>{val}</span>
+                    <Navigation className="w-2.5 h-2.5 opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition text-sky-400" />
+                </button>
             )
         },
         {
@@ -149,8 +187,14 @@ export default function TrainsPage() {
             label: 'Train Name',
             sortable: true,
             render: (val, row) => (
-                <div>
-                    <div className="text-xs font-bold text-[var(--color-text)]">{val}</div>
+                <div 
+                    onClick={(e) => { e.stopPropagation(); handleOpenTracking(row.train_number); }}
+                    className="cursor-pointer group/name"
+                    title="Click to view Live Route, Status & Weekly Dates"
+                >
+                    <div className="text-xs font-bold text-[var(--color-text)] group-hover/name:text-sky-400 transition flex items-center gap-1.5">
+                        <span>{val}</span>
+                    </div>
                     <div className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{row.days_of_operation || 'Daily'}</div>
                 </div>
             )
@@ -159,10 +203,14 @@ export default function TrainsPage() {
             key: 'route',
             label: 'Origin → Destination',
             render: (_, row) => (
-                <div className="text-xs font-semibold text-[var(--color-text)]">
-                    <span className="text-emerald-400 font-bold">{row.source_station || 'NDLS'}</span>
+                <div 
+                    onClick={(e) => { e.stopPropagation(); handleOpenTracking(row.train_number); }}
+                    className="text-xs font-semibold text-[var(--color-text)] cursor-pointer group/route"
+                    title="Click to view Live Route, Status & Weekly Dates"
+                >
+                    <span className="text-emerald-400 font-bold group-hover/route:underline">{row.source_station || 'NDLS'}</span>
                     <span className="text-[var(--color-text-muted)] mx-1.5">→</span>
-                    <span className="text-amber-400 font-bold">{row.destination_station || 'BBS'}</span>
+                    <span className="text-amber-400 font-bold group-hover/route:underline">{row.destination_station || 'BBS'}</span>
                 </div>
             )
         },
@@ -183,7 +231,11 @@ export default function TrainsPage() {
             key: 'live_status',
             label: 'Live Status',
             render: (status, row) => (
-                <div className="flex items-center gap-1.5">
+                <div 
+                    onClick={(e) => { e.stopPropagation(); handleOpenTracking(row.train_number); }}
+                    className="flex items-center gap-1.5 cursor-pointer"
+                    title="Click to view Live Route, Status & Weekly Dates"
+                >
                     <StatusBadge status={status || 'On Time'} size="xs" />
                     {row.delay_mins > 0 && (
                         <span className="text-[10px] text-rose-400 font-semibold font-mono">
@@ -200,7 +252,15 @@ export default function TrainsPage() {
             render: (_, row) => (
                 <div className="flex items-center justify-end gap-1">
                     <button
-                        onClick={() => {
+                        onClick={(e) => { e.stopPropagation(); handleOpenTracking(row.train_number); }}
+                        className="p-1.5 rounded-lg text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 transition"
+                        title="Where is My Train: Live Status & Route"
+                    >
+                        <Navigation className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedTrain(row);
                             setCurrentStatus(row.live_status || 'On Time');
                             setDelayMinutes(row.delay_mins || 0);
@@ -213,7 +273,7 @@ export default function TrainsPage() {
                         <Radio className="w-4 h-4" />
                     </button>
                     <button
-                        onClick={() => { setSelectedTrain(row); setShowDeleteConfirm(true); }}
+                        onClick={(e) => { e.stopPropagation(); setSelectedTrain(row); setShowDeleteConfirm(true); }}
                         className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition"
                         title="Delete train"
                     >
@@ -280,6 +340,7 @@ export default function TrainsPage() {
                 searchPlaceholder="Search by train number, name or station..."
                 searchValue={search}
                 onSearchChange={(v) => { setSearch(v); setPage(1); }}
+                onRowClick={(row) => handleOpenTracking(row.train_number)}
             />
 
             {/* 1. Add Train Modal */}
@@ -456,6 +517,16 @@ export default function TrainsPage() {
                 confirmText="Delete Train"
                 confirmVariant="danger"
                 loading={actionLoading}
+            />
+
+            {/* 4. Where is My Train: Live Tracking & Route Modal */}
+            <TrainLiveTrackingModal
+                isOpen={showTrackingModal}
+                onClose={() => {
+                    setShowTrackingModal(false);
+                    setTrackingTrainNumber(null);
+                }}
+                trainNumber={trackingTrainNumber}
             />
         </div>
     );
