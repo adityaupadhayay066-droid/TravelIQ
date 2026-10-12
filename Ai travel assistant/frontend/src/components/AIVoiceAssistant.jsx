@@ -313,13 +313,13 @@ export default function AIVoiceAssistant() {
                     title="TravelIQ Voice Assistant"
                     className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 shrink-0 ${
                         isOpen
-                            ? 'text-[#14532D] dark:text-[#EEF2ED]'
+                            ? 'text-[var(--color-primary)] dark:text-[#F0F4F7]'
                             : 'text-white'
                     }`}
                     style={{
-                        background: isOpen ? 'var(--color-surface)' : '#14532D',
+                        background: isOpen ? 'var(--color-surface)' : 'var(--color-primary, #244C66)',
                         border: isOpen ? '1px solid var(--color-border)' : '2px solid rgba(255,255,255,0.2)',
-                        boxShadow: '0 4px 16px rgba(20, 83, 45, 0.25)',
+                        boxShadow: '0 4px 16px rgba(36, 76, 102, 0.25)',
                     }}
                 >
                     {isOpen ? <X className="h-6 w-6" /> : (

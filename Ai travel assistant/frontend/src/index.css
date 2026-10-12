@@ -45,67 +45,87 @@ html, body {
   background: rgba(163, 176, 171, 0.45);
 }
 
-/* ===== TravelIQ Natural Design Tokens ===== */
+/* ===== TravelIQ Production Travel Design Tokens ===== */
 :root,
 .light,
 [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #F7F5EF;
+  --color-bg: #F7F8FA;
   --color-surface: #FFFFFF;
-  --color-cream: #FFFDF7;
-  --color-primary: #14532D;
-  --color-primary-hover: #0F3F22;
-  --color-primary-light: #2F7D32;
-  --color-accent: #E58A3A;
-  --color-accent-hover: #D4782A;
-  --color-secondary: #2F80A8;
-  --color-secondary-dark: #3A7D9A;
-  --color-sand: #E8D5B5;
-  --color-sand-light: #F4ECE1;
-  --color-text: #1F2933;
-  --color-text-muted: #64748B;
-  --color-border: #E3DED2;
-  --color-soft: #EEF2ED;
-  --color-leaf: #6B8E23;
-  --color-earth: #8B6F47;
-  --color-danger: #C53030;
-  --color-success: #2F7D32;
+  --color-cream: #F7F8FA;
+  --color-primary: #244C66;
+  --color-primary-hover: #193B51;
+  --color-primary-light: #356280;
+  --color-navy: #244C66;
+  --color-navy-dark: #193B51;
+  --color-teal: #244C66;
+  --color-teal-hover: #193B51;
+  --color-teal-light: #356280;
+  --color-teal-subtle: #EAF0F4;
+  --color-accent: #B66A45;
+  --color-accent-hover: #9E5633;
+  --color-secondary: #66737D;
+  --color-secondary-dark: #202A32;
+  --color-amber: #B66A45;
+  --color-orange: #B66A45;
+  --color-text: #202A32;
+  --color-text-secondary: #66737D;
+  --color-text-muted: #89939B;
+  --color-border: #E3E7EA;
+  --color-border-light: #EEF2F4;
+  --color-soft: #EEF2F4;
+  --color-section: #EEF2F4;
+  --color-nav-selected-bg: #EAF0F4;
+  --color-nav-selected-text: #244C66;
+  --color-danger: #B54747;
+  --color-error: #B54747;
+  --color-success: #287A55;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Manrope', 'Inter', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
 }
 
 .dark,
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: #101B17;
-  --color-surface: #172722;
-  --color-cream: #1C2F29;
-  --color-primary: #EEF2ED;
-  --color-primary-hover: #FFFFFF;
-  --color-primary-light: #489A6B;
-  --color-accent: #E58A3A;
-  --color-accent-hover: #F09B4F;
-  --color-secondary: #4AA4CF;
-  --color-secondary-dark: #2F80A8;
-  --color-sand: #3D3528;
-  --color-sand-light: #262017;
-  --color-text: #F7F5EF;
-  --color-text-muted: #94A3B8;
-  --color-border: #273E36;
-  --color-soft: #1D322B;
-  --color-leaf: #7FA82D;
-  --color-earth: #A68658;
-  --color-danger: #E53E3E;
-  --color-success: #38A169;
+  --color-bg: #121921;
+  --color-surface: #1B242E;
+  --color-cream: #162029;
+  --color-primary: #5A8CAE;
+  --color-primary-hover: #75A4C4;
+  --color-primary-light: #90B9D4;
+  --color-navy: #1B242E;
+  --color-navy-dark: #121921;
+  --color-teal: #5A8CAE;
+  --color-teal-hover: #75A4C4;
+  --color-teal-light: #90B9D4;
+  --color-teal-subtle: #233240;
+  --color-accent: #C87E58;
+  --color-accent-hover: #DC926C;
+  --color-secondary: #9CAAB5;
+  --color-secondary-dark: #CAD3DA;
+  --color-amber: #C87E58;
+  --color-orange: #C87E58;
+  --color-text: #F0F4F7;
+  --color-text-secondary: #9CAAB5;
+  --color-text-muted: #768591;
+  --color-border: #293644;
+  --color-border-light: #202D3A;
+  --color-soft: #1D2833;
+  --color-section: #162029;
+  --color-nav-selected-bg: #233240;
+  --color-nav-selected-text: #75A4C4;
+  --color-danger: #D65C5C;
+  --color-error: #D65C5C;
+  --color-success: #349669;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Manrope', 'Inter', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* ===== Global Reset & Base Styling ===== */
@@ -180,33 +200,33 @@ html, body {
 .travel-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(23, 63, 58, 0.04);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
-  will-change: border-color, box-shadow;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(32, 42, 50, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .travel-card:hover {
-  border-color: #C2BBB0;
-  box-shadow: 0 6px 20px rgba(23, 63, 58, 0.07);
+  border-color: #CAD3DA;
+  box-shadow: 0 4px 12px rgba(32, 42, 50, 0.06);
 }
 
 .dark .travel-card:hover {
-  border-color: #3E5B53;
+  border-color: #38495A;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ===== Form Inputs ===== */
 .travel-input {
   width: 100%;
-  height: 48px;
+  height: 44px;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 0 14px;
-  font-size: 0.9375rem;
+  border-radius: var(--radius-md);
+  padding: 0 12px;
+  font-size: 0.875rem;
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .travel-input::placeholder {
@@ -215,55 +235,78 @@ html, body {
 
 .travel-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(23, 63, 58, 0.12);
+  box-shadow: 0 0 0 2px rgba(36, 76, 102, 0.12);
 }
 
 /* ===== Button System ===== */
 .btn-primary {
-  height: 46px;
-  background-color: var(--color-accent);
+  height: 44px;
+  background-color: var(--color-primary);
   color: #FFFFFF;
   font-weight: 600;
-  font-size: 0.9375rem;
-  border-radius: 8px;
-  padding: 0 22px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+  padding: 0 20px;
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: background-color 0.18s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-accent-hover);
+  background-color: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btn-secondary {
-  height: 46px;
-  background-color: var(--color-surface);
-  color: var(--color-primary);
+.btn-navy {
+  height: 44px;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
   font-weight: 600;
-  font-size: 0.9375rem;
-  border-radius: 8px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
   padding: 0 20px;
-  border: 1px solid var(--color-primary);
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: background-color 0.18s ease, color 0.18s ease;
+  transition: background-color 0.15s ease;
+}
+
+.btn-navy:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  height: 44px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+  padding: 0 18px;
+  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-secondary:hover {
   background-color: var(--color-soft);
+  border-color: #CAD3DA;
 }
 
 .btn-ghost {

@@ -7,6 +7,9 @@ export default function PassengerSelector({ value, config, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const totalSeniors = activeValue.seniors || 0;
+  const guardiansCount = (activeValue.adults || 0) + (activeValue.seniors || 0);
+
   // Close when clicking outside
   useEffect(() => {
     const handleOutsideClick = (e) => {
@@ -107,7 +110,7 @@ export default function PassengerSelector({ value, config, onChange }) {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{value.adults}</span>
+                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.adults}</span>
                   <button 
                     type="button"
                     onClick={() => handleIncrement('adults')}
@@ -132,7 +135,7 @@ export default function PassengerSelector({ value, config, onChange }) {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{value.seniors}</span>
+                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.seniors}</span>
                   <button 
                     type="button"
                     onClick={() => handleIncrement('seniors')}
@@ -158,7 +161,7 @@ export default function PassengerSelector({ value, config, onChange }) {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{value.children}</span>
+                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.children}</span>
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}
@@ -185,7 +188,7 @@ export default function PassengerSelector({ value, config, onChange }) {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{value.infants}</span>
+                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.infants}</span>
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}

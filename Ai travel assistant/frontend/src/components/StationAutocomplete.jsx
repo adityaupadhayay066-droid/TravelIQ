@@ -121,7 +121,7 @@ export default function StationAutocomplete({ value, onChange, placeholder, inpu
               if (suggestions.length > 0) setShowDropdown(true);
             }}
             placeholder={inputPlaceholder || "Search city or station code..."}
-            className="bg-transparent border-none outline-none text-[#263238] dark:text-[#F7F5EF] font-bold w-full placeholder-[#66736F]/60 dark:placeholder-[#A3B0AB]/60 text-xs sm:text-sm focus:ring-0 p-0 m-0" 
+            className="bg-transparent border-none outline-none text-[#263238] dark:text-[#F7F5EF] font-semibold w-full placeholder:text-[#66736F]/70 dark:placeholder:text-[#A3B0AB]/70 placeholder:font-normal text-xs sm:text-sm focus:ring-0 p-0 m-0" 
           />
         </div>
         {showVoiceBtn}

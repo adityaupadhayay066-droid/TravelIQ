@@ -1,674 +1,737 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   Search, MapPin, Calendar, Users, ArrowRightLeft, 
   ArrowRight, ShieldCheck, Shield, Compass, Check, 
   Train, Plane, Bus, Sparkles, Sliders, IndianRupee, 
   Clock, Award, Navigation, Star, Heart, CheckCircle2,
-  ChevronRight, MessageSquare
+  ChevronRight, MessageSquare, Building2, AlertCircle,
+  HelpCircle, ExternalLink, RefreshCw, Luggage, Bed, Utensils
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StationAutocomplete from '../components/StationAutocomplete';
 import PassengerSelector from '../components/PassengerSelector';
-import TravelBudgetPlanner from '../components/TravelBudgetPlanner';
-import TripPlanner from '../components/TripPlanner';
 
+// Featured 8 Popular Destinations across India
 const POPULAR_DESTINATIONS = [
   {
-    name: 'Manali',
-    location: 'Himachal Pradesh',
-    budget: 'From ₹6,500',
-    bestTime: 'October–June',
-    style: 'Himalayan Escapes',
-    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
-    desc: 'High-altitude adventure town with snow valleys, pine forests, and cedar shrines.'
+    name: 'Goa',
+    state: 'Goa Coast',
+    tagline: 'Sun-drenched beaches, Portuguese colonial architecture, spice plantations, and seafood shacks.',
+    bestSeason: 'Nov – Feb',
+    image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80',
+    slug: 'Goa',
+    size: 'large'
   },
   {
-    name: 'Goa',
-    location: 'Goa Coast',
-    budget: 'From ₹4,500',
-    bestTime: 'November–February',
-    style: 'Coastal & Beaches',
-    image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80',
-    desc: 'Sun-drenched beaches, Portuguese colonial villas, spice farms, and seafood shacks.'
+    name: 'Manali',
+    state: 'Himachal Pradesh',
+    tagline: 'High-altitude Himalayan valley with snow-capped peaks, pine forests, and Solang valley adventures.',
+    bestSeason: 'Oct – Jun',
+    image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80',
+    slug: 'Manali',
+    size: 'medium'
   },
   {
     name: 'Jaipur',
-    location: 'Rajasthan',
-    budget: 'From ₹3,800',
-    bestTime: 'October–March',
-    style: 'Heritage & Palaces',
+    state: 'Rajasthan',
+    tagline: 'The historic Pink City renowned for Amer Fort, Hawa Mahal, royal palaces, and artisan bazaars.',
+    bestSeason: 'Oct – Mar',
     image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=800&q=80',
-    desc: 'The historic Pink City famous for Amer Fort, Hawa Mahal, and royal bazaars.'
-  },
-  {
-    name: 'Kerala',
-    location: 'Kerala Backwaters',
-    budget: 'From ₹7,500',
-    bestTime: 'September–March',
-    style: 'Backwaters & Nature',
-    image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
-    desc: 'Tranquil houseboat canals, Ayurvedic retreats, and lush tea estates in Munnar.'
+    slug: 'Jaipur',
+    size: 'medium'
   },
   {
     name: 'Varanasi',
-    location: 'Uttar Pradesh',
-    budget: 'From ₹3,200',
-    bestTime: 'October–March',
-    style: 'Spiritual & Ghats',
+    state: 'Uttar Pradesh',
+    tagline: 'Ancient spiritual heart along the Ganga river with morning boat rides and evening Ganga Aarti ceremonies.',
+    bestSeason: 'Oct – Mar',
     image: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=800&q=80',
-    desc: 'Ancient spiritual heart along the Ganga river with evening aarti ceremonies.'
+    slug: 'Varanasi',
+    size: 'tall'
   },
   {
-    name: 'Kashmir',
-    location: 'Jammu & Kashmir',
-    budget: 'From ₹9,200',
-    bestTime: 'April–October',
-    style: 'Alpine Valleys & Lakes',
-    image: 'https://images.unsplash.com/photo-1588714477688-cf28a50e94f7?auto=format&fit=crop&w=800&q=80',
-    desc: 'Shikara rides on Dal Lake, Gulmarg gondola, and snow-capped Pir Panjal peaks.'
+    name: 'Kerala',
+    state: 'Backwaters & Munnar',
+    tagline: 'Tranquil houseboat canals in Alleppey, Ayurvedic wellness retreats, and misty tea plantations in Munnar.',
+    bestSeason: 'Sep – Mar',
+    image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80',
+    slug: 'Kerala',
+    size: 'medium'
+  },
+  {
+    name: 'Darjeeling',
+    state: 'West Bengal',
+    tagline: 'Queen of the Hills with Kanchenjunga sunrise views, UNESCO Himalayan toy train, and emerald tea gardens.',
+    bestSeason: 'Mar – May & Sep – Nov',
+    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80',
+    slug: 'Darjeeling',
+    size: 'medium'
+  },
+  {
+    name: 'Udaipur',
+    state: 'Rajasthan',
+    tagline: 'The romantic City of Lakes with magnificent Lake Pichola palace vistas and Rajput courtyards.',
+    bestSeason: 'Oct – Mar',
+    image: 'https://images.unsplash.com/photo-1615836245337-f5b9b2303f10?auto=format&fit=crop&w=800&q=80',
+    slug: 'Udaipur',
+    size: 'medium'
   },
   {
     name: 'Meghalaya',
-    location: 'Northeast India',
-    budget: 'From ₹8,000',
-    bestTime: 'October–April',
-    style: 'Waterfalls & Living Roots',
+    state: 'Northeast India',
+    tagline: 'Misty waterfalls, crystal clear Umngot river in Dawki, and legendary centuries-old Living Root Bridges.',
+    bestSeason: 'Oct – Apr',
     image: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=800&q=80',
-    desc: 'Living root bridges, crystal clear Umngot river, and misty rainforest waterfalls.'
-  },
-  {
-    name: 'Rajasthan',
-    location: 'Desert & Jaisalmer',
-    budget: 'From ₹5,500',
-    bestTime: 'November–February',
-    style: 'Desert Safari & Forts',
-    image: 'https://images.unsplash.com/photo-1609137144822-094119d65751?auto=format&fit=crop&w=800&q=80',
-    desc: 'Golden sandstone fortresses, Thar desert camel dunes, and folk music nights.'
-  },
-  {
-    name: 'Mumbai',
-    location: 'Maharashtra',
-    budget: 'From ₹4,200',
-    bestTime: 'October–March',
-    style: 'Coastal Metropolis',
-    image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80',
-    desc: 'Marine Drive sunsets, Gateway of India, street street food, and historic rail architecture.'
-  },
-  {
-    name: 'Delhi',
-    location: 'National Capital Territory',
-    budget: 'From ₹3,000',
-    bestTime: 'October–March',
-    style: 'Historic Monuments',
-    image: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=800&q=80',
-    desc: 'Red Fort, Qutub Minar, bustling Chandni Chowk delicacies, and modern transit hub.'
+    slug: 'Meghalaya',
+    size: 'large'
   }
 ];
 
-const COMPARISON_SAMPLE = [
-  {
-    type: 'Train',
-    icon: Train,
-    color: '#14532D',
-    bgColor: 'bg-[#14532D]',
-    name: 'Vande Bharat Express',
-    number: '22436',
-    departure: '06:00',
-    departurePlace: 'New Delhi (NDLS)',
-    arrival: '14:00',
-    arrivalPlace: 'Varanasi Jn (BSB)',
-    duration: '8h 00m',
-    fare: '₹1,750',
-    status: 'Available (48 seats)',
-    statusColor: 'text-[#2F7D32]',
-    tag: 'Fastest Train'
+// Travel Picks Categories
+const TRAVEL_PICKS = {
+  'weekend': {
+    title: 'Weekend Escapes',
+    description: 'Quick getaways under 6 hours from major Indian metros.',
+    destinations: [
+      { name: 'Rishikesh', state: 'Uttarakhand', duration: '2-3 Days', estBudget: '₹4,500 – ₹8,000', highlight: 'Ganga rafting & riverside stays', image: 'https://images.unsplash.com/photo-1600100397608-f010f4439fa3?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Pondicherry', state: 'Tamil Nadu Coast', duration: '2-3 Days', estBudget: '₹5,000 – ₹9,500', highlight: 'French quarter cafes & Promenade', image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Mahabaleshwar', state: 'Maharashtra', duration: '2 Days', estBudget: '₹4,000 – ₹7,500', highlight: 'Strawberry valleys & viewpoints', image: 'https://images.unsplash.com/photo-1609137144822-094119d65751?auto=format&fit=crop&w=600&q=80' }
+    ]
   },
-  {
-    type: 'Flight',
-    icon: Plane,
-    color: '#2F80A8',
-    bgColor: 'bg-[#2F80A8]',
-    name: 'IndiGo Airlines',
-    number: '6E-204',
-    departure: '09:15',
-    departurePlace: 'Delhi (DEL-T2)',
-    arrival: '10:45',
-    arrivalPlace: 'Varanasi (VNS)',
-    duration: '1h 30m',
-    fare: '₹4,350',
-    status: 'Direct • 15kg Bag',
-    statusColor: 'text-[#2F80A8]',
-    tag: 'Quickest'
+  'mountain': {
+    title: 'Mountain Retreats',
+    description: 'Breathe crisp pine air and view snow peaks in the Himalayas & Western Ghats.',
+    destinations: [
+      { name: 'Manali', state: 'Himachal Pradesh', duration: '4-5 Days', estBudget: '₹7,500 – ₹14,000', highlight: 'Rohtang Pass & Old Manali cafes', image: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Munnar', state: 'Kerala', duration: '3-4 Days', estBudget: '₹6,500 – ₹12,000', highlight: 'Tea gardens & Anamudi mist', image: 'https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Ooty & Coonoor', state: 'Tamil Nadu', duration: '3-4 Days', estBudget: '₹5,500 – ₹11,000', highlight: 'Nilgiri Mountain Railway ride', image: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=600&q=80' }
+    ]
   },
-  {
-    type: 'Bus',
-    icon: Bus,
-    color: '#E58A3A',
-    bgColor: 'bg-[#E58A3A]',
-    name: 'Zingbus AC Multi-Axle',
-    number: 'Sleeper 2+1',
-    departure: '20:30',
-    departurePlace: 'Kashmere Gate ISBT',
-    arrival: '08:00',
-    arrivalPlace: 'Varanasi Cantt',
-    duration: '11h 30m',
-    fare: '₹1,150',
-    status: 'Live GPS • Water Bottle',
-    statusColor: 'text-[#E58A3A]',
-    tag: 'Cheapest'
+  'beaches': {
+    title: 'Beaches & Coast',
+    description: 'Warm Arabian Sea sunsets, coastal cuisine, and clean tropical shorelines.',
+    destinations: [
+      { name: 'South Goa', state: 'Goa', duration: '4-5 Days', estBudget: '₹8,000 – ₹16,000', highlight: 'Palolem & Agonda serene sands', image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Gokarna', state: 'Karnataka', duration: '3-4 Days', estBudget: '₹5,000 – ₹9,500', highlight: 'Om Beach cliffside treks', image: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Varkala', state: 'Kerala', duration: '3-4 Days', estBudget: '₹6,000 – ₹11,500', highlight: 'Red cliff views & coastal dining', image: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?auto=format&fit=crop&w=600&q=80' }
+    ]
+  },
+  'heritage': {
+    title: 'Heritage & Culture',
+    description: 'Centuries-old stone fortresses, sacred temples, and living traditions.',
+    destinations: [
+      { name: 'Jaipur', state: 'Rajasthan', duration: '3-4 Days', estBudget: '₹6,000 – ₹12,000', highlight: 'Amer Fort & royal heritage stay', image: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Hampi', state: 'Karnataka', duration: '3 Days', estBudget: '₹4,500 – ₹8,500', highlight: 'Vijayanagara boulder ruins & temples', image: 'https://images.unsplash.com/photo-1600100397608-f010f4439fa3?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Varanasi', state: 'Uttar Pradesh', duration: '2-3 Days', estBudget: '₹4,000 – ₹8,000', highlight: 'Ancient ghats & evening aarti', image: 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=600&q=80' }
+    ]
+  },
+  'budget': {
+    title: 'Budget Trips',
+    description: 'High-value adventures with affordable rail connectivity and backpacker hostels.',
+    destinations: [
+      { name: 'Pushkar', state: 'Rajasthan', duration: '2-3 Days', estBudget: '₹3,500 – ₹6,000', highlight: 'Desert sunset & sacred lake ghats', image: 'https://images.unsplash.com/photo-1609137144822-094119d65751?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Dharamshala & McLeodganj', state: 'Himachal Pradesh', duration: '3-4 Days', estBudget: '₹4,500 – ₹8,000', highlight: 'Tibetan culture & Triund trek', image: 'https://images.unsplash.com/photo-1588714477688-cf28a50e94f7?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Puri', state: 'Odisha', duration: '2-3 Days', estBudget: '₹3,800 – ₹6,500', highlight: 'Jagannath temple & coastal breeze', image: 'https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=600&q=80' }
+    ]
+  },
+  'adventure': {
+    title: 'Adventure Travel',
+    description: 'River rapids, high-altitude trekking, paragliding, and wilderness trails.',
+    destinations: [
+      { name: 'Bir Billing', state: 'Himachal Pradesh', duration: '3 Days', estBudget: '₹6,000 – ₹11,000', highlight: 'World-renowned paragliding site', image: 'https://images.unsplash.com/photo-1588714477688-cf28a50e94f7?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Meghalaya', state: 'Northeast India', duration: '4-5 Days', estBudget: '₹8,500 – ₹15,000', highlight: 'Double-decker root bridge trek', image: 'https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=600&q=80' },
+      { name: 'Rishikesh', state: 'Uttarakhand', duration: '3 Days', estBudget: '₹5,500 – ₹9,500', highlight: 'Grade IV white water rafting', image: 'https://images.unsplash.com/photo-1600100397608-f010f4439fa3?auto=format&fit=crop&w=600&q=80' }
+    ]
   }
-];
+};
+
+const POPULAR_HOTEL_CITIES = ['Goa', 'Manali', 'Jaipur', 'Varanasi', 'Kochi', 'Mumbai', 'New Delhi', 'Kolkata', 'Bengaluru'];
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Trip Planner Form State
-  const [from, setFrom] = useState(null);
-  const [to, setTo] = useState(null);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [returnDate, setReturnDate] = useState('');
-  const [hasReturn, setHasReturn] = useState(false);
+  // Search category tab: 'flights' | 'trains' | 'buses' | 'hotels'
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['flights', 'trains', 'buses', 'hotels'].includes(tabParam.toLowerCase())) {
+      return tabParam.toLowerCase();
+    }
+    return 'trains';
+  });
+
+  // Listen for navbar category switch event
+  useEffect(() => {
+    const handleTabEvent = (e) => {
+      if (e.detail && e.detail.tab) {
+        setActiveTab(e.detail.tab);
+      }
+    };
+    window.addEventListener('traveliq:set-tab', handleTabEvent);
+    return () => window.removeEventListener('traveliq:set-tab', handleTabEvent);
+  }, []);
+
+  // Sync tab with URL search parameter if changed
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['flights', 'trains', 'buses', 'hotels'].includes(tabParam.toLowerCase())) {
+      setActiveTab(tabParam.toLowerCase());
+    }
+  }, [location.search]);
+
+  // Transportation Form State
+  const [tripType, setTripType] = useState('oneWay'); // 'oneWay' | 'roundTrip'
+  const [fromStation, setFromStation] = useState(null);
+  const [toStation, setToStation] = useState(null);
+  const [departureDate, setDepartureDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  });
+  const [returnDate, setReturnDate] = useState(() => {
+    const inThreeDays = new Date();
+    inThreeDays.setDate(inThreeDays.getDate() + 4);
+    return inThreeDays.toISOString().split('T')[0];
+  });
   const [passengerConfig, setPassengerConfig] = useState({ adults: 1, children: 0, infants: 0, seniors: 0 });
-  const [budget, setBudget] = useState('');
-  const [travelPreference, setTravelPreference] = useState('Balanced'); // 'Fastest' | 'Cheapest' | 'Comfortable' | 'Balanced'
+  const [travelClass, setTravelClass] = useState('All Classes');
   const [isSearching, setIsSearching] = useState(false);
 
-  // Active comparison tab filter
-  const [activeComparisonTab, setActiveComparisonTab] = useState('All');
+  // Hotel Form State
+  const [hotelCity, setHotelCity] = useState('Goa');
+  const [hotelCheckIn, setHotelCheckIn] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split('T')[0];
+  });
+  const [hotelCheckOut, setHotelCheckOut] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 5);
+    return d.toISOString().split('T')[0];
+  });
+  const [hotelGuests, setHotelGuests] = useState('2 Guests, 1 Room');
+
+  // Personalized Picks State
+  const [selectedPickCategory, setSelectedPickCategory] = useState('weekend');
+
+  // Budget Planner State
+  const [budgetCity, setBudgetCity] = useState('Delhi');
+  const [maxBudget, setMaxBudget] = useState(15000);
+  const [budgetDuration, setBudgetDuration] = useState('4-5 Days');
+  const [budgetTravelers, setBudgetTravelers] = useState(2);
+  const [budgetInterest, setBudgetInterest] = useState('Heritage & Nature');
+
+  // Budget calculations
+  const perPersonBudget = Math.round(maxBudget / Math.max(1, budgetTravelers));
+  const calcTransport = Math.round(maxBudget * 0.38);
+  const calcStays = Math.round(maxBudget * 0.28);
+  const calcFood = Math.round(maxBudget * 0.18);
+  const calcLocalTransit = Math.round(maxBudget * 0.10);
+  const calcActivities = maxBudget - (calcTransport + calcStays + calcFood + calcLocalTransit);
 
   const handleSwapStations = () => {
-    const temp = from;
-    setFrom(to);
-    setTo(temp);
+    const temp = fromStation;
+    setFromStation(toStation);
+    setToStation(temp);
   };
 
-  const handleSearch = (e) => {
+  const handleTransportSearch = (e) => {
     if (e) e.preventDefault();
-    if (!from) {
-      return toast.error('Please enter a departure city or station.');
+    if (!fromStation) {
+      return toast.error('Please select a departure city or station.');
     }
-    if (!to) {
-      return toast.error('Please enter an arrival city or station.');
+    if (!toStation) {
+      return toast.error('Please select an arrival city or station.');
     }
+
     setIsSearching(true);
-    const totalPassengers = passengerConfig.adults + passengerConfig.children + passengerConfig.infants + passengerConfig.seniors;
-    
+    const totalPassengers = (passengerConfig.adults || 1) + (passengerConfig.children || 0) + (passengerConfig.seniors || 0);
+
     setTimeout(() => {
       navigate('/dashboard', {
         state: {
-          source: from,
-          dest: to,
-          departureDate: date,
-          returnDate: hasReturn ? returnDate : null,
+          source: fromStation,
+          dest: toStation,
+          departureDate,
+          returnDate: tripType === 'roundTrip' ? returnDate : null,
           passengers: totalPassengers,
-          budget: parseInt(budget) || 15000,
-          preference: travelPreference
+          modeFilter: activeTab === 'flights' ? ['Flight'] : activeTab === 'buses' ? ['Bus'] : ['Train', 'Flight', 'Bus']
         }
       });
-    }, 300);
+      setIsSearching(false);
+    }, 250);
   };
 
-  const scrollToPlanner = () => {
-    const elem = document.getElementById('trip-planner-section');
-    if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+  const handleHotelSearch = (e) => {
+    if (e) e.preventDefault();
+    if (!hotelCity || !hotelCity.trim()) {
+      return toast.error('Please enter a destination city for hotels.');
+    }
+
+    setIsSearching(true);
+    setTimeout(() => {
+      navigate('/dashboard', {
+        state: {
+          openHotels: true,
+          hotelDestination: hotelCity.trim(),
+          checkIn: hotelCheckIn,
+          checkOut: hotelCheckOut,
+          guests: hotelGuests
+        }
+      });
+      setIsSearching(false);
+    }, 250);
   };
 
-  const scrollToExplore = () => {
-    const elem = document.getElementById('destination-explorer-section');
-    if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+  const handleSelectPopularDestination = (destName) => {
+    setToStation({ station_name: destName, station_code: destName.slice(0, 3).toUpperCase() });
+    const panel = document.getElementById('search-booking-panel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#101B17] text-[#1F2933] dark:text-[#F7F5EF] transition-colors">
-      
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] text-[#202A32] dark:text-[#F0F4F7] transition-colors">
+
       {/* ====================================================================
-          SECTION 1: HERO SECTION (3D REALISTIC MINIATURE WORLD + EDITORIAL)
+          SECTION 3: HERO SECTION — EDITORIAL TRAVEL SEARCH
           ==================================================================== */}
-      <section className="py-10 lg:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <section className="relative bg-[#F7F8FA] dark:bg-[#121921] border-b border-[#E3E7EA] dark:border-[#293644] overflow-hidden">
+        
+        {/* Subtle, restrained background texture */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-20 dark:opacity-10">
+          <img 
+            src="https://images.unsplash.com/photo-1506461883276-594a12b11cf3?auto=format&fit=crop&w=2000&q=80" 
+            alt="Scenic rail corridor"
+            className="w-full h-full object-cover object-center mix-blend-multiply"
+          />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-14 sm:pb-16">
           
-          {/* LEFT SIDE (7 COLS): HEADLINE, VALUE PROPOSITION & DIRECT CTAS */}
-          <div className="lg:col-span-7 space-y-6">
-            
-            {/* Small Label */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#14532D]/10 dark:bg-[#EEF2ED]/10 text-[#14532D] dark:text-[#EEF2ED] text-xs font-bold uppercase tracking-wider border border-[#14532D]/20 animate-fade-in-up">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2F7D32] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F7D32]"></span>
-              </span>
-              <span>SMART TRAVEL PLANNING</span>
+          {/* Hero Headline & Supporting Statement */}
+          <div className="max-w-3xl mb-7 sm:mb-9 text-center sm:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EEF2F4] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5] text-xs font-medium tracking-wide mb-3">
+              <span>Intelligent Indian Travel Assistant</span>
             </div>
 
-            {/* Large Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#14532D] dark:text-white leading-[1.1] font-heading tracking-tight animate-fade-in-up delay-75">
-              Travel smarter.<br />
-              <span className="text-[#E58A3A] relative inline-block">
-                Explore further.
-                <span className="absolute bottom-1 left-0 w-full h-1 bg-[#E58A3A]/20 rounded-full"></span>
-              </span>
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-bold tracking-tight leading-tight text-[#202A32] dark:text-[#F0F4F7]">
+              Every journey starts <span className="text-[#244C66] dark:text-[#75A4C4]">smarter</span>.
             </h1>
 
-            {/* Supporting Text */}
-            <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed max-w-xl animate-fade-in-up delay-150">
-              Plan, compare, and personalize your journey with TravelIQ. Discover multi-modal train routes, air connections, comfortable buses, and verified local itineraries across India.
+            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-2xl">
+              Discover better routes, compare verified trains, flights, and buses, and plan your journey with confidence.
             </p>
-
-            {/* Primary & Secondary CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2 animate-fade-in-up delay-225">
-              <button
-                onClick={scrollToPlanner}
-                className="px-6 py-3.5 rounded-xl bg-[#14532D] hover:bg-[#0F3F22] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
-              >
-                <Compass className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
-                <span>Plan My Journey</span>
-              </button>
-
-              <button
-                onClick={scrollToExplore}
-                className="px-6 py-3.5 rounded-xl bg-white dark:bg-[#172722] hover:bg-[#F7F5EF] dark:hover:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] font-bold text-sm border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer group shadow-2xs hover:shadow-md"
-              >
-                <span>Explore Destinations</span>
-                <ArrowRight className="w-4 h-4 text-[#E58A3A] group-hover:translate-x-1 transition-transform duration-200" />
-              </button>
-            </div>
-
-            {/* Trust Highlights */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-6 border-t border-[#E3DED2] dark:border-[#273E36] overflow-hidden animate-fade-in-up delay-300">
-              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
-                <p className="text-xl sm:text-2xl font-extrabold text-[#14532D] dark:text-white font-mono truncate">10,000+</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Indian Routes</p>
-              </div>
-              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
-                <p className="text-xl sm:text-2xl font-extrabold text-[#2F80A8] font-mono truncate">Real-Time</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Seat Availability</p>
-              </div>
-              <div className="min-w-0 p-2 rounded-xl transition-colors hover:bg-[#EEF2ED]/50 dark:hover:bg-[#172722]/50">
-                <p className="text-xl sm:text-2xl font-extrabold text-[#E58A3A] font-mono truncate">Multimodal</p>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate font-medium">Train, Flight, Bus</p>
-              </div>
-            </div>
-
           </div>
 
-          {/* RIGHT SIDE (5 COLS): PREMIUM TRAVELIQ BRAND EMBLEM SHOWCASE */}
-          <div className="lg:col-span-5 w-full animate-fade-in-scale delay-150">
-            <div className="relative rounded-3xl overflow-hidden border border-[#E3DED2] dark:border-[#273E36] bg-[#0A1612] shadow-2xl group transition-all duration-300 hover:shadow-[0_20px_50px_rgba(20,83,45,0.2)]">
-              
-              {/* Main TravelIQ 3D Logo / Visual Asset */}
-              <div className="relative h-[400px] sm:h-[480px] lg:h-[520px] overflow-hidden bg-[#0A1612] flex items-center justify-center">
-                <img 
-                  src="/traveliq-hero-logo.jpg" 
-                  alt="TravelIQ Smart Multimodal Journeys" 
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
+          {/* ================================================================
+              STRUCTURED TRAVEL SEARCH BOOKING PANEL
+              ================================================================ */}
+          <div id="search-booking-panel" className="bg-white dark:bg-[#1B242E] rounded-xl shadow-xs border border-[#E3E7EA] dark:border-[#293644] overflow-hidden text-[#202A32] dark:text-[#F0F4F7]">
+            
+            {/* Category Tabs: Flights, Trains, Buses, Hotels */}
+            <div className="flex items-center border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] overflow-x-auto scrollbar-none px-2 pt-1.5">
+              {[
+                { id: 'trains', label: 'Trains', icon: Train, badge: 'IRCTC Live' },
+                { id: 'flights', label: 'Flights', icon: Plane, badge: 'Direct Air' },
+                { id: 'buses', label: 'Buses', icon: Bus, badge: 'Interstate' },
+                { id: 'hotels', label: 'Hotels', icon: Building2, badge: 'Verified Stays' }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                      isSelected
+                        ? 'border-[#244C66] text-[#244C66] dark:border-[#75A4C4] dark:text-[#75A4C4] bg-white dark:bg-[#1B242E]'
+                        : 'border-transparent text-[#66737D] dark:text-[#9CAAB5] hover:text-[#202A32] dark:hover:text-[#F0F4F7]'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-[#244C66] dark:text-[#75A4C4]' : 'text-[#89939B]'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* TAB CONTENT: TRANSPORT SEARCH (Trains, Flights, Buses) */}
+            {activeTab !== 'hotels' ? (
+              <form onSubmit={handleTransportSearch} className="p-4 sm:p-5 space-y-4">
                 
-                {/* Natural Gradient & Aura Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A1612]/90 via-black/25 to-black/30 pointer-events-none" />
-
-                {/* Top Left Badge with gentle floating effect */}
-                <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] shadow-lg text-xs font-bold text-white animate-float">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
-                  </span>
-                  <span>AI Multimodal Network</span>
+                {/* Trip Type Selector (One Way / Round Trip) */}
+                <div className="flex items-center gap-4 text-xs font-medium text-[#66737D] dark:text-[#9CAAB5] pb-0.5">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="tripType" 
+                      checked={tripType === 'oneWay'} 
+                      onChange={() => setTripType('oneWay')} 
+                      className="accent-[#244C66] cursor-pointer"
+                    />
+                    <span>One Way</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="tripType" 
+                      checked={tripType === 'roundTrip'} 
+                      onChange={() => setTripType('roundTrip')} 
+                      className="accent-[#244C66] cursor-pointer"
+                    />
+                    <span>Round Trip</span>
+                  </label>
                 </div>
 
-                {/* Top Right Floating Badge */}
-                <div className="absolute top-4 right-4 bg-black/60 dark:bg-[#172722]/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 dark:border-[#273E36] text-xs font-bold text-[#E58A3A] flex items-center gap-1.5 shadow-lg animate-float-reverse">
-                  <Sparkles className="w-3.5 h-3.5 text-[#E58A3A] animate-spin" style={{ animationDuration: '8s' }} />
-                  <span>TravelIQ Official</span>
-                </div>
+                {/* Form Fields Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                  
+                  {/* Origin (From) */}
+                  <div className="lg:col-span-3">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      From (Origin)
+                    </label>
+                    <StationAutocomplete 
+                      value={fromStation}
+                      onChange={setFromStation}
+                      placeholder="Departure City / Station"
+                      inputPlaceholder="e.g. New Delhi (NDLS), Mumbai..."
+                    />
+                  </div>
 
-                {/* Floating Bottom Card with interactive hover */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/95 dark:bg-[#172722]/95 backdrop-blur-md border border-[#E3DED2] dark:border-[#273E36] shadow-xl space-y-2.5 transition-transform duration-300 group-hover:-translate-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-[#14532D] text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
-                        <Train className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-[#1F2933] dark:text-white flex items-center gap-1.5">
-                          Indian Railways & Multimodal Express
-                        </h4>
-                        <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
-                          Connecting 10,000+ stations, airports and bus routes
-                        </p>
+                  {/* Swap Button */}
+                  <div className="lg:col-span-1 flex justify-center py-1 lg:py-0">
+                    <button
+                      type="button"
+                      onClick={handleSwapStations}
+                      className="w-9 h-9 rounded-full border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] hover:bg-white dark:hover:bg-[#1B242E] text-[#66737D] hover:text-[#244C66] transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                      title="Swap Origin and Destination"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Destination (To) */}
+                  <div className="lg:col-span-3">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      To (Destination)
+                    </label>
+                    <StationAutocomplete 
+                      value={toStation}
+                      onChange={setToStation}
+                      placeholder="Arrival City / Station"
+                      inputPlaceholder="e.g. Varanasi Jn (BSB), Goa..."
+                    />
+                  </div>
+
+                  {/* Departure Date */}
+                  <div className={tripType === 'roundTrip' ? 'lg:col-span-2' : 'lg:col-span-3'}>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Departure Date
+                    </label>
+                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                      <input 
+                        type="date"
+                        value={departureDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setDepartureDate(e.target.value)}
+                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Return Date (if Round Trip) */}
+                  {tripType === 'roundTrip' && (
+                    <div className="lg:col-span-2">
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                        Return Date
+                      </label>
+                      <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                        <input 
+                          type="date"
+                          value={returnDate}
+                          min={departureDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                        />
                       </div>
                     </div>
-                    <span className="font-mono text-[11px] font-extrabold text-[#14532D] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#1D322B] px-2.5 py-1 rounded-lg">
-                      Verified
+                  )}
+
+                  {/* Passengers & Class */}
+                  <div className={tripType === 'roundTrip' ? 'lg:col-span-12' : 'lg:col-span-2'}>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Travelers
+                    </label>
+                    <PassengerSelector 
+                      value={passengerConfig}
+                      onChange={setPassengerConfig}
+                    />
+                  </div>
+
+                </div>
+
+                {/* Submit Row */}
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E3E7EA] dark:border-[#293644]">
+                  <div className="flex items-center gap-4 text-xs text-[#66737D] dark:text-[#9CAAB5]">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#287A55]" />
+                      <span>Direct & connecting alternatives</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#287A55]" />
+                      <span>Transparent fare breakdown</span>
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E3DED2]/80 dark:border-[#273E36] text-[11px] text-[#1F2933] dark:text-[#F7F5EF]">
-                    <div className="flex items-center gap-1.5 font-medium">
-                      <Clock className="w-3.5 h-3.5 text-[#2F80A8]" />
-                      <span>Live Timings</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#2F7D32]" />
-                      <span>Seat Status</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 font-medium">
-                      <IndianRupee className="w-3.5 h-3.5 text-[#E58A3A]" />
-                      <span>Best Fares</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ====================================================================
-          SECTION 2: TRIP PLANNER (CLEAN & INTUITIVE PLANNER INTERFACE)
-          ==================================================================== */}
-      <section id="trip-planner-section" className="py-12 bg-white dark:bg-[#172722] border-y border-[#E3DED2] dark:border-[#273E36]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="mb-8 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#14532D] dark:text-[#EEF2ED] mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#E58A3A]" />
-              <span>Multi-Modal Booking Engine</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#14532D] dark:text-white font-heading">
-              Plan Your Journey
-            </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">
-              Compare fares and schedules across Indian Railways, domestic flights, and interstate buses.
-            </p>
-          </div>
-
-          {/* TRIP PLANNER FORM CARD */}
-          <div className="bg-[#FFFDF7] dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-6 shadow-sm">
-            <form onSubmit={handleSearch} className="space-y-5">
-              
-              {/* Row 1: Station From / Swap / Station To */}
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#14532D] dark:text-[#EEF2ED] uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#14532D]" />
-                    <span>From (Origin)</span>
-                  </label>
-                  <StationAutocomplete 
-                    value={from} 
-                    onChange={setFrom} 
-                    placeholder="Departure city or station"
-                    inputPlaceholder="e.g. Bhubaneswar (BBS), New Delhi (NDLS)..."
-                  />
-                </div>
-
-                <div className="flex justify-center sm:pt-6">
                   <button
-                    type="button"
-                    onClick={handleSwapStations}
-                    className="p-3 rounded-xl border border-[#E3DED2] dark:border-[#273E36] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] transition-transform hover:scale-105 cursor-pointer shadow-2xs"
-                    title="Swap Origin and Destination"
+                    type="submit"
+                    disabled={isSearching}
+                    className="w-full sm:w-auto px-7 h-11 rounded-lg bg-[#244C66] hover:bg-[#193B51] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
                   >
-                    <ArrowRightLeft className="w-4 h-4" />
+                    <Search className="w-4 h-4" />
+                    <span>{isSearching ? 'Searching...' : `Search ${activeTab === 'flights' ? 'Flights' : activeTab === 'buses' ? 'Buses' : 'Trains & Routes'}`}</span>
                   </button>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#14532D] dark:text-[#EEF2ED] uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#E58A3A]" />
-                    <span>To (Destination)</span>
-                  </label>
-                  <StationAutocomplete 
-                    value={to} 
-                    onChange={setTo} 
-                    placeholder="Arrival city or station"
-                    inputPlaceholder="e.g. Manali (MNL), Mumbai Central (MMCT)..."
-                  />
-                </div>
-
-              </div>
-
-              {/* Row 2: Departure, Return (Toggle), Travellers, Budget */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                
-                {/* Departure Date */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F5EF] uppercase tracking-wider flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-[#2F80A8]" />
-                    <span>Departure</span>
-                  </label>
-                  <div className="flex items-center bg-white dark:bg-[#172722] rounded-xl p-3 border border-[#E3DED2] dark:border-[#273E36] hover:border-[#14532D]/40 transition-colors h-[54px]">
-                    <input
-                      type="date"
-                      value={date}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="bg-transparent border-none outline-none text-[#1F2933] dark:text-[#F7F5EF] text-xs sm:text-sm font-bold w-full cursor-pointer p-0 m-0 focus:ring-0"
-                    />
-                  </div>
-                </div>
-
-                {/* Return Date (Optional) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F5EF] uppercase tracking-wider flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#64748B]" />
-                      <span>Return</span>
+              </form>
+            ) : (
+              /* TAB CONTENT: HOTELS SEARCH */
+              <form onSubmit={handleHotelSearch} className="p-4 sm:p-5 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                  
+                  {/* Destination City */}
+                  <div className="md:col-span-4">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Destination City or Area
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => setHasReturn(!hasReturn)}
-                      className="text-[10px] font-semibold text-[#2F80A8] hover:underline cursor-pointer"
-                    >
-                      {hasReturn ? 'Remove' : '+ Add Return'}
-                    </button>
-                  </div>
-                  <div className={`flex items-center bg-white dark:bg-[#172722] rounded-xl p-3 border ${hasReturn ? 'border-[#E3DED2] dark:border-[#273E36]' : 'border-dashed border-[#E3DED2] opacity-60'} h-[54px]`}>
-                    {hasReturn ? (
-                      <input
-                        type="date"
-                        value={returnDate}
-                        min={date}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        className="bg-transparent border-none outline-none text-[#1F2933] dark:text-[#F7F5EF] text-xs sm:text-sm font-bold w-full cursor-pointer p-0 m-0"
+                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-[#89939B] shrink-0" />
+                      <input 
+                        type="text"
+                        value={hotelCity}
+                        onChange={(e) => setHotelCity(e.target.value)}
+                        placeholder="e.g. Goa, Manali, Jaipur, Mumbai..."
+                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7]"
                       />
-                    ) : (
-                      <span 
-                        onClick={() => setHasReturn(true)}
-                        className="text-xs text-[#64748B] cursor-pointer"
-                      >
-                        One-Way Trip
-                      </span>
-                    )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Travellers */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F5EF] uppercase tracking-wider flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-[#14532D]" />
-                    <span>Travellers</span>
-                  </label>
-                  <PassengerSelector
-                    value={passengerConfig}
-                    onChange={setPassengerConfig}
-                  />
-                </div>
-
-                {/* Budget */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F5EF] uppercase tracking-wider flex items-center gap-1.5">
-                    <IndianRupee className="w-3.5 h-3.5 text-[#E58A3A]" />
-                    <span>Budget Limit</span>
-                  </label>
-                  <div className="flex items-center bg-white dark:bg-[#172722] rounded-xl px-3 border border-[#E3DED2] dark:border-[#273E36] hover:border-[#14532D]/40 transition-colors h-[54px]">
-                    <span className="text-xs font-bold text-[#64748B] mr-1">₹</span>
-                    <input
-                      type="number"
-                      value={budget}
-                      step="500"
-                      min="1000"
-                      onChange={(e) => setBudget(e.target.value)}
-                      placeholder="15000"
-                      className="bg-transparent border-none outline-none text-[#1F2933] dark:text-[#F7F5EF] text-xs sm:text-sm font-bold w-full p-0"
-                    />
+                  {/* Check-In */}
+                  <div className="md:col-span-3">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Check-In Date
+                    </label>
+                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                      <input 
+                        type="date"
+                        value={hotelCheckIn}
+                        min={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setHotelCheckIn(e.target.value)}
+                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                      />
+                    </div>
                   </div>
+
+                  {/* Check-Out */}
+                  <div className="md:col-span-3">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Check-Out Date
+                    </label>
+                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                      <input 
+                        type="date"
+                        value={hotelCheckOut}
+                        min={hotelCheckIn}
+                        onChange={(e) => setHotelCheckOut(e.target.value)}
+                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Guests & Rooms */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
+                      Guests
+                    </label>
+                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[#89939B] shrink-0" />
+                      <input 
+                        type="text"
+                        value={hotelGuests}
+                        onChange={(e) => setHotelGuests(e.target.value)}
+                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7]"
+                      />
+                    </div>
+                  </div>
+
                 </div>
 
-              </div>
-
-              {/* Row 3: Travel Preference Options & Search CTA */}
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pt-2">
-                
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-[#64748B] dark:text-[#94A3B8] uppercase mr-1">
-                    Travel Preference:
-                  </span>
-                  {['Fastest', 'Cheapest', 'Comfortable', 'Balanced'].map((pref) => (
+                {/* Popular Stays Chips */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-xs">
+                  <span className="text-[#89939B] font-medium mr-1">Popular Stays:</span>
+                  {POPULAR_HOTEL_CITIES.map((city) => (
                     <button
-                      key={pref}
+                      key={city}
                       type="button"
-                      onClick={() => setTravelPreference(pref)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer border ${
-                        travelPreference === pref
-                          ? 'bg-[#14532D] text-white border-[#14532D]'
-                          : 'bg-white dark:bg-[#172722] text-[#1F2933] dark:text-[#F7F5EF] border-[#E3DED2] dark:border-[#273E36] hover:border-[#14532D]'
+                      onClick={() => setHotelCity(city)}
+                      className={`px-2.5 py-1 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
+                        hotelCity === city 
+                          ? 'bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] border-[#E3E7EA] dark:border-[#293644] font-semibold'
+                          : 'bg-[#F7F8FA] dark:bg-[#162029] text-[#66737D] dark:text-[#9CAAB5] border-[#E3E7EA] dark:border-[#293644] hover:bg-white'
                       }`}
                     >
-                      {pref}
+                      {city}
                     </button>
                   ))}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSearching}
-                  className="px-8 h-[52px] rounded-xl bg-[#14532D] hover:bg-[#0F3F22] text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all"
-                >
-                  {isSearching ? (
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
+                {/* Submit Row */}
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E3E7EA] dark:border-[#293644]">
+                  <div className="text-xs text-[#66737D] dark:text-[#9CAAB5]">
+                    Showing verified stays, homestays, and boutique hotels.
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSearching}
+                    className="w-full sm:w-auto px-7 h-11 rounded-lg bg-[#244C66] hover:bg-[#193B51] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                  >
                     <Search className="w-4 h-4" />
-                  )}
-                  <span>Find Best Routes</span>
-                </button>
+                    <span>Search Hotels in {hotelCity}</span>
+                  </button>
+                </div>
 
+              </form>
+            )}
+
+          </div>
+
+          {/* Trust Value Badges below Booking Panel */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-5 text-xs">
+            <div className="flex items-center gap-2.5 bg-white dark:bg-[#1B242E] p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] shadow-2xs">
+              <Train className="w-4 h-4 text-[#244C66] dark:text-[#75A4C4] shrink-0" />
+              <div>
+                <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">IRCTC Timetables</p>
+                <p className="text-[11px] text-[#89939B]">Daily rail schedules & fares</p>
               </div>
-
-            </form>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white dark:bg-[#1B242E] p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] shadow-2xs">
+              <Compass className="w-4 h-4 text-[#244C66] dark:text-[#75A4C4] shrink-0" />
+              <div>
+                <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Smart Hub Transfers</p>
+                <p className="text-[11px] text-[#89939B]">Reliable connecting routes</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white dark:bg-[#1B242E] p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] shadow-2xs">
+              <Plane className="w-4 h-4 text-[#244C66] dark:text-[#75A4C4] shrink-0" />
+              <div>
+                <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Domestic Flights</p>
+                <p className="text-[11px] text-[#89939B]">Direct flight comparisons</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white dark:bg-[#1B242E] p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-[#244C66] dark:text-[#75A4C4] shrink-0" />
+              <div>
+                <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Transparent Pricing</p>
+                <p className="text-[11px] text-[#89939B]">Zero hidden fees</p>
+              </div>
+            </div>
           </div>
 
         </div>
       </section>
 
       {/* ====================================================================
-          SECTION 3: MULTI-MODAL COMPARISON SHOWCASE (TRAINS, FLIGHTS, BUSES)
+          SECTION 4: POPULAR DESTINATIONS IN INDIA
           ==================================================================== */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2F80A8] mb-1">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Multi-Modal Comparison</span>
+            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#B66A45] dark:text-[#C87E58] mb-1.5">
+              <span>Editorial Destination Discovery</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#14532D] dark:text-white font-heading">
-              Compare Trains, Flights & Buses Side-by-Side
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+              Popular Destinations in India
             </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">
-              Evaluate real-time fares, travel times, luggage allowances, and comfort ratings on one screen.
+            <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1 max-w-xl">
+              Authentic travel guides, seasonal weather, and direct train and flight routes to top Indian locations.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-white dark:bg-[#172722] p-1 rounded-xl border border-[#E3DED2] dark:border-[#273E36]">
-            {['All', 'Train', 'Flight', 'Bus'].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setActiveComparisonTab(mode)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                  activeComparisonTab === mode
-                    ? 'bg-[#14532D] text-white'
-                    : 'text-[#64748B] hover:text-[#1F2933] dark:hover:text-white'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
+          <Link
+            to="/destinations"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#244C66] dark:text-[#75A4C4] hover:underline shrink-0"
+          >
+            <span>View All 50+ Destinations</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        {/* Comparison Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {COMPARISON_SAMPLE.filter(item => activeComparisonTab === 'All' || item.type === activeComparisonTab).map((item, idx) => {
-            const Icon = item.icon;
+        {/* Varied Proportion Photographic Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {POPULAR_DESTINATIONS.map((dest, idx) => {
+            const isFeatured = dest.size === 'large';
             return (
-              <div
-                key={idx}
-                className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs card-interactive flex flex-col justify-between group"
+              <div 
+                key={dest.name}
+                className={`group relative rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs hover:shadow-md transition-shadow duration-200 flex flex-col ${
+                  isFeatured ? 'sm:col-span-2' : ''
+                }`}
               >
-                <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#273E36]">
-                    <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-xl text-white ${item.bgColor} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-[#1F2933] dark:text-white">
-                          {item.name}
-                        </h4>
-                        <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
-                          {item.number}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#EEF2ED] dark:bg-[#101B17] text-[#14532D] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#273E36]">
-                      {item.tag}
-                    </span>
+                {/* Photo with Natural Gradient Overlay */}
+                <div className={`relative overflow-hidden ${isFeatured ? 'h-64 sm:h-72' : 'h-52'}`}>
+                  <img 
+                    src={dest.image} 
+                    alt={`${dest.name}, ${dest.state}`}
+                    className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                  
+                  {/* Season Badge */}
+                  <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-2xs text-white text-[11px] font-medium flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-white/80" />
+                    <span>Best: {dest.bestSeason}</span>
                   </div>
 
-                  {/* Schedule Timings */}
-                  <div className="py-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-base font-black font-mono text-[#1F2933] dark:text-white">{item.departure}</p>
-                        <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">{item.departurePlace}</p>
-                      </div>
-                      <div className="flex flex-col items-center px-3">
-                        <span className="text-[10px] font-bold text-[#64748B]">{item.duration}</span>
-                        <div className="w-16 h-0.5 bg-[#E3DED2] dark:bg-[#273E36] relative my-1">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#14532D] absolute right-0 -top-0.5 animate-pulse" />
-                        </div>
-                        <span className="text-[9px] text-[#2F7D32] font-semibold">Direct</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-base font-black font-mono text-[#1F2933] dark:text-white">{item.arrival}</p>
-                        <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">{item.arrivalPlace}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-[#E3DED2]/60 dark:border-[#273E36]">
-                      <span className="text-[#64748B]">{item.status}</span>
-                      <span className="text-base font-black text-[#14532D] dark:text-[#EEF2ED] font-mono">{item.fare}</span>
-                    </div>
+                  {/* Destination Title on photo */}
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <p className="text-xs font-medium text-white/80">{dest.state}</p>
+                    <h3 className="text-xl sm:text-2xl font-bold leading-tight">{dest.name}</h3>
                   </div>
                 </div>
 
-                {/* Actions: View Details & Select */}
-                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E3DED2] dark:border-[#273E36]">
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="py-2 rounded-xl text-xs font-bold border border-[#E3DED2] dark:border-[#273E36] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] text-[#1F2933] dark:text-[#F7F5EF] transition-all duration-150 active:scale-95 cursor-pointer"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="py-2 rounded-xl text-xs font-bold bg-[#14532D] hover:bg-[#0F3F22] text-white transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs hover:shadow-md"
-                  >
-                    Select
-                  </button>
+                {/* Content & Action */}
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] line-clamp-2 leading-relaxed">
+                    {dest.tagline}
+                  </p>
+
+                  <div className="pt-2 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between">
+                    <button
+                      onClick={() => handleSelectPopularDestination(dest.name)}
+                      className="text-xs font-semibold text-[#66737D] dark:text-[#9CAAB5] hover:text-[#244C66] dark:hover:text-[#75A4C4] cursor-pointer flex items-center gap-1"
+                    >
+                      <Train className="w-3.5 h-3.5 text-[#244C66]" />
+                      <span>Search Routes</span>
+                    </button>
+
+                    <Link
+                      to={`/destinations/${dest.slug}`}
+                      className="text-xs font-semibold text-[#244C66] dark:text-[#75A4C4] hover:underline flex items-center gap-1"
+                    >
+                      <span>Explore Guide</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
 
               </div>
@@ -678,260 +741,707 @@ export default function LandingPage() {
       </section>
 
       {/* ====================================================================
-          SECTION 4: DESTINATION EXPLORER (TOP INDIA DESTINATIONS)
+          SECTION 6: INTELLIGENT ALTERNATIVE ROUTES SHOWCASE
           ==================================================================== */}
-      <section id="destination-explorer-section" className="py-16 bg-[#FFFDF7] dark:bg-[#172722] border-y border-[#E3DED2] dark:border-[#273E36]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section className="py-12 sm:py-16 bg-[#EEF2F4] dark:bg-[#162029] border-y border-[#E3E7EA] dark:border-[#293644]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#E58A3A] mb-1">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Destination Discovery</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#14532D] dark:text-white font-heading">
-                Explore Premier Destinations Across India
-              </h2>
-              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">
-                Curated travel budgets, recommended seasons, and comprehensive local itineraries.
-              </p>
+          <div className="max-w-3xl mb-8">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+              <span>Smart Connecting Alternatives</span>
             </div>
-
-            <Link
-              to="/destinations"
-              className="text-xs sm:text-sm font-bold text-[#14532D] dark:text-[#EEF2ED] hover:underline flex items-center gap-1 self-start sm:self-auto group"
-            >
-              <span>Explore All Destinations</span>
-              <ArrowRight className="w-4 h-4 text-[#E58A3A] group-hover:translate-x-1 transition-transform duration-200" />
-            </Link>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+              Smart Alternatives for Your Journey
+            </h2>
+            <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1">
+              When direct trains or flights are waitlisted, TravelIQ calculates reliable connecting journeys through verified interchange stations.
+            </p>
           </div>
 
-          {/* Destination Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {POPULAR_DESTINATIONS.slice(0, 10).map((dest) => (
-              <Link
-                key={dest.name}
-                to={`/destinations/${encodeURIComponent(dest.name)}`}
-                className="bg-white dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl overflow-hidden card-interactive shadow-xs group flex flex-col justify-between"
-              >
+          {/* Comparison Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            {/* Direct Option (Waitlisted scenario) */}
+            <div className="lg:col-span-5 bg-white dark:bg-[#1B242E] rounded-xl p-5 border border-[#E3E7EA] dark:border-[#293644] shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-[#E3E7EA] dark:border-[#293644]">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-[#EEF2F4] dark:bg-[#162029] text-[#66737D] dark:text-[#9CAAB5] text-xs font-medium">
+                      Direct Train
+                    </span>
+                    <span className="text-xs text-[#89939B]">New Delhi → Varanasi</span>
+                  </div>
+                  <span className="text-xs font-semibold text-[#B54747]">WL 48 (Waitlisted)</span>
+                </div>
+
+                <div className="py-4 space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-bold text-[#202A32] dark:text-[#F0F4F7]">06:00 AM</p>
+                      <p className="text-xs text-[#66737D]">New Delhi (NDLS)</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-[11px] text-[#89939B]">8h 00m</span>
+                      <div className="w-20 h-px bg-[#E3E7EA] dark:border-[#293644] my-1" />
+                      <span className="text-[10px] text-[#89939B]">Direct Express</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-[#202A32] dark:text-[#F0F4F7]">02:00 PM</p>
+                      <p className="text-xs text-[#66737D]">Varanasi Jn (BSB)</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] bg-[#F7F8FA] dark:bg-[#121921] p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+                    High demand: Low probability of waitlist confirmation for chosen departure date.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-xs text-[#66737D]">
+                <span>Fare: ₹1,750 (AC Chair)</span>
+                <span className="text-[#B54747] font-medium">Seat Unavailable</span>
+              </div>
+            </div>
+
+            {/* Smart Alternative Option */}
+            <div className="lg:col-span-7 bg-white dark:bg-[#1B242E] rounded-xl p-5 border border-[#244C66] dark:border-[#75A4C4] shadow-xs flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-0.5 bg-[#244C66] text-white text-[10px] font-semibold rounded-bl-lg">
+                ★ TravelIQ Alternative
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 pb-3 border-b border-[#E3E7EA] dark:border-[#293644]">
+                  <span className="px-2 py-0.5 rounded bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] text-xs font-semibold">
+                    Connecting via Kanpur Central (CNB)
+                  </span>
+                  <span className="text-xs text-[#287A55] font-semibold">Available (32 Seats in Leg 1 & 2)</span>
+                </div>
+
+                {/* 2 Journey Legs */}
+                <div className="py-4 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644]">
+                    <div>
+                      <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Leg 1: Train 12004 Shatabdi</p>
+                      <p className="text-[11px] text-[#66737D]">NDLS (06:10 AM) → CNB (11:20 AM)</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[#287A55] font-semibold">Available</span>
+                      <p className="text-[11px] text-[#89939B]">5h 10m • ₹1,040</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pl-3 text-xs font-medium text-[#244C66] dark:text-[#75A4C4]">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#244C66]" />
+                    <span>Transfer at Kanpur Central (CNB) — 1h 20m Connection Time (Same Station)</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644]">
+                    <div>
+                      <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Leg 2: Train 12560 Shiv Ganga Exp</p>
+                      <p className="text-[11px] text-[#66737D]">CNB (12:40 PM) → BSB (05:15 PM)</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[#287A55] font-semibold">Available</span>
+                      <p className="text-[11px] text-[#89939B]">4h 35m • ₹780</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Combined Route Summary */}
+              <div className="pt-3 border-t border-[#E3E7EA] dark:border-[#293644] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div>
-                  <div className="h-44 overflow-hidden relative bg-[#EEF2ED] dark:bg-[#1D322B]">
-                    <img 
-                      src={dest.image} 
-                      alt={dest.name}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80';
-                      }}
-                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
-                    />
-                    <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-sm">
-                      {dest.style}
-                    </div>
-                  </div>
-
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-baseline justify-between">
-                      <h3 className="font-bold text-base text-[#14532D] dark:text-white font-heading group-hover:text-[#E58A3A] transition-colors duration-200">
-                        {dest.name}
-                      </h3>
-                      <span className="text-[11px] font-semibold text-[#64748B]">{dest.location}</span>
-                    </div>
-
-                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8] line-clamp-2 leading-relaxed">
-                      {dest.desc}
-                    </p>
-                  </div>
+                  <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7]">Total Time: 11h 05m</span>
+                  <span className="text-[#89939B] mx-2">•</span>
+                  <span className="font-semibold text-[#244C66] dark:text-[#75A4C4]">Combined Fare: ₹1,820</span>
                 </div>
 
-                <div className="p-4 pt-2 border-t border-[#E3DED2] dark:border-[#273E36] flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] text-[#64748B] block">Starting Budget</span>
-                    <span className="font-bold font-mono text-[#14532D] dark:text-[#EEF2ED]">{dest.budget}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-[#64748B] block">Best Season</span>
-                    <span className="font-semibold text-[#1F2933] dark:text-white text-[11px]">{dest.bestTime}</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => {
+                    navigate('/dashboard', {
+                      state: {
+                        source: { station_name: 'New Delhi', station_code: 'NDLS' },
+                        dest: { station_name: 'Varanasi Jn', station_code: 'BSB' },
+                        departureDate
+                      }
+                    });
+                  }}
+                  className="px-4 py-2 rounded-lg bg-[#244C66] hover:bg-[#193B51] text-white font-semibold transition-colors cursor-pointer"
+                >
+                  View Connecting Routes
+                </button>
+              </div>
 
-              </Link>
-            ))}
+            </div>
+
           </div>
 
         </div>
       </section>
 
       {/* ====================================================================
-          SECTION 5: TRAVEL BUDGET PLANNER & TRIP TIMELINE SHOWCASE
+          SECTION 7: PERSONALIZED RECOMMENDATIONS — TRAVEL PICKS FOR YOU
           ==================================================================== */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Visual Budget Planner (5 Cols) */}
-          <div className="lg:col-span-5 space-y-4">
-            <TravelBudgetPlanner initialBudget={15000} destination="Manali" />
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="mb-7">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+            <span>Curated Suggestions</span>
           </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+            Travel Picks for You
+          </h2>
+          <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1">
+            Choose what you feel like exploring and discover verified recommendations with realistic budgets.
+          </p>
 
-          {/* Visual Day-by-Day Timeline (7 Cols) */}
-          <div className="lg:col-span-7 space-y-4">
-            <TripPlanner />
+          {/* Category Filter Chips */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-4 pb-1">
+            {Object.keys(TRAVEL_PICKS).map((key) => {
+              const item = TRAVEL_PICKS[key];
+              const isSelected = selectedPickCategory === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedPickCategory(key)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border ${
+                    isSelected
+                      ? 'bg-[#244C66] text-white border-[#244C66] font-semibold'
+                      : 'bg-white dark:bg-[#1B242E] text-[#66737D] dark:text-[#9CAAB5] border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA]'
+                  }`}
+                >
+                  {item.title}
+                </button>
+              );
+            })}
           </div>
-
         </div>
-      </section>
 
-      {/* ====================================================================
-          SECTION 6: DEDICATED AI CONCIERGE ASSISTANT SHOWCASE
-          ==================================================================== */}
-      <section className="py-16 bg-white dark:bg-[#172722] border-t border-[#E3DED2] dark:border-[#273E36]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="bg-[#FFFDF7] dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-3xl p-6 sm:p-10 shadow-sm">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              
-              <div className="lg:col-span-6 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#14532D]/10 text-[#14532D] dark:text-[#EEF2ED] text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 text-[#E58A3A]" />
-                  <span>TravelIQ Assistant</span>
-                </div>
-                <h2 className="text-2xl sm:text-4xl font-extrabold text-[#14532D] dark:text-white font-heading">
-                  Your Personal Indian Travel Concierge
-                </h2>
-                <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
-                  Tell TravelIQ where you want to go and your budget limit. Our assistant crafts a structured day-by-day itinerary with verified express trains, scenic bus routes, hygienic food recommendations, and stays.
-                </p>
-
-                <div className="p-4 rounded-xl bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] space-y-2">
-                  <p className="text-xs font-bold text-[#1F2933] dark:text-white">
-                    Example Query:
-                  </p>
-                  <p className="text-xs font-mono text-[#14532D] dark:text-[#EEF2ED] bg-[#F7F5EF] dark:bg-[#101B17] p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#273E36]">
-                    "I want to travel from Bhubaneswar to Manali for 5 days under ₹15,000."
-                  </p>
+        {/* Selected Category Destination Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {TRAVEL_PICKS[selectedPickCategory].destinations.map((spot) => (
+            <div 
+              key={spot.name}
+              className="bg-white dark:bg-[#1B242E] rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+            >
+              <div>
+                <div className="h-44 overflow-hidden relative">
+                  <img 
+                    src={spot.image} 
+                    alt={spot.name}
+                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-2xs text-white text-[11px] font-medium">
+                    {spot.duration}
+                  </div>
                 </div>
 
-                <div className="pt-2">
-                  <Link
-                    to="/dashboard/ai-workspace"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3F22] text-white text-xs font-bold shadow-xs transition-colors"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Open Concierge Assistant</span>
-                  </Link>
+                <div className="p-4 space-y-1.5">
+                  <p className="text-xs font-semibold text-[#244C66] dark:text-[#75A4C4]">{spot.state}</p>
+                  <h3 className="text-lg font-bold text-[#202A32] dark:text-[#F0F4F7]">{spot.name}</h3>
+                  <p className="text-xs text-[#66737D] dark:text-[#9CAAB5]">{spot.highlight}</p>
                 </div>
               </div>
 
-              {/* Concierge Response Card Preview */}
-              <div className="lg:col-span-6">
-                <div className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs card-interactive space-y-3">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E3DED2] dark:border-[#273E36]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#2F7D32] animate-pulse" />
-                      <span className="text-xs font-bold text-[#14532D] dark:text-white">Structured Plan Output</span>
-                    </div>
-                    <span className="font-mono text-xs font-bold text-[#E58A3A] bg-[#E58A3A]/10 px-2.5 py-0.5 rounded-md">Total Est: ₹14,200</span>
-                  </div>
+              <div className="p-4 pt-0 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-xs mt-3">
+                <div>
+                  <span className="text-[10px] text-[#89939B] block">Est. Cost / Person</span>
+                  <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7] font-mono">{spot.estBudget}</span>
+                </div>
 
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2 rounded-lg bg-[#F7F5EF] dark:bg-[#101B17] flex justify-between items-center gap-2 min-w-0">
-                      <span className="font-bold text-[#14532D] dark:text-[#EEF2ED] shrink-0">Day 1 — Journey</span>
-                      <span className="text-[#64748B] text-right truncate max-w-[58%]">Bhubaneswar → Delhi → Volvo coach</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-[#F7F5EF] dark:bg-[#101B17] flex justify-between items-center gap-2 min-w-0">
-                      <span className="font-bold text-[#14532D] dark:text-[#EEF2ED] shrink-0">Day 2 — Exploration</span>
-                      <span className="text-[#64748B] text-right truncate max-w-[58%]">Old Manali, Hadimba Devi shrine</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-[#F7F5EF] dark:bg-[#101B17] flex justify-between items-center gap-2 min-w-0">
-                      <span className="font-bold text-[#14532D] dark:text-[#EEF2ED] shrink-0">Day 3 — Adventure</span>
-                      <span className="text-[#64748B] text-right truncate max-w-[58%]">Solang Valley paragliding & snow</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-[#F7F5EF] dark:bg-[#101B17] flex justify-between items-center gap-2 min-w-0">
-                      <span className="font-bold text-[#14532D] dark:text-[#EEF2ED] shrink-0">Day 4 — Sightseeing</span>
-                      <span className="text-[#64748B] text-right truncate max-w-[58%]">Vashisht Sulphur baths & Mall Road</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-[#F7F5EF] dark:bg-[#101B17] flex justify-between items-center gap-2 min-w-0">
-                      <span className="font-bold text-[#14532D] dark:text-[#EEF2ED] shrink-0">Day 5 — Return</span>
-                      <span className="text-[#64748B] text-right truncate max-w-[58%]">Safe return to Bhubaneswar</span>
-                    </div>
-                  </div>
+                <Link
+                  to={`/destinations/${spot.name}`}
+                  className="px-3 py-1.5 rounded-lg bg-[#EEF2F4] dark:bg-[#162029] hover:bg-[#EAF0F4] text-[#202A32] dark:text-[#F0F4F7] text-xs font-semibold transition-colors"
+                >
+                  View Details
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-                  <div className="p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#273E36] bg-[#FFFDF7] dark:bg-[#101B17] flex items-center justify-between text-[11px]">
-                    <span className="text-[#64748B]">Includes: Transport, Hotels, Food, Tips</span>
-                    <span className="text-[#2F7D32] font-bold">Within ₹15,000 budget ✓</span>
-                  </div>
+      {/* ====================================================================
+          SECTION 8: BUDGET TRAVEL PLANNER — PLAN WITHIN YOUR BUDGET
+          ==================================================================== */}
+      <section className="py-12 sm:py-16 bg-[#EEF2F4] dark:bg-[#162029] border-y border-[#E3E7EA] dark:border-[#293644]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="max-w-3xl mb-8">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+              <span>Financial Clarity</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+              Plan Within Your Budget
+            </h2>
+            <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1">
+              Select your origin, target budget, and trip duration to receive a transparent cost breakdown across travel, accommodation, and food.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* Inputs Panel (5 cols) */}
+            <div className="lg:col-span-5 bg-white dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-xs space-y-4">
+              <h3 className="font-bold text-base text-[#202A32] dark:text-[#F0F4F7]">Trip Parameters</h3>
+              
+              {/* Starting City */}
+              <div>
+                <label className="block text-xs font-semibold text-[#66737D] dark:text-[#9CAAB5] mb-1">Starting City</label>
+                <select 
+                  value={budgetCity}
+                  onChange={(e) => setBudgetCity(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] text-xs font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                >
+                  <option value="Delhi">New Delhi</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Kolkata">Kolkata</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                </select>
+              </div>
+
+              {/* Maximum Budget Slider & Presets */}
+              <div>
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <span className="font-semibold text-[#66737D] dark:text-[#9CAAB5]">Maximum Budget</span>
+                  <span className="font-mono font-bold text-base text-[#244C66] dark:text-[#75A4C4]">
+                    ₹{maxBudget.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <input 
+                  type="range"
+                  min="5000"
+                  max="60000"
+                  step="2500"
+                  value={maxBudget}
+                  onChange={(e) => setMaxBudget(parseInt(e.target.value))}
+                  className="w-full accent-[#244C66] cursor-pointer"
+                />
+                <div className="flex justify-between gap-1.5 mt-2">
+                  {[10000, 15000, 25000, 40000].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setMaxBudget(preset)}
+                      className={`text-[11px] font-semibold px-2 py-1 rounded-md border cursor-pointer ${
+                        maxBudget === preset 
+                          ? 'bg-[#244C66] text-white border-[#244C66]' 
+                          : 'bg-[#F7F8FA] dark:bg-[#162029] border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5]'
+                      }`}
+                    >
+                      ₹{preset / 1000}k
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Trip Duration */}
+              <div>
+                <label className="block text-xs font-semibold text-[#66737D] dark:text-[#9CAAB5] mb-1">Trip Duration</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['2-3 Days', '4-5 Days', '7+ Days'].map((dur) => (
+                    <button
+                      key={dur}
+                      type="button"
+                      onClick={() => setBudgetDuration(dur)}
+                      className={`py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer text-center ${
+                        budgetDuration === dur
+                          ? 'bg-[#244C66] text-white border-[#244C66]'
+                          : 'bg-[#F7F8FA] dark:bg-[#162029] border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5]'
+                      }`}
+                    >
+                      {dur}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Number of Travelers */}
+              <div>
+                <label className="block text-xs font-semibold text-[#66737D] dark:text-[#9CAAB5] mb-1">Travelers</label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setBudgetTravelers(num)}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer text-center ${
+                        budgetTravelers === num
+                          ? 'bg-[#244C66] text-white border-[#244C66]'
+                          : 'bg-[#F7F8FA] dark:bg-[#162029] border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5]'
+                      }`}
+                    >
+                      {num} {num === 1 ? 'Solo' : 'Travelers'}
+                    </button>
+                  ))}
                 </div>
               </div>
 
             </div>
+
+            {/* Estimated Breakdown Cards (7 cols) */}
+            <div className="lg:col-span-7 bg-white dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E3E7EA] dark:border-[#293644]">
+                <div>
+                  <h3 className="font-bold text-base text-[#202A32] dark:text-[#F0F4F7]">Estimated Cost Distribution</h3>
+                  <p className="text-xs text-[#66737D] mt-0.5">Approx. ₹{perPersonBudget.toLocaleString('en-IN')} per person for {budgetDuration}</p>
+                </div>
+                <div className="px-2.5 py-0.5 rounded-full bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] text-xs font-semibold shrink-0">
+                  Total ₹{maxBudget.toLocaleString('en-IN')}
+                </div>
+              </div>
+
+              {/* Stacked Proportional Bar */}
+              <div className="space-y-1.5">
+                <div className="h-2.5 w-full rounded-full bg-[#E3E7EA] dark:bg-[#293644] overflow-hidden flex">
+                  <div style={{ width: '38%' }} className="h-full bg-[#244C66]" title="Transit (38%)" />
+                  <div style={{ width: '28%' }} className="h-full bg-[#4A7A9E]" title="Stays (28%)" />
+                  <div style={{ width: '18%' }} className="h-full bg-[#B66A45]" title="Food (18%)" />
+                  <div style={{ width: '10%' }} className="h-full bg-[#66737D]" title="Local Transit (10%)" />
+                  <div style={{ width: '6%' }} className="h-full bg-[#89939B]" title="Activities (6%)" />
+                </div>
+                <div className="flex justify-between text-[11px] text-[#89939B] font-medium px-1">
+                  <span>Transit (38%)</span>
+                  <span>Stays (28%)</span>
+                  <span>Food (18%)</span>
+                  <span>Local (10%)</span>
+                  <span>Sightseeing (6%)</span>
+                </div>
+              </div>
+
+              {/* Breakdown Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921]">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7] flex items-center gap-1.5">
+                      <Train className="w-3.5 h-3.5 text-[#244C66]" />
+                      <span>Transportation</span>
+                    </span>
+                    <span className="font-mono font-bold text-[#244C66] dark:text-[#75A4C4]">₹{calcTransport.toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#66737D] dark:text-[#9CAAB5]">Train AC 3T / Sleeper or interstate bus tickets</p>
+                </div>
+
+                <div className="p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921]">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7] flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#244C66]" />
+                      <span>Accommodation</span>
+                    </span>
+                    <span className="font-mono font-bold text-[#244C66] dark:text-[#75A4C4]">₹{calcStays.toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#66737D] dark:text-[#9CAAB5]">3-star boutique hotels or verified homestays</p>
+                </div>
+
+                <div className="p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921]">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7] flex items-center gap-1.5">
+                      <Utensils className="w-3.5 h-3.5 text-[#B66A45]" />
+                      <span>Food & Dining</span>
+                    </span>
+                    <span className="font-mono font-bold text-[#B66A45]">₹{calcFood.toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#66737D] dark:text-[#9CAAB5]">Regional thalis, breakfasts & cafe dining</p>
+                </div>
+
+                <div className="p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921]">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-semibold text-[#202A32] dark:text-[#F0F4F7] flex items-center gap-1.5">
+                      <Compass className="w-3.5 h-3.5 text-[#66737D]" />
+                      <span>Local Transit & Sights</span>
+                    </span>
+                    <span className="font-mono font-bold text-[#202A32] dark:text-[#F0F4F7]">₹{(calcLocalTransit + calcActivities).toLocaleString('en-IN')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#66737D] dark:text-[#9CAAB5]">Auto-rickshaws, monument passes & local transit</p>
+                </div>
+              </div>
+
+              {/* Honest Disclaimer */}
+              <div className="p-2.5 rounded-lg bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] text-xs text-[#66737D] dark:text-[#9CAAB5] flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-[#89939B] shrink-0 mt-0.5" />
+                <p>
+                  <strong className="text-[#202A32] dark:text-[#F0F4F7]">Budget note:</strong> Figures shown are estimated benchmarks based on average seasonal fares and verified 3-star accommodations. Confirmed prices vary by travel dates.
+                </p>
+              </div>
+
+            </div>
+
           </div>
 
         </div>
       </section>
 
       {/* ====================================================================
-          FOOTER (CLEAN, SOLID, TRAVEL-TECH PRODUCT FOOTER)
+          SECTION 11: ADDITIONAL HOMEPAGE SECTIONS
           ==================================================================== */}
-      <footer className="border-t border-[#E3DED2] dark:border-[#273E36] bg-[#FFFDF7] dark:bg-[#101B17] py-12 text-xs text-[#64748B] dark:text-[#94A3B8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      
+      {/* 11.1 WHY TRAVELIQ? */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+            <span>Built For Indian Commuters & Travelers</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+            Why TravelIQ?
+          </h2>
+          <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1.5">
+            A travel platform engineered to solve real booking frustrations across rail, air, and interstate buses.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
+              <Compass className="w-4.5 h-4.5" />
+            </div>
+            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Compare Travel Modes</h3>
+            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+              Evaluate trains, domestic flights, and buses side-by-side on duration, comfort, and real fare differences.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
+              <ArrowRightLeft className="w-4.5 h-4.5" />
+            </div>
+            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Discover Alternative Routes</h3>
+            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+              When direct trains are waitlisted, explore connecting journeys through convenient junction stations with safe layovers.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
+              <IndianRupee className="w-4.5 h-4.5" />
+            </div>
+            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Plan Around Your Budget</h3>
+            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+              Allocate your spending logically between transit, stays, and dining to prevent surprise travel expenses.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
+              <ShieldCheck className="w-4.5 h-4.5" />
+            </div>
+            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Verified Schedules</h3>
+            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+              Train numbers, running days, and station codes are checked against active timetable datasets for dependable plans.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 11.2 HOW IT WORKS */}
+      <section className="py-12 sm:py-16 bg-[#EEF2F4] dark:bg-[#162029] border-y border-[#E3E7EA] dark:border-[#293644]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-3">
-              <div className="flex items-center gap-1 text-xl font-extrabold font-heading">
-                <span className="text-[#14532D] dark:text-white">Travel</span>
-                <span className="text-[#E58A3A]">IQ</span>
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+              <span>Simplicity First</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+              How It Works
+            </h2>
+            <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1.5">
+              Three straightforward steps from initial inspiration to departure.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative">
+            
+            <div className="bg-white dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-xs relative">
+              <span className="text-3xl font-bold text-[#CAD3DA] dark:text-[#293644] font-mono absolute top-4 right-4">01</span>
+              <div className="w-9 h-9 rounded-lg bg-[#244C66] text-white flex items-center justify-center font-bold mb-3">
+                <Search className="w-4.5 h-4.5" />
               </div>
-              <p className="text-xs leading-relaxed text-[#64748B] dark:text-[#94A3B8]">
-                Smart travel assistant for discovering, comparing, and planning journeys across India.
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] mb-1.5">Search Your Journey</h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                Enter your origin, destination, and departure date. Switch freely between Trains, Flights, Buses, and Hotels.
               </p>
             </div>
 
-            <div>
-              <h4 className="font-bold text-xs uppercase tracking-wider text-[#1F2933] dark:text-white mb-3">
-                Plan & Compare
-              </h4>
-              <ul className="space-y-2">
-                <li><Link to="/dashboard" className="hover:underline">Route Search</Link></li>
-                <li><Link to="/dashboard" className="hover:underline">Train Schedules</Link></li>
-                <li><Link to="/dashboard/food" className="hover:underline">Station Food Delivery</Link></li>
-                <li><Link to="/dashboard/eco" className="hover:underline">Carbon Eco Tracker</Link></li>
-              </ul>
+            <div className="bg-white dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-xs relative">
+              <span className="text-3xl font-bold text-[#CAD3DA] dark:text-[#293644] font-mono absolute top-4 right-4">02</span>
+              <div className="w-9 h-9 rounded-lg bg-[#244C66] text-white flex items-center justify-center font-bold mb-3">
+                <Compass className="w-4.5 h-4.5" />
+              </div>
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] mb-1.5">Compare Available Routes</h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                Review verified direct connections alongside smart multi-leg alternatives with transparent departure and arrival timings.
+              </p>
             </div>
 
-            <div>
-              <h4 className="font-bold text-xs uppercase tracking-wider text-[#1F2933] dark:text-white mb-3">
-                Discovery & Tools
-              </h4>
-              <ul className="space-y-2">
-                <li><Link to="/destinations" className="hover:underline">50+ Indian Destinations</Link></li>
-                <li><Link to="/dashboard/station-3d" className="hover:underline">3D Station Navigation</Link></li>
-                <li><Link to="/dashboard/3d-globe" className="hover:underline">3D Travel Globe</Link></li>
-                <li><Link to="/dashboard/ai-workspace" className="hover:underline">AI Intelligence Suite</Link></li>
-              </ul>
+            <div className="bg-white dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-xs relative">
+              <span className="text-3xl font-bold text-[#CAD3DA] dark:text-[#293644] font-mono absolute top-4 right-4">03</span>
+              <div className="w-9 h-9 rounded-lg bg-[#244C66] text-white flex items-center justify-center font-bold mb-3">
+                <CheckCircle2 className="w-4.5 h-4.5" />
+              </div>
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] mb-1.5">Choose What Suits You</h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                Select your preferred option, view complete intermediate station stops, and proceed with confirmed details.
+              </p>
             </div>
 
-            <div>
-              <h4 className="font-bold text-xs uppercase tracking-wider text-[#1F2933] dark:text-white mb-3">
-                Support & Admin
-              </h4>
-              <ul className="space-y-2">
-                <li><Link to="/support" className="hover:underline">Help & Support</Link></li>
-                <li><Link to="/dashboard/my-trips" className="hover:underline">My Booked Trips</Link></li>
-                <li><Link to="/admin/dashboard" className="hover:underline text-sky-600 flex items-center gap-1 font-semibold">
-                  <Shield className="w-3.5 h-3.5 text-sky-500" />
-                  <span>Admin Portal</span>
-                </Link></li>
-              </ul>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 11.3 TRAVEL GUIDES */}
+      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
+              <span>Practical Tips</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+              Practical Travel Guides
+            </h2>
+            <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1">
+              Expert articles and verified advice for navigating Indian rail, air corridors, and seasonal routes.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-white dark:bg-[#1B242E] rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] shadow-xs group flex flex-col justify-between">
+            <div className="p-4 space-y-2">
+              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4]">
+                Railway Guide
+              </span>
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] group-hover:text-[#244C66] transition-colors">
+                Understanding Tatkal, Premium Tatkal & Waitlist Quotas
+              </h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                How opening windows work at 10:00 AM (AC) and 11:00 AM (Non-AC), and when connecting routes offer confirmed seats.
+              </p>
+            </div>
+            <div className="p-4 pt-0 text-xs font-semibold text-[#244C66] dark:text-[#75A4C4] flex items-center gap-1">
+              <span>Read guide</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </div>
 
-          <div className="pt-6 border-t border-[#E3DED2] dark:border-[#273E36] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© {new Date().getFullYear()} TravelIQ. All rights reserved across Indian Railways & Domestic Transit Network.</p>
-            <div className="flex items-center gap-6 font-semibold">
-              <Link to="/support" className="hover:underline">Privacy Policy</Link>
-              <Link to="/support" className="hover:underline">Terms of Service</Link>
-              <Link to="/support" className="hover:underline">Security</Link>
+          <div className="bg-white dark:bg-[#1B242E] rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] shadow-xs group flex flex-col justify-between">
+            <div className="p-4 space-y-2">
+              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4]">
+                Route Comparison
+              </span>
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] group-hover:text-[#244C66] transition-colors">
+                Delhi to Varanasi: Vande Bharat vs Flight Comparison
+              </h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                Comparing total gate-to-gate transit time against the 8-hour direct Vande Bharat rail service arriving in city center.
+              </p>
             </div>
+            <div className="p-4 pt-0 text-xs font-semibold text-[#244C66] dark:text-[#75A4C4] flex items-center gap-1">
+              <span>Read comparison</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#1B242E] rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] shadow-xs group flex flex-col justify-between">
+            <div className="p-4 space-y-2">
+              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4]">
+                Scenic Journeys
+              </span>
+              <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7] group-hover:text-[#244C66] transition-colors">
+                The Konkan Railway: Mumbai to Goa Best Timings & Views
+              </h3>
+              <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
+                Tunnel counts, lush Western Ghat viaducts, and why the Tejas or Mandovi Express daytime departure is unforgettable.
+              </p>
+            </div>
+            <div className="p-4 pt-0 text-xs font-semibold text-[#244C66] dark:text-[#75A4C4] flex items-center gap-1">
+              <span>Read guide</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 11.4 TRUST & TRANSPARENCY STATEMENT */}
+      <section className="py-10 bg-white dark:bg-[#1B242E] border-y border-[#E3E7EA] dark:border-[#293644]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-3">
+          <div className="w-10 h-10 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] mx-auto flex items-center justify-center font-bold">
+            <Shield className="w-5 h-5" />
+          </div>
+          <h2 className="text-xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
+            Trust & Transparency Commitment
+          </h2>
+          <p className="text-xs sm:text-sm text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-3xl mx-auto">
+            At TravelIQ, we believe honest travel information is essential. Train schedules, station codes, and running frequencies are validated against active datasets. Whenever live data is unavailable, information is clearly labeled as an estimate.
+          </p>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          11.5 COMPREHENSIVE REFINED FOOTER
+          ==================================================================== */}
+      <footer className="bg-[#EEF2F4] dark:bg-[#162029] text-[#66737D] dark:text-[#9CAAB5] text-xs pt-12 pb-10 border-t border-[#E3E7EA] dark:border-[#293644]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-[#E3E7EA] dark:border-[#293644]">
+            
+            {/* Col 1: Brand Info */}
+            <div className="lg:col-span-2 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#244C66] text-white flex items-center justify-center shadow-xs">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" />
+                  </svg>
+                </div>
+                <span className="text-base font-bold text-[#202A32] dark:text-[#F0F4F7]">TravelIQ</span>
+              </div>
+              <p className="text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-sm">
+                Indian multimodal travel planner and route comparison platform. Unifying trains, domestic flights, and interstate buses into a reliable search experience.
+              </p>
+            </div>
+
+            {/* Col 2: Supported Travel Modes */}
+            <div className="space-y-2">
+              <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7] uppercase tracking-wider text-[11px]">Travel Modes</p>
+              <ul className="space-y-1.5">
+                <li><Link to="/?tab=trains" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Indian Railways (IRCTC)</Link></li>
+                <li><Link to="/?tab=flights" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Domestic Flights</Link></li>
+                <li><Link to="/?tab=buses" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Interstate Buses</Link></li>
+                <li><Link to="/?tab=hotels" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Hotels & Stays</Link></li>
+                <li><Link to="/dashboard/track" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Live Train GPS Tracker</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Destinations */}
+            <div className="space-y-2">
+              <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7] uppercase tracking-wider text-[11px]">Destinations</p>
+              <ul className="space-y-1.5">
+                <li><Link to="/destinations/Goa" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Goa Coast</Link></li>
+                <li><Link to="/destinations/Manali" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Manali & Solang</Link></li>
+                <li><Link to="/destinations/Jaipur" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Jaipur Pink City</Link></li>
+                <li><Link to="/destinations/Varanasi" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Varanasi Ghats</Link></li>
+                <li><Link to="/destinations" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">All 50+ Destinations</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Help & Support */}
+            <div className="space-y-2">
+              <p className="font-semibold text-[#202A32] dark:text-[#F0F4F7] uppercase tracking-wider text-[11px]">Support & Legal</p>
+              <ul className="space-y-1.5">
+                <li><Link to="/support" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Helpdesk & FAQs</Link></li>
+                <li><Link to="/dashboard/my-trips" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Booking Status</Link></li>
+                <li><span className="text-[#89939B]">Privacy Policy</span></li>
+                <li><span className="text-[#89939B]">Terms of Service</span></li>
+                <li><Link to="/developer" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Developer API</Link></li>
+              </ul>
+            </div>
+
+          </div>
+
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#89939B]">
+            <p>© {new Date().getFullYear()} TravelIQ. All rights reserved.</p>
+            <p>Built with verified Indian transit schedules and responsive layout.</p>
           </div>
 
         </div>

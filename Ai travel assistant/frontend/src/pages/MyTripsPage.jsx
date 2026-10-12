@@ -80,32 +80,32 @@ export default function MyTripsPage() {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F7F5EF] dark:bg-[#12201D] transition-colors duration-300">
+    <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#070D18] transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {/* Title */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold font-manrope text-[#263238] dark:text-[#F7F5EF]">Tickets & Travel History</h1>
-            <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs mt-1">Review active boarding tickets, download e-receipts, or track historic searches.</p>
+            <h1 className="text-2xl font-bold font-heading text-slate-900 dark:text-white">Tickets & Travel History</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Review active boarding tickets, download e-receipts, or track historic searches.</p>
           </div>
           
-          <div className="flex bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-1 shadow-sm">
+          <div className="flex bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-2xs">
             <button 
               onClick={() => setActiveTab('bookings')}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'bookings' ? 'bg-[#173F3A] dark:bg-[#EEF2ED] text-[#FFFFFF] dark:text-[#12201D]' : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'}`}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'bookings' ? 'bg-teal-600 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
             >
               Train & Transit
             </button>
             <button 
               onClick={() => setActiveTab('hotels')}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'hotels' ? 'bg-[#173F3A] dark:bg-[#EEF2ED] text-[#FFFFFF] dark:text-[#12201D]' : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'}`}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'hotels' ? 'bg-teal-600 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
             >
               Hotels & Stays {hotelBookings.length > 0 && `(${hotelBookings.length})`}
             </button>
             <button 
               onClick={() => setActiveTab('searches')}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'searches' ? 'bg-[#173F3A] dark:bg-[#EEF2ED] text-[#FFFFFF] dark:text-[#12201D]' : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'}`}
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'searches' ? 'bg-teal-600 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
             >
               Search Logs
             </button>
@@ -114,13 +114,13 @@ export default function MyTripsPage() {
 
         {/* Search tool */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
             placeholder="Search by hotel name, booking ID, or city..." 
             value={search} 
             onChange={e => setSearch(e.target.value)}
-            className="travel-input w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-4 text-[#263238] dark:text-[#F7F5EF] text-xs placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all font-medium"
+            className="w-full bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-all font-medium shadow-2xs"
           />
         </div>
 

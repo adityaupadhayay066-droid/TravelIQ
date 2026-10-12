@@ -19,8 +19,8 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       name: 'Transportation',
       amount: transport,
       pct: 40,
-      color: '#14532D',
-      bgColor: 'bg-[#14532D]',
+      color: '#0D9488',
+      bgColor: 'bg-teal-600',
       icon: Train,
       detail: 'Trains (AC 3T/Sleeper), Local Cab, Bus connections'
     },
@@ -28,8 +28,8 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       name: 'Accommodation',
       amount: accommodation,
       pct: 27,
-      color: '#2F80A8',
-      bgColor: 'bg-[#2F80A8]',
+      color: '#0284C7',
+      bgColor: 'bg-sky-600',
       icon: Hotel,
       detail: 'Comfortable 3-star stays & verified boutique guesthouses'
     },
@@ -37,8 +37,8 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       name: 'Food & Dining',
       amount: food,
       pct: 17,
-      color: '#E58A3A',
-      bgColor: 'bg-[#E58A3A]',
+      color: '#F59E0B',
+      bgColor: 'bg-amber-500',
       icon: Utensils,
       detail: 'Local thalis, authentic dining, street snacks & beverages'
     },
@@ -46,8 +46,8 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       name: 'Activities & Sightseeing',
       amount: activities,
       pct: 10,
-      color: '#6B8E23',
-      bgColor: 'bg-[#6B8E23]',
+      color: '#10B981',
+      bgColor: 'bg-emerald-600',
       icon: Compass,
       detail: 'Monument tickets, adventure passes, local guides'
     },
@@ -55,10 +55,10 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       name: 'Emergency & Incidentals',
       amount: emergency,
       pct: 6,
-      color: '#8B6F47',
-      bgColor: 'bg-[#8B6F47]',
+      color: '#8B5CF6',
+      bgColor: 'bg-purple-500',
       icon: ShieldAlert,
-      detail: 'Buffer for medical, transit delays, or spontaneous plans'
+      detail: 'Buffer for transit delays, medical, or spontaneous plans'
     }
   ];
 
@@ -69,26 +69,26 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
   };
 
   return (
-    <div className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 sm:p-6 shadow-xs">
+    <div className="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#E3DED2] dark:border-[#273E36]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E58A3A] shrink-0" />
-            <h3 className="text-lg sm:text-xl font-bold text-[#14532D] dark:text-white font-heading">
+            <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shrink-0" />
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white font-heading">
               Smart Travel Budget Planner
             </h3>
           </div>
-          <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Optimized budget distribution for journeys to {destination} and across India.
           </p>
         </div>
 
         {/* Total Budget Pill Display */}
-        <div className="flex items-center gap-2 bg-[#F7F5EF] dark:bg-[#101B17] px-3.5 py-2 rounded-xl border border-[#E3DED2] dark:border-[#273E36] shrink-0 self-start sm:self-auto">
-          <span className="text-[11px] font-semibold text-[#64748B] uppercase">Total:</span>
-          <span className="text-lg sm:text-xl font-black text-[#14532D] dark:text-[#EEF2ED] font-mono">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 shrink-0 self-start sm:self-auto">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase">Total:</span>
+          <span className="text-lg sm:text-xl font-black text-teal-600 dark:text-teal-400 font-mono">
             ₹{totalBudget.toLocaleString('en-IN')}
           </span>
         </div>
@@ -98,7 +98,7 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
       <div className="py-4 space-y-3.5">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-[#94A3B8]">Quick Presets:</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Quick Presets:</span>
           </div>
           <div className="grid grid-cols-5 gap-1.5">
             {BUDGET_PRESETS.map((preset) => (
@@ -108,8 +108,8 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
                 onClick={() => handleBudgetChange(preset)}
                 className={`py-1.5 px-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer border text-center ${
                   totalBudget === preset
-                    ? 'bg-[#14532D] text-white border-[#14532D] shadow-xs'
-                    : 'bg-[#F7F5EF] dark:bg-[#101B17] text-[#1F2933] dark:text-[#F7F5EF] border-[#E3DED2] dark:border-[#273E36] hover:border-[#14532D] dark:hover:border-[#489A6B]'
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-teal-500'
                 }`}
               >
                 ₹{preset >= 1000 ? `${preset / 1000}k` : preset}
@@ -120,9 +120,9 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
 
         {/* Range Slider */}
         <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-[#64748B] dark:text-[#94A3B8]">
+          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>Budget Scale</span>
-            <span className="font-bold text-[#14532D] dark:text-white font-mono">₹{totalBudget.toLocaleString('en-IN')}</span>
+            <span className="font-bold text-teal-600 dark:text-teal-400 font-mono">₹{totalBudget.toLocaleString('en-IN')}</span>
           </div>
           <input
             type="range"
@@ -131,7 +131,7 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
             step="1000"
             value={totalBudget}
             onChange={(e) => handleBudgetChange(e.target.value)}
-            className="w-full accent-[#14532D] dark:accent-[#2F7D32] cursor-pointer"
+            className="w-full accent-teal-600 cursor-pointer"
           />
         </div>
       </div>

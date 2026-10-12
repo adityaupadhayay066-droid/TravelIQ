@@ -262,34 +262,34 @@ export default function AIChatbot() {
       {/* Floating Concierge Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-[#14532D] hover:bg-[#0F3F22] text-white shadow-xl cursor-pointer flex items-center justify-center border-2 border-white/20"
-        style={{ transform: `scale(${isOpen ? 1 : scrollScale})`, transformOrigin: 'bottom right', transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)' }}
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-[#244C66] hover:bg-[#193B51] text-white shadow-xl cursor-pointer flex items-center justify-center border-2 border-white/20 transition-transform duration-200"
+        style={{ transform: `scale(${isOpen ? 1 : scrollScale})`, transformOrigin: 'bottom right' }}
         title="TravelIQ Assistant Concierge"
       >
         {isOpen ? <X className="w-6 h-6" /> : (
           <div className="relative">
             <MessageSquare className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#E58A3A]" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#B66A45]" />
           </div>
         )}
       </button>
 
       {/* Assistant Modal Window */}
       {isOpen && (
-        <div className="fixed bottom-36 right-3 sm:bottom-22 sm:right-6 z-50 w-[calc(100vw-1.5rem)] sm:w-[460px] h-[600px] max-h-[82vh] bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[#1F2933] dark:text-[#F7F5EF]">
+        <div className="fixed bottom-36 right-3 sm:bottom-22 sm:right-6 z-50 w-[calc(100vw-1.5rem)] sm:w-[460px] h-[600px] max-h-[82vh] bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[#202A32] dark:text-[#F0F4F7]">
           
           {/* Concierge Header */}
-          <div className="p-4 border-b border-[#E3DED2] dark:border-[#273E36] flex items-center justify-between bg-[#FFFDF7] dark:bg-[#101B17]">
+          <div className="p-4 border-b border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between bg-[#F7F8FA] dark:bg-[#162029]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#14532D] text-white flex items-center justify-center font-black shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-[#244C66] text-white flex items-center justify-center font-black shadow-xs text-xs">
                 IQ
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#14532D] dark:text-white font-heading">
+                <h4 className="text-sm font-bold text-[#202A32] dark:text-[#F0F4F7] font-heading">
                   TravelIQ Assistant
                 </h4>
-                <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2F7D32] animate-pulse" />
+                <p className="text-[11px] text-[#66737D] dark:text-[#89939B] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   India Smart Travel Concierge
                 </p>
               </div>
@@ -298,14 +298,14 @@ export default function AIChatbot() {
             <div className="flex items-center gap-1">
               <button
                 onClick={handleClear}
-                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#C53030] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] transition-colors"
+                className="p-1.5 rounded-lg text-[#66737D] hover:text-[#B54747] hover:bg-[#EEF2F4] dark:hover:bg-[#202D3A] transition-colors cursor-pointer"
                 title="Clear Chat History"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#1F2933] hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] transition-colors"
+                className="p-1.5 rounded-lg text-[#66737D] hover:text-[#202A32] dark:hover:text-white hover:bg-[#EEF2F4] dark:hover:bg-[#202D3A] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -313,12 +313,12 @@ export default function AIChatbot() {
           </div>
 
           {/* Quick Prompts Bar */}
-          <div className="px-3 py-2 bg-[#F7F5EF] dark:bg-[#101B17]/60 border-b border-[#E3DED2] dark:border-[#273E36] overflow-x-auto whitespace-nowrap scrollbar-none flex gap-1.5">
+          <div className="px-3 py-2 bg-[#EEF2F4] dark:bg-[#162029]/80 border-b border-[#E3E7EA] dark:border-[#293644] overflow-x-auto whitespace-nowrap scrollbar-none flex gap-1.5">
             {PROMPT_SUGGESTIONS.map((prompt, i) => (
               <button
                 key={i}
                 onClick={() => handleSend(prompt)}
-                className="text-[10px] font-semibold bg-white dark:bg-[#172722] text-[#14532D] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#273E36] px-2.5 py-1 rounded-full hover:border-[#14532D] transition-colors cursor-pointer shrink-0"
+                className="text-[10px] font-semibold bg-white dark:bg-[#202D3A] text-[#244C66] dark:text-[#75A4C4] border border-[#E3E7EA] dark:border-[#293644] px-2.5 py-1 rounded-full hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors cursor-pointer shrink-0"
               >
                 {prompt}
               </button>
@@ -333,7 +333,7 @@ export default function AIChatbot() {
                 className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'bot' && (
-                  <div className="w-7 h-7 rounded-lg bg-[#14532D] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                  <div className="w-7 h-7 rounded-lg bg-[#244C66] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
                     IQ
                   </div>
                 )}
@@ -341,21 +341,21 @@ export default function AIChatbot() {
                 <div
                   className={`max-w-[85%] rounded-xl p-3.5 text-xs leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#14532D] text-white rounded-tr-xs'
-                      : 'bg-[#F7F5EF] dark:bg-[#1D322B] text-[#1F2933] dark:text-[#F7F5EF] border border-[#E3DED2] dark:border-[#273E36] rounded-tl-xs'
+                      ? 'bg-[#244C66] text-white rounded-tr-xs'
+                      : 'bg-[#F7F8FA] dark:bg-[#162029] text-[#202A32] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644] rounded-tl-xs'
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.text}</p>
 
                   {/* Structured Recommendation Card */}
                   {msg.structured && (
-                    <div className="mt-3.5 space-y-3 pt-3 border-t border-[#E3DED2] dark:border-[#273E36] bg-white dark:bg-[#172722] p-3 rounded-lg border">
+                    <div className="mt-3.5 space-y-3 pt-3 border-t border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] p-3 rounded-lg border">
                       
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-[#14532D] dark:text-white">
+                        <span className="font-bold text-xs text-[#202A32] dark:text-[#F0F4F7]">
                           {msg.structured.title}
                         </span>
-                        <span className="font-mono text-xs font-black text-[#E58A3A] bg-[#E58A3A]/10 px-2 py-0.5 rounded">
+                        <span className="font-mono text-xs font-black text-[#B66A45] bg-[#B66A45]/10 px-2 py-0.5 rounded">
                           Total: {msg.structured.totalCost}
                         </span>
                       </div>
@@ -363,23 +363,23 @@ export default function AIChatbot() {
                       {/* Day by Day Plan */}
                       <div className="space-y-1.5">
                         {msg.structured.days.map((d, i) => (
-                          <div key={i} className="p-2 rounded-md bg-[#F7F5EF] dark:bg-[#101B17] border border-[#E3DED2]/60 dark:border-[#273E36] flex flex-col gap-0.5">
+                          <div key={i} className="p-2 rounded-md bg-[#F7F8FA] dark:bg-[#162029] border border-[#E3E7EA] dark:border-[#293644] flex flex-col gap-0.5">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-[11px] text-[#14532D] dark:text-[#EEF2ED]">{d.day}</span>
-                              <span className="font-mono text-[10px] text-[#64748B]">{d.cost}</span>
+                              <span className="font-bold text-[11px] text-[#244C66] dark:text-[#75A4C4]">{d.day}</span>
+                              <span className="font-mono text-[10px] text-[#66737D] dark:text-[#89939B]">{d.cost}</span>
                             </div>
-                            <p className="font-semibold text-[11px] text-[#1F2933] dark:text-white">{d.title}</p>
-                            {d.transport && <p className="text-[10px] text-[#2F80A8]">🚆 {d.transport}</p>}
-                            {d.places && <p className="text-[10px] text-[#6B8E23]">📍 {d.places}</p>}
-                            {d.activities && <p className="text-[10px] text-[#E58A3A]">⚡ {d.activities}</p>}
-                            {d.food && <p className="text-[10px] text-[#8B6F47]">🍽️ {d.food}</p>}
+                            <p className="font-semibold text-[11px] text-[#202A32] dark:text-[#F0F4F7]">{d.title}</p>
+                            {d.transport && <p className="text-[10px] text-[#356280]">🚆 {d.transport}</p>}
+                            {d.places && <p className="text-[10px] text-emerald-600 dark:text-emerald-400">📍 {d.places}</p>}
+                            {d.activities && <p className="text-[10px] text-[#B66A45]">⚡ {d.activities}</p>}
+                            {d.food && <p className="text-[10px] text-[#66737D]">🍽️ {d.food}</p>}
                           </div>
                         ))}
                       </div>
 
                       {/* Cost Breakdown */}
                       {msg.structured.breakdown && (
-                        <div className="grid grid-cols-2 gap-1.5 text-[10px] bg-[#F7F5EF] dark:bg-[#101B17] p-2 rounded-md">
+                        <div className="grid grid-cols-2 gap-1.5 text-[10px] bg-[#F7F8FA] dark:bg-[#162029] p-2 rounded-md border border-[#E3E7EA] dark:border-[#293644]">
                           <span>Transport: <strong>{msg.structured.breakdown.transport}</strong></span>
                           <span>Stays: <strong>{msg.structured.breakdown.hotel}</strong></span>
                           <span>Food: <strong>{msg.structured.breakdown.food}</strong></span>
@@ -389,8 +389,8 @@ export default function AIChatbot() {
 
                       {/* Travel Tips */}
                       {msg.structured.tips && (
-                        <div className="space-y-1 text-[10px] text-[#64748B] dark:text-[#94A3B8]">
-                          <span className="font-bold text-[#14532D] dark:text-[#EEF2ED]">Concierge Tips:</span>
+                        <div className="space-y-1 text-[10px] text-[#66737D] dark:text-[#89939B]">
+                          <span className="font-bold text-[#244C66] dark:text-[#75A4C4]">Concierge Tips:</span>
                           {msg.structured.tips.map((tip, i) => (
                             <p key={i} className="flex items-start gap-1">
                               • <span>{tip}</span>
@@ -404,7 +404,7 @@ export default function AIChatbot() {
                 </div>
 
                 {msg.role === 'user' && (
-                  <div className="w-7 h-7 rounded-lg bg-[#E58A3A] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                  <div className="w-7 h-7 rounded-lg bg-[#B66A45] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
                     <User className="w-3.5 h-3.5" />
                   </div>
                 )}
@@ -412,8 +412,8 @@ export default function AIChatbot() {
             ))}
 
             {loading && (
-              <div className="flex items-center gap-2 text-xs text-[#64748B]">
-                <div className="w-4 h-4 border-2 border-[#14532D] border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-[#66737D] dark:text-[#89939B]">
+                <div className="w-4 h-4 border-2 border-[#244C66] border-t-transparent rounded-full animate-spin" />
                 <span>Crafting multimodal travel plan...</span>
               </div>
             )}
@@ -421,7 +421,7 @@ export default function AIChatbot() {
           </div>
 
           {/* Chat Input */}
-          <div className="p-3 border-t border-[#E3DED2] dark:border-[#273E36] bg-[#FFFDF7] dark:bg-[#101B17]">
+          <div className="p-3 border-t border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -434,7 +434,7 @@ export default function AIChatbot() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask e.g. Bhubaneswar to Manali 5 days..."
-                className="flex-1 bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-xl px-3.5 py-2.5 text-xs text-[#1F2933] dark:text-[#F7F5EF] outline-none focus:border-[#14532D]"
+                className="flex-1 bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-3.5 py-2.5 text-xs text-[#202A32] dark:text-[#F0F4F7] outline-none focus:border-[#244C66]"
               />
               <button
                 type="button"
@@ -443,7 +443,7 @@ export default function AIChatbot() {
                 className={`p-2.5 rounded-xl transition-all cursor-pointer ${
                   isListening 
                     ? 'bg-rose-600 text-white animate-pulse' 
-                    : 'bg-[#EEF2ED] dark:bg-[#1D322B] text-[#14532D] dark:text-[#EEF2ED] hover:bg-[#E3DED2] dark:hover:bg-[#273E36]'
+                    : 'bg-[#EEF2F4] dark:bg-[#202D3A] text-[#244C66] dark:text-[#75A4C4] hover:bg-[#E3E7EA]'
                 }`}
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -451,7 +451,7 @@ export default function AIChatbot() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="p-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3F22] disabled:opacity-50 text-white transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl bg-[#244C66] hover:bg-[#193B51] disabled:opacity-50 text-white transition-colors cursor-pointer"
               >
                 <Send className="w-4 h-4" />
               </button>
