@@ -1,15 +1,22 @@
 import axios from 'axios';
 
 export const getBackendURL = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  if (envUrl) {
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+  }
   return '/api';
 };
 
 export const getBackendBaseURL = () => {
-  return '';
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  return envUrl ? envUrl.replace(/\/+$/, '') : '';
 };
 
 export const getAiServiceURL = () => {
-  return '/ai';
+  const envUrl = import.meta.env.VITE_AI_URL;
+  return envUrl ? envUrl.replace(/\/+$/, '') : '/ai';
 };
 
 // ─── Auth endpoints that should NOT trigger silent refresh ───
@@ -99,7 +106,7 @@ api.interceptors.response.use(
       // ─── Token Refresh Logic (only for protected routes) ───
       originalRequest._retry = true;
       try {
-        await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        await axios.post(`${getBackendURL()}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem('userInfo');
