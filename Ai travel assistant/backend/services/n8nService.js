@@ -86,8 +86,8 @@ async function generateAIFallback(prompt) {
 async function triggerSupportWebhook(ticket, initialMessage, user) {
   const webhookUrl = process.env.N8N_SUPPORT_WEBHOOK_URL ||
     `${process.env.N8N_WEBHOOK_BASE_URL || 'http://localhost:5678/webhook'}/traveliq-support`;
-  const backendPort = process.env.PORT || 5000;
-  const callbackUrl = `http://localhost:${backendPort}/api/n8n/support-reply`;
+  const backendCallbackBase = process.env.BACKEND_CALLBACK_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const callbackUrl = `${backendCallbackBase}/api/n8n/support-reply`;
 
   const payload = {
     event: 'support.ticket_created',
@@ -127,7 +127,7 @@ async function triggerSupportWebhook(ticket, initialMessage, user) {
     console.log(`[n8nService] ✅ n8n support webhook delivered successfully!`);
 
     // If n8n responded with an immediate AI reply in the webhook response (synchronous workflow)
-    const replyText = response.data?.reply || response.data?.message || response.data?.ai_response;
+    const replyText = response.data?.reply || response.data?.message || response.data?.ai_response || response.data?.ai_reply;
     if (replyText) {
       await SupportMessage.create({
         ticket_id: ticket.id,
@@ -182,8 +182,8 @@ Provide an empathetic, ultra-helpful, 2-3 sentence initial response outlining po
 async function triggerBookingWebhook(booking, user) {
   const webhookUrl = process.env.N8N_BOOKING_WEBHOOK_URL ||
     `${process.env.N8N_WEBHOOK_BASE_URL || 'http://localhost:5678/webhook'}/traveliq-booking`;
-  const backendPort = process.env.PORT || 5000;
-  const callbackUrl = `http://localhost:${backendPort}/api/n8n/booking-notification`;
+  const backendCallbackBase = process.env.BACKEND_CALLBACK_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const callbackUrl = `${backendCallbackBase}/api/n8n/booking-notification`;
 
   const payload = {
     event: 'booking.ticket_confirmed',
@@ -256,8 +256,8 @@ Generate a concise, cheerful 2-sentence travel briefing with 1 packing tip and 1
 async function triggerDelayWebhook(disruptionData, user) {
   const webhookUrl = process.env.N8N_DELAY_WEBHOOK_URL ||
     `${process.env.N8N_WEBHOOK_BASE_URL || 'http://localhost:5678/webhook'}/traveliq-delay-alert`;
-  const backendPort = process.env.PORT || 5000;
-  const callbackUrl = `http://localhost:${backendPort}/api/n8n/delay-alert`;
+  const backendCallbackBase = process.env.BACKEND_CALLBACK_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const callbackUrl = `${backendCallbackBase}/api/n8n/delay-alert`;
 
   const payload = {
     event: 'transit.delay_detected',
@@ -317,17 +317,23 @@ async function sendTestWebhook(type = 'all') {
 
   const results = {};
 
+  const secret = process.env.N8N_WEBHOOK_SECRET || 'traveliq_n8n_secret_token_2026';
+  const headers = { 'Content-Type': 'application/json', 'X-TravelIQ-Secret': secret };
+
   if (type === 'all' || type === 'support') {
     try {
       const res = await axios.post(supportUrl, {
         event: 'test.ping',
         timestamp: new Date().toISOString(),
         test: true,
+        secret,
         message: 'TravelIQ n8n integration ping test for Support Automation'
-      }, { timeout: 3000 });
+      }, { timeout: 3000, headers });
       results.support = { status: 'Connected', code: res.status, data: res.data };
+      n8nStats.lastStatus = 'Connected';
     } catch (e) {
       results.support = { status: 'Offline / Unreachable', error: e.message, targetUrl: supportUrl };
+      n8nStats.lastStatus = 'Offline';
     }
   }
 
@@ -337,8 +343,9 @@ async function sendTestWebhook(type = 'all') {
         event: 'test.ping',
         timestamp: new Date().toISOString(),
         test: true,
+        secret,
         message: 'TravelIQ n8n integration ping test for Booking Automation'
-      }, { timeout: 3000 });
+      }, { timeout: 3000, headers });
       results.booking = { status: 'Connected', code: res.status, data: res.data };
     } catch (e) {
       results.booking = { status: 'Offline / Unreachable', error: e.message, targetUrl: bookingUrl };
@@ -351,8 +358,9 @@ async function sendTestWebhook(type = 'all') {
         event: 'test.ping',
         timestamp: new Date().toISOString(),
         test: true,
+        secret,
         message: 'TravelIQ n8n integration ping test for Delay Automation'
-      }, { timeout: 3000 });
+      }, { timeout: 3000, headers });
       results.delay = { status: 'Connected', code: res.status, data: res.data };
     } catch (e) {
       results.delay = { status: 'Offline / Unreachable', error: e.message, targetUrl: delayUrl };

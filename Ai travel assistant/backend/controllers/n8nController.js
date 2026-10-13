@@ -22,6 +22,11 @@ exports.handleSupportReply = async (req, res) => {
 
     const { ticket_id, message, sender_name, status } = req.body;
 
+    // Gracefully acknowledge test pings from n8n test workflows
+    if (ticket_id === 0 || ticket_id === '0' || req.body.is_test) {
+      return res.json({ success: true, message: 'Test ping acknowledged by support callback endpoint.' });
+    }
+
     if (!ticket_id || !message) {
       return res.status(400).json({ success: false, message: 'ticket_id and message are required.' });
     }

@@ -112,8 +112,10 @@ function minutesToTime(mins) {
   return `${h}:${m}`;
 }
 
+const { MultiModalRoutingEngine } = require('./multiModalRoutingEngine');
+
 /**
- * Discovers valid 2-leg connecting train routes in database
+ * Discovers valid 2-leg connecting train routes in database and nationwide hub architecture
  * @param {string} originCode - Origin station code
  * @param {string} destCode - Destination station code
  * @param {string|Date} travelDate - Date of journey
@@ -121,11 +123,23 @@ function minutesToTime(mins) {
  * @returns {Promise<Array>} List of connecting routes
  */
 async function findConnectingTrains(originCode, destCode, travelDate, sequelize) {
-  if (!originCode || !destCode || !sequelize) return [];
+  if (!originCode || !destCode) return [];
+
+  const engine = new MultiModalRoutingEngine({ sequelize });
+  try {
+    const discovery = await engine.findConnectingRoutes(originCode, destCode, travelDate);
+    if (discovery && discovery.routes && discovery.routes.length > 0) {
+      return discovery.routes;
+    }
+  } catch (err) {
+    console.error('MultiModalRoutingEngine connecting route discovery notice:', err.message);
+  }
 
   const targetDay = getDayOfWeek(travelDate);
 
-  // Query database for 1-transfer connecting trains via intermediate station
+  if (!sequelize) return [];
+
+  // Query database for 1-transfer connecting trains via intermediate station as fallback
   const sql = `
     SELECT 
       ts1.train_number AS leg1_train_number,
@@ -167,7 +181,6 @@ async function findConnectingTrains(originCode, destCode, travelDate, sequelize)
     const connectingRoutes = [];
 
     for (const row of rawResults) {
-      // Validate running days if targetDay specified
       if (targetDay) {
         const leg1Days = normalizeRunsOn(row.leg1_runs_on);
         const leg2Days = normalizeRunsOn(row.leg2_runs_on);
@@ -176,14 +189,13 @@ async function findConnectingTrains(originCode, destCode, travelDate, sequelize)
         }
       }
 
-      // Layover calculation
+      // Layover calculation with strict 60 - 360 min window
       const arrMins = timeToMinutes(row.leg1_arrival);
       const depMins = timeToMinutes(row.leg2_departure);
       let layoverMins = depMins - arrMins;
       if (layoverMins < 0) layoverMins += 1440; // overnight layover
 
-      // Reasonable layover filter: between 30 mins and 8 hours (480 mins)
-      if (layoverMins < 30 || layoverMins > 480) {
+      if (layoverMins < 60 || layoverMins > 360) {
         continue;
       }
 

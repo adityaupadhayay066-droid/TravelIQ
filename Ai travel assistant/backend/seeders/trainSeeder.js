@@ -223,6 +223,102 @@ const DEFAULT_TRAINS = [
             { station_code: 'MTJ', arrival_time: '05:40:00', departure_time: '05:42:00', day_count: 2, stop_sequence: 11 },
             { station_code: 'NDLS', arrival_time: '07:40:00', departure_time: null, day_count: 2, stop_sequence: 12 }
         ]
+    },
+    {
+        train_number: '22428',
+        train_name: 'Bhrigu Superfast Express',
+        runs_on: ['MON', 'WED', 'FRI'],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '23:55:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ANVT', arrival_time: '00:10:00', departure_time: '00:15:00', day_count: 2, stop_sequence: 2 },
+            { station_code: 'ALJN', arrival_time: '01:38:00', departure_time: '01:40:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'CNB', arrival_time: '05:20:00', departure_time: '05:25:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'ALD', arrival_time: '08:20:00', departure_time: '08:25:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'GCT', arrival_time: '12:35:00', departure_time: '12:40:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'BUI', arrival_time: '14:00:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '15126',
+        train_name: 'Jan Shatabdi Intercity Express',
+        schedule: [
+            { station_code: 'BSB', arrival_time: null, departure_time: '17:20:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'DDU', arrival_time: '18:00:00', departure_time: '18:10:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'MGS', arrival_time: '18:00:00', departure_time: '18:10:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GCT', arrival_time: '19:15:00', departure_time: '19:20:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BUI', arrival_time: '20:30:00', departure_time: null, day_count: 1, stop_sequence: 4 }
+        ]
+    },
+    {
+        train_number: '11088',
+        train_name: 'Pune - Veraval Express',
+        schedule: [
+            { station_code: 'PUNE', arrival_time: null, departure_time: '20:10:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'LNL', arrival_time: '20:58:00', departure_time: '21:00:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'KYN', arrival_time: '22:25:00', departure_time: '22:30:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BSR', arrival_time: '23:45:00', departure_time: '23:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'ST', arrival_time: '03:10:00', departure_time: '03:15:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'BRC', arrival_time: '04:45:00', departure_time: '04:55:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'ADI', arrival_time: '07:20:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '12995',
+        train_name: 'Bandra Terminus - Udaipur City Superfast Express',
+        schedule: [
+            { station_code: 'BDTS', arrival_time: null, departure_time: '16:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BSR', arrival_time: '01:45:00', departure_time: '01:55:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'ST', arrival_time: '04:40:00', departure_time: '04:45:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BRC', arrival_time: '06:20:00', departure_time: '06:30:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'RTM', arrival_time: '09:45:00', departure_time: '09:55:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'COR', arrival_time: '12:35:00', departure_time: '12:45:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'UDZ', arrival_time: '14:05:00', departure_time: null, day_count: 2, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '20980',
+        train_name: 'Ahmedabad - Udaipur City Superfast Intercity',
+        schedule: [
+            { station_code: 'ADI', arrival_time: null, departure_time: '09:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'HMT', arrival_time: '10:38:00', departure_time: '10:40:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'COR', arrival_time: '12:55:00', departure_time: '13:00:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'UDZ', arrival_time: '14:15:00', departure_time: null, day_count: 1, stop_sequence: 4 }
+        ]
+    },
+    {
+        train_number: '22943',
+        train_name: 'Pune - Indore Express',
+        schedule: [
+            { station_code: 'PUNE', arrival_time: null, departure_time: '15:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'KYN', arrival_time: '17:40:00', departure_time: '17:45:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BSR', arrival_time: '18:40:00', departure_time: '18:45:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'ST', arrival_time: '21:45:00', departure_time: '21:50:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'BRC', arrival_time: '23:20:00', departure_time: '23:30:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'RTM', arrival_time: '03:00:00', departure_time: null, day_count: 2, stop_sequence: 6 }
+        ]
+    },
+    {
+        train_number: '19327',
+        train_name: 'Ratlam - Udaipur City Express',
+        schedule: [
+            { station_code: 'RTM', arrival_time: null, departure_time: '04:45:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'JAO', arrival_time: '05:28:00', departure_time: '05:30:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'MDS', arrival_time: '06:10:00', departure_time: '06:15:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'COR', arrival_time: '07:45:00', departure_time: '07:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'UDZ', arrival_time: '09:30:00', departure_time: null, day_count: 1, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '12533',
+        train_name: 'Pushpak Express',
+        schedule: [
+            { station_code: 'LKO', arrival_time: null, departure_time: '21:25:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '22:40:00', departure_time: '22:45:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BPL', arrival_time: '07:05:00', departure_time: '07:15:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'BSL', arrival_time: '11:58:00', departure_time: '12:05:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'KYN', arrival_time: '16:22:00', departure_time: '16:25:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'CSMT', arrival_time: '17:30:00', departure_time: null, day_count: 2, stop_sequence: 6 }
+        ]
     }
 ];
 
@@ -238,9 +334,9 @@ async function seedDefaultTrains() {
                 train_name: item.train_name,
                 source_station: src,
                 destination_station: dst,
-                runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+                runs_on: item.runs_on || ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
                 service_type: 'Express',
-                frequency: 'Daily'
+                frequency: item.runs_on ? `${item.runs_on.length} days/week` : 'Daily'
             }
         });
 

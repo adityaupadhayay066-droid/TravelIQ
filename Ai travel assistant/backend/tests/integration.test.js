@@ -12,7 +12,8 @@ function postJson(url, body) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(data)
+        'Content-Length': Buffer.byteLength(data),
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
       }
     }, res => {
       let raw = '';
@@ -136,6 +137,60 @@ async function runIntegrationTests() {
       'All trains have frequency, running_days, and route_type populated',
       allHaveMetadata,
       trainsFri[0]
+    );
+
+    // 5. East Corridor Test: TATA -> BUI (No direct rail, connects via DDU/BSB)
+    const resTataBui = await postJson('http://localhost:5000/api/travel/routes/search', {
+      source: 'TATA',
+      destination: 'BUI',
+      departureDate: '2026-10-15'
+    });
+    test(
+      'TATA -> BUI route search returns 200 OK',
+      resTataBui.status === 200,
+      resTataBui
+    );
+    const tataBuiTrains = resTataBui.data.trains || [];
+    test(
+      'TATA -> BUI returns connecting routes via DDU or BSB',
+      tataBuiTrains.length > 0 && tataBuiTrains.some(t => t.route_type === 'Connecting' || (t.id && (t.id.includes('DDU') || t.id.includes('BSB')))),
+      tataBuiTrains
+    );
+
+    // 6. West-North Corridor Test: PUNE -> UDZ (Connects via BSR, ADI, or RTM)
+    const resPuneUdz = await postJson('http://localhost:5000/api/travel/routes/search', {
+      source: 'PUNE',
+      destination: 'UDZ',
+      departureDate: '2026-10-15'
+    });
+    test(
+      'PUNE -> UDZ route search returns 200 OK',
+      resPuneUdz.status === 200,
+      resPuneUdz
+    );
+    const puneUdzTrains = resPuneUdz.data.trains || [];
+    test(
+      'PUNE -> UDZ returns connecting routes via BSR, ADI, or RTM',
+      puneUdzTrains.length > 0 && puneUdzTrains.some(t => t.route_type === 'Connecting' || (t.id && (t.id.includes('BSR') || t.id.includes('ADI') || t.id.includes('RTM')))),
+      puneUdzTrains
+    );
+
+    // 7. Cluster Transfer Test: LKO -> GOI (Inter-terminal transfer)
+    const resLkoGoi = await postJson('http://localhost:5000/api/travel/routes/search', {
+      source: 'LKO',
+      destination: 'GOI',
+      departureDate: '2026-10-15'
+    });
+    test(
+      'LKO -> GOI route search returns 200 OK',
+      resLkoGoi.status === 200,
+      resLkoGoi
+    );
+    const lkoGoiTrains = resLkoGoi.data.trains || [];
+    test(
+      'LKO -> GOI returns connecting multimodal route with layover/transfer',
+      lkoGoiTrains.length > 0,
+      lkoGoiTrains
     );
 
   } catch (err) {

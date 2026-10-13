@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse booking payload from TravelIQ\nconst body = $input.first().json.body || $input.first().json;\nconst booking = body.booking || {};\nconst user = body.user || {};\n\nconst trainNumber = booking.train_number || '12301';\nconst source = booking.source_station_code || 'DEL';\nconst destination = booking.destination_station_code || 'BBS';\nconst travelClass = booking.travel_class || 'SL';\nconst fare = booking.ticket_fare || '₹1,250';\nconst date = booking.booking_date || new Date().toISOString().split('T')[0];\n\nconst prompt = `You are TravelIQ Smart Travel Concierge.\nTraveler: ${user.name || 'Traveler'}\nTrain: #${trainNumber}\nFrom: ${source} ➔ To: ${destination}\nClass: ${travelClass}\nDate: ${date}\nFare: ₹${fare}\n\nGenerate a personalized 3-part travel briefing:\n1. Delay Probability & Route Status (e.g. Minimal delay risk)\n2. Weather & Packing Advisory (clothing, power banks, medicines)\n3. Top Food Recommendation for station transit.`;\n\nreturn {\n  json: {\n    booking_id: booking.id,\n    booking_ref: booking.booking_reference || `#TK-${booking.id}`,\n    user_id: user.id,\n    user_name: user.name,\n    user_email: user.email,\n    user_phone: user.phone,\n    train_number: trainNumber,\n    source: source,\n    destination: destination,\n    travel_class: travelClass,\n    fare: fare,\n    date: date,\n    callback_url: body.callback_url || 'http://localhost:5000/api/n8n/booking-notification',\n    secret: body.secret || 'traveliq_n8n_secret_token_2026',\n    ai_prompt: prompt\n  }\n};"
+        "jsCode": "// Parse booking payload from TravelIQ\nconst body = $input.first().json.body || $input.first().json;\nconst isTest = body.test || body.event === 'test.ping';\n\nif (isTest) {\n  return {\n    json: {\n      is_test: true,\n      booking_id: 0,\n      booking_ref: '#TK-TEST',\n      user_id: 0,\n      user_name: 'TravelIQ Tester',\n      user_email: 'tester@traveliq.com',\n      user_phone: '9999999999',\n      train_number: '12301',\n      source: 'DEL',\n      destination: 'BBS',\n      travel_class: 'SL',\n      fare: '₹1,250',\n      date: new Date().toISOString().split('T')[0],\n      callback_url: body.callback_url || 'http://localhost:5000/api/n8n/booking-notification',\n      secret: body.secret || 'traveliq_n8n_secret_token_2026',\n      ai_prompt: 'Test booking ping'\n    }\n  };\n}\n\nconst booking = body.booking || {};\nconst user = body.user || {};\n\nconst trainNumber = booking.train_number || '12301';\nconst source = booking.source_station_code || 'DEL';\nconst destination = booking.destination_station_code || 'BBS';\nconst travelClass = booking.travel_class || 'SL';\nconst fare = booking.ticket_fare || '₹1,250';\nconst date = booking.booking_date || new Date().toISOString().split('T')[0];\n\nconst prompt = `You are TravelIQ Smart Travel Concierge.\\nTraveler: ${user.name || 'Traveler'}\\nTrain: #${trainNumber}\\nFrom: ${source} ➔ To: ${destination}\\nClass: ${travelClass}\\nDate: ${date}\\nFare: ₹${fare}\\n\\nGenerate a personalized 3-part travel briefing:\\n1. Delay Probability & Route Status (e.g. Minimal delay risk)\\n2. Weather & Packing Advisory (clothing, power banks, medicines)\\n3. Top Food Recommendation for station transit.`;\n\nreturn {\n  json: {\n    is_test: false,\n    booking_id: booking.id,\n    booking_ref: booking.booking_reference || `#TK-${booking.id}`,\n    user_id: user.id,\n    user_name: user.name || 'Traveler',\n    user_email: user.email,\n    user_phone: user.phone,\n    train_number: trainNumber,\n    source: source,\n    destination: destination,\n    travel_class: travelClass,\n    fare: fare,\n    date: date,\n    callback_url: body.callback_url || 'http://localhost:5000/api/n8n/booking-notification',\n    secret: body.secret || 'traveliq_n8n_secret_token_2026',\n    ai_prompt: prompt\n  }\n};"
       },
       "name": "Format Booking Data",
       "type": "n8n-nodes-base.code",
@@ -31,7 +31,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Generate AI Journey Briefing\nconst data = $input.first().json;\n\nconst briefing = `🎉 Congratulations ${data.user_name || 'Traveler'}! Your booking ${data.booking_ref} on Train #${data.train_number} (${data.source} ➔ ${data.destination}) is confirmed. \n\n🤖 AI Travel Briefing:\n• Live Route Advisory: Optimal corridor selected with 96% on-time probability.\n• Smart Packing: Keep a compact power bank, warm layer for AC coaches, and valid government photo ID.\n• Station Delight: Regional pantry services and food explorer options are active along your route.\n\nTrack your journey live on your TravelIQ Dashboard!`;\n\nreturn {\n  json: {\n    ...data,\n    title: `Trip Confirmed: ${data.source} to ${data.destination}`,\n    ai_briefing: briefing\n  }\n};"
+        "jsCode": "// Generate AI Journey Briefing\nconst data = $input.first().json;\n\nif (data.is_test) {\n  return {\n    json: {\n      ...data,\n      title: 'Booking Test Ping Verified',\n      ai_briefing: '✅ n8n TravelIQ Booking Journey Briefing Automation is active and connected successfully.'\n    }\n  };\n}\n\nconst briefing = `🎉 Congratulations ${data.user_name || 'Traveler'}! Your booking ${data.booking_ref} on Train #${data.train_number} (${data.source} ➔ ${data.destination}) is confirmed. \\n\\n🤖 AI Travel Briefing:\\n• Live Route Advisory: Optimal corridor selected with 96% on-time probability.\\n• Smart Packing: Keep a compact power bank, warm layer for AC coaches, and valid government photo ID.\\n• Station Delight: Regional pantry services and food explorer options are active along your route.\\n\\nTrack your journey live on your TravelIQ Dashboard!`;\n\nreturn {\n  json: {\n    ...data,\n    title: `Trip Confirmed: ${data.source} to ${data.destination}`,\n    ai_briefing: briefing\n  }\n};"
       },
       "name": "AI Journey Brief Generator",
       "type": "n8n-nodes-base.code",
@@ -60,7 +60,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"booking_id\": {{ $json.booking_id }},\n  \"user_id\": {{ $json.user_id }},\n  \"title\": \"{{ $json.title }}\",\n  \"briefing\": \"{{ $json.ai_briefing }}\",\n  \"secret\": \"{{ $json.secret }}\"\n}",
+        "jsonBody": "={{ JSON.stringify({\n  booking_id: $json.booking_id,\n  user_id: $json.user_id,\n  title: $json.title,\n  briefing: $json.ai_briefing,\n  secret: $json.secret\n}) }}",
         "options": {
           "timeout": 10000
         }
@@ -71,12 +71,13 @@
       "position": [
         940,
         300
-      ]
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"automation\": \"TravelIQ Booking Confirmation & Journey Briefing (n8n)\",\n  \"booking_id\": {{ $json.booking_id }},\n  \"briefing\": \"{{ $json.ai_briefing }}\"\n}",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  automation: 'TravelIQ Booking Confirmation & Journey Briefing (n8n)',\n  booking_id: $json.booking_id,\n  briefing: $json.ai_briefing\n}) }}",
         "options": {}
       },
       "name": "Respond with Briefing",
@@ -138,10 +139,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "tags": [
-    "TravelIQ",
-    "Ticket Booking",
-    "Journey Briefing",
-    "AI Automation"
-  ]
+  "tags": []
 }

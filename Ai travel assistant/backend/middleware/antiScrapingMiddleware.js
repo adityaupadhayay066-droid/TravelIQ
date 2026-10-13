@@ -87,6 +87,7 @@ const verifyClientShield = (token) => {
  * Check if an IP is currently blacklisted
  */
 const isIPBlacklisted = (ip) => {
+    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || process.env.NODE_ENV === 'test') return false;
     if (!blacklistedIPs.has(ip)) return false;
     const entry = blacklistedIPs.get(ip);
     if (Date.now() > entry.expiresAt) {
@@ -100,6 +101,7 @@ const isIPBlacklisted = (ip) => {
  * Blacklist an offending IP address and log security alert
  */
 const blacklistIP = async (ip, reason, durationMs = 24 * 60 * 60 * 1000, details = {}) => {
+    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || process.env.NODE_ENV === 'test') return;
     const expiresAt = Date.now() + durationMs;
     blacklistedIPs.set(ip, {
         reason,

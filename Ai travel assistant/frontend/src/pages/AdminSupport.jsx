@@ -47,7 +47,12 @@ export default function AdminSupport() {
         setIsTestingN8n(true);
         try {
             const res = await api.post('/n8n/test', { type: 'support' });
-            toast.success('n8n Webhook Test ping sent successfully!');
+            const supportResult = res.data?.results?.support;
+            if (supportResult?.status === 'Connected') {
+                toast.success('n8n Webhook Connected and responding!');
+            } else {
+                toast.error(`n8n is ${supportResult?.status || 'Offline'} on port 5678. Run "npx n8n" to start.`);
+            }
             fetchN8nStatus();
         } catch (err) {
             toast.error('n8n test error: ' + err.message);
@@ -132,10 +137,17 @@ export default function AdminSupport() {
                                 </div>
                                 <h3 className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED] flex items-center gap-2 font-['Manrope']">
                                     n8n AI Workflow Automation Engine
-                                    <span className="text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full bg-[#4F7D62]/10 text-[#4F7D62] border border-[#4F7D62]/30 flex items-center gap-1">
-                                        <span className="w-1.5 h-1.5 bg-[#4F7D62] rounded-full" />
-                                        Active
-                                    </span>
+                                    {n8nTelemetry?.lastStatus === 'Connected' || n8nTelemetry?.lastStatus === 'Success' ? (
+                                        <span className="text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full bg-[#4F7D62]/10 text-[#4F7D62] border border-[#4F7D62]/30 flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 bg-[#4F7D62] rounded-full animate-pulse" />
+                                            Online & Active
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full bg-[#D96C4F]/10 text-[#D96C4F] border border-[#D96C4F]/30 flex items-center gap-1.5">
+                                            <span className="w-1.5 h-1.5 bg-[#D96C4F] rounded-full" />
+                                            Offline (AI Fallback Active)
+                                        </span>
+                                    )}
                                 </h3>
                             </div>
                             <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] max-w-2xl leading-relaxed">
