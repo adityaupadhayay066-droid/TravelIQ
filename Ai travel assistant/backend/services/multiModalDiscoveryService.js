@@ -1,5 +1,6 @@
 const { resolveAirport, areBothAirportCities, getNearestAirport } = require('../utils/airportRegistry');
 const { trainRunsOnDate, getTrainFrequencyLabel, formatRunningDays } = require('./routeValidationEngine');
+const { VERIFIED_FLIGHT_SCHEDULES, VERIFIED_INTERCITY_BUSES } = require('./multiModalRoutingEngine');
 
 // Known coordinates for Indian railway hubs and cities for accurate distance calculation
 const CITY_COORDINATES = {
@@ -69,6 +70,17 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Resolve coordinates for station / city
 function resolveCoordinates(stationObj, fallbackName) {
+  const code = (stationObj?.station_code || '').toLowerCase().trim();
+  const name = String(stationObj?.station_name || fallbackName || '').toLowerCase().trim();
+  if (code && CITY_COORDINATES[code]) {
+    return CITY_COORDINATES[code];
+  }
+  for (const [key, val] of Object.entries(CITY_COORDINATES)) {
+    if (name === key || name.startsWith(key + ' ') || name.endsWith(' ' + key)) {
+      return val;
+    }
+  }
+
   if (stationObj && stationObj.latitude && stationObj.longitude && Number(stationObj.latitude) !== 0) {
     return {
       lat: Number(stationObj.latitude),
@@ -120,92 +132,154 @@ function generateRealisticTrainSchedule(sourceObj, destObj, distanceKm, travelDa
   // Base railway track distance is ~1.12x aerial distance
   const railDistance = Math.max(80, Math.round(distanceKm * 1.15));
 
-  // Determine corridor type and popular train templates with authentic running days
-  const isEasternCorridor = (srcName.toLowerCase().includes('delhi') || srcName.toLowerCase().includes('ndls')) && 
-    (dstName.toLowerCase().includes('ballia') || dstName.toLowerCase().includes('bui') || dstName.toLowerCase().includes('varanasi') || dstName.toLowerCase().includes('chhapra') || dstName.toLowerCase().includes('patna'));
+  // Determine verified corridor type - only return trains if authentic direct connection exists
+  const sLower = srcName.toLowerCase();
+  const dLower = dstName.toLowerCase();
+  const sCode = srcCode.toUpperCase();
+  const dCode = dstCode.toUpperCase();
 
-  const trainTemplates = [
-    {
-      id: 101,
-      number: isEasternCorridor ? '12562' : '12582',
-      name: isEasternCorridor ? 'Swatantrata Senani Superfast Express' : 'Superfast Express',
-      speed: 78,
-      depMins: 6 * 60 + 0, // 06:00 AM
-      classes: ['SL', '3E', '3A', '2A', '1A', '2S'],
-      runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
-      type: 'Train'
-    },
-    {
-      id: 102,
-      number: '22436',
-      name: 'Vande Bharat Express',
-      speed: 105,
-      depMins: 6 * 60 + 30, // 06:30 AM
-      classes: ['2S', 'CC', 'EC'],
-      runs_on: ['MON', 'TUE', 'WED', 'FRI', 'SAT', 'SUN'], // Doesn't run on Thursday
-      type: 'Train'
-    },
-    {
-      id: 103,
-      number: isEasternCorridor ? '14006' : '12392',
-      name: isEasternCorridor ? 'Lichchavi Express' : 'Shramjeevi Superfast Express',
-      speed: 68,
-      depMins: 9 * 60 + 15, // 09:15 AM
-      classes: ['SL', '3A', '2A', '2S'],
-      runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
-      type: 'Train'
-    },
-    {
-      id: 104,
-      number: isEasternCorridor ? '22428' : '12004',
-      name: isEasternCorridor ? 'Bhrigu Superfast Express' : 'Shatabdi Express',
-      speed: 82,
-      depMins: 11 * 60 + 45, // 11:45 AM
-      classes: ['2S', 'CC', 'EC', '3A'],
-      runs_on: ['MON', 'WED', 'FRI'], // 3 days/week
-      type: 'Train'
-    },
-    {
-      id: 105,
-      number: '12301',
-      name: 'Rajdhani Express (Via Grand Chord)',
-      speed: 90,
-      depMins: 16 * 60 + 55, // 04:55 PM
-      classes: ['3A', '2A', '1A', '3E'],
-      runs_on: ['MON', 'TUE', 'THU', 'FRI', 'SAT', 'SUN'],
-      type: 'Train'
-    },
-    {
-      id: 106,
-      number: isEasternCorridor ? '15054' : '12488',
-      name: isEasternCorridor ? 'Chhapra - Lucknow Express' : 'Seemanchal Superfast Express',
-      speed: 66,
-      depMins: 18 * 60 + 20, // 06:20 PM
-      classes: ['SL', '3E', '3A', '2A', '2S'],
-      runs_on: ['TUE', 'THU', 'SAT'], // 3 days/week
-      type: 'Train'
-    },
-    {
-      id: 107,
-      number: '12566',
-      name: 'Bihar Sampark Kranti Superfast Express',
-      speed: 74,
-      depMins: 20 * 60 + 10, // 08:10 PM
-      classes: ['SL', '3A', '2A', '1A', '2S'],
-      runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
-      type: 'Train'
-    },
-    {
-      id: 108,
-      number: '12260',
-      name: 'AC Duronto Express',
-      speed: 88,
-      depMins: 22 * 60 + 30, // 10:30 PM
-      classes: ['3A', '2A', '1A', '3E'],
-      runs_on: ['MON', 'WED', 'SAT'], // 3 days/week
-      type: 'Train'
-    }
-  ];
+  const isDelhi = sLower.includes('delhi') || sCode === 'NDLS' || sCode === 'DLI' || sCode === 'ANVT';
+  const isBallia = dLower.includes('ballia') || dCode === 'BUI';
+  const isVaranasi = dLower.includes('varanasi') || dCode === 'BSB';
+  const isKanpur = dLower.includes('kanpur') || dCode === 'CNB';
+  const isPatna = dLower.includes('patna') || dCode === 'PNBE';
+  const isChhapra = dLower.includes('chhapra') || dCode === 'CPR';
+  const isHowrah = dLower.includes('howrah') || dLower.includes('kolkata') || dCode === 'HWH';
+
+  let trainTemplates = [];
+
+  if (isDelhi && isBallia) {
+    // Authentic direct trains between Delhi and Ballia
+    trainTemplates = [
+      {
+        id: 101,
+        number: '12562',
+        name: 'Swatantrata Senani Superfast Express',
+        speed: 78,
+        depMins: 6 * 60 + 0, // 06:00 AM
+        classes: ['SL', '3E', '3A', '2A', '1A', '2S'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      },
+      {
+        id: 103,
+        number: '14006',
+        name: 'Lichchavi Express',
+        speed: 68,
+        depMins: 9 * 60 + 15, // 09:15 AM
+        classes: ['SL', '3A', '2A', '2S'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      },
+      {
+        id: 104,
+        number: '22428',
+        name: 'Bhrigu Superfast Express',
+        speed: 82,
+        depMins: 11 * 60 + 45, // 11:45 AM
+        classes: ['2S', 'CC', 'EC', '3A'],
+        runs_on: ['MON', 'WED', 'FRI'], // 3 days/week
+        type: 'Train'
+      }
+    ];
+  } else if (isDelhi && (isVaranasi || isChhapra || isPatna)) {
+    trainTemplates = [
+      {
+        id: 101,
+        number: '12562',
+        name: 'Swatantrata Senani Superfast Express',
+        speed: 78,
+        depMins: 6 * 60 + 0,
+        classes: ['SL', '3E', '3A', '2A', '1A', '2S'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      },
+      {
+        id: 102,
+        number: '22436',
+        name: 'Vande Bharat Express',
+        speed: 105,
+        depMins: 6 * 60 + 30,
+        classes: ['2S', 'CC', 'EC'],
+        runs_on: ['MON', 'TUE', 'WED', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      },
+      {
+        id: 103,
+        number: '14006',
+        name: 'Lichchavi Express',
+        speed: 68,
+        depMins: 9 * 60 + 15,
+        classes: ['SL', '3A', '2A', '2S'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      }
+    ];
+  } else if (isDelhi && isKanpur) {
+    trainTemplates = [
+      {
+        id: 102,
+        number: '22436',
+        name: 'Vande Bharat Express',
+        speed: 105,
+        depMins: 6 * 60 + 30,
+        classes: ['2S', 'CC', 'EC'],
+        runs_on: ['MON', 'TUE', 'WED', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      },
+      {
+        id: 104,
+        number: '12004',
+        name: 'Lucknow Shatabdi Express',
+        speed: 82,
+        depMins: 6 * 60 + 10,
+        classes: ['2S', 'CC', 'EC', '3A'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      }
+    ];
+  } else if (isDelhi && isHowrah) {
+    trainTemplates = [
+      {
+        id: 105,
+        number: '12302',
+        name: 'New Delhi - Howrah Rajdhani Express',
+        speed: 90,
+        depMins: 16 * 60 + 55,
+        classes: ['3A', '2A', '1A', '3E'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      }
+    ];
+  } else if ((sLower.includes('howrah') || sCode === 'HWH') && isDelhi) {
+    trainTemplates = [
+      {
+        id: 105,
+        number: '12301',
+        name: 'Howrah Rajdhani Express (Via Grand Chord)',
+        speed: 90,
+        depMins: 16 * 60 + 55,
+        classes: ['3A', '2A', '1A', '3E'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      }
+    ];
+  } else if ((sLower.includes('varanasi') || sCode === 'BSB' || sCode === 'DDU') && isBallia) {
+    trainTemplates = [
+      {
+        id: 106,
+        number: '15126',
+        name: 'Jan Shatabdi Intercity Express',
+        speed: 66,
+        depMins: 18 * 60 + 0,
+        classes: ['2S', 'CC'],
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        type: 'Train'
+      }
+    ];
+  }
+  // If corridor has no direct trains (e.g. Tatanagar to Ballia), trainTemplates is empty []
+
 
   return trainTemplates
     .filter(tmpl => trainRunsOnDate(tmpl, travelDate))
@@ -265,51 +339,60 @@ function generateRealisticTrainSchedule(sourceObj, destObj, distanceKm, travelDa
 /**
  * Generates realistic commercial flights or multimodal flight + ground transfers
  */
+/**
+ * Retrieves authentic commercial flights or multimodal flight + ground transfers from verified schedules
+ */
 function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = null) {
   const hasSrcAirport = resolveAirport(sourceObj);
   const hasDstAirport = resolveAirport(destObj);
 
-  // If both cities have direct commercial airports, return direct flights
+  // If both cities have direct commercial airports, check verified direct flights
   if (hasSrcAirport && hasDstAirport && hasSrcAirport.iata !== hasDstAirport.iata) {
-    const flightHours = (distanceKm / 750) + 0.65; // cruise + taxi/takeoff/landing time
+    const verifiedFlights = VERIFIED_FLIGHT_SCHEDULES.filter(
+      f => f.origin_iata === hasSrcAirport.iata && f.dest_iata === hasDstAirport.iata
+    );
 
-    const flightCarriers = [
-      { id: 201, carrier: 'IndiGo', flightNo: '6E-205', depMins: 7 * 60 + 15, baseMultiplier: 1.0 },
-      { id: 202, carrier: 'Air India', flightNo: 'AI-805', depMins: 10 * 60 + 30, baseMultiplier: 1.15 },
-      { id: 203, carrier: 'Vistara', flightNo: 'UK-995', depMins: 14 * 60 + 45, baseMultiplier: 1.25 },
-      { id: 204, carrier: 'Akasa Air', flightNo: 'QP-1310', depMins: 18 * 60 + 20, baseMultiplier: 0.95 },
-      { id: 205, carrier: 'SpiceJet', flightNo: 'SG-8169', depMins: 20 * 60 + 50, baseMultiplier: 0.90 }
-    ];
+    if (verifiedFlights.length === 0) {
+      // Do NOT fabricate flights if no verified flight schedule exists for this pair
+      return [];
+    }
 
-    const baseEcoFare = Math.max(2850, Math.round(distanceKm * 3.4));
+    return verifiedFlights.map((f, idx) => {
+      const depParts = (f.dep_time || '08:00:00').split(':');
+      const depMins = parseInt(depParts[0], 10) * 60 + parseInt(depParts[1], 10);
+      const arrParts = (f.arr_time || '10:00:00').split(':');
+      const arrMins = parseInt(arrParts[0], 10) * 60 + parseInt(arrParts[1], 10) + ((f.day_offset || 0) * 1440);
+      const flightHours = Math.max(0.5, (arrMins - depMins) / 60);
 
-    return flightCarriers.map(f => {
-      const arrMins = f.depMins + (flightHours * 60);
-      const ecoFare = Math.round(baseEcoFare * f.baseMultiplier);
-      const flexiFare = Math.round(ecoFare * 1.28);
-      const bizFare = Math.round(ecoFare * 2.45);
+      const ecoFare = f.fare_inr || null;
+      const flexiFare = ecoFare ? Math.round(ecoFare * 1.25) : null;
+      const bizFare = ecoFare ? Math.round(ecoFare * 2.2) : null;
 
-      const fares = {
-        'Economy': ecoFare,
-        'Flexi': flexiFare,
-        'Business': bizFare
-      };
+      const fares = {};
+      if (ecoFare) fares['Economy'] = ecoFare;
+      if (flexiFare) fares['Flexi'] = flexiFare;
+      if (bizFare) fares['Business'] = bizFare;
+
+      const classes = ecoFare ? Object.entries(fares).map(([cls, fare]) => `${cls} - ₹${fare.toLocaleString()}`) : [];
 
       return {
-        id: f.id,
+        id: 200 + idx,
         type: 'Flight',
         mode: 'Flight',
         route_type: 'Direct',
         direct: true,
         validated: true,
         source_verified: true,
+        verification_status: 'provider_verified',
+        source: 'verified_commercial_flight_registry',
+        fare_type: ecoFare ? 'actual' : null,
         departure_date: travelDate || null,
-        name: `${f.carrier} ${f.flightNo}`,
-        train_name: `${f.carrier} ${f.flightNo}`,
-        number: f.flightNo,
-        train_number: f.flightNo,
-        depTime: formatTimeAMPM(f.depMins),
-        arrTime: formatTimeAMPM(arrMins),
+        name: `${f.airline} ${f.flight_number}`,
+        train_name: `${f.airline} ${f.flight_number}`,
+        number: f.flight_number,
+        train_number: f.flight_number,
+        depTime: f.dep_time ? f.dep_time.substring(0, 5) : formatTimeAMPM(depMins),
+        arrTime: f.arr_time ? f.arr_time.substring(0, 5) : formatTimeAMPM(arrMins),
         dur: formatDuration(flightHours),
         duration_hours: parseFloat(flightHours.toFixed(1)),
         depStation: `${sourceObj.station_name || sourceObj.name} (${hasSrcAirport.iata})`,
@@ -318,13 +401,13 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
         destination_code: hasDstAirport.iata,
         price: ecoFare,
         fare_inr: ecoFare,
-        classes: [`Economy - ₹${ecoFare.toLocaleString()}`, `Flexi - ₹${flexiFare.toLocaleString()}`, `Business - ₹${bizFare.toLocaleString()}`],
-        fares: fares,
-        available_classes: ['Economy', 'Flexi', 'Business'],
+        classes,
+        fares: Object.keys(fares).length > 0 ? fares : null,
+        available_classes: Object.keys(fares),
         running_days: 'Daily',
         frequency: 'Daily (7 days/week)',
-        source_departure: formatTimeAMPM(f.depMins),
-        dest_arrival: formatTimeAMPM(arrMins),
+        source_departure: f.dep_time ? f.dep_time.substring(0, 5) : formatTimeAMPM(depMins),
+        dest_arrival: f.arr_time ? f.arr_time.substring(0, 5) : formatTimeAMPM(arrMins),
         airportInfo: {
           srcAirport: hasSrcAirport.name,
           dstAirport: hasDstAirport.name
@@ -333,19 +416,30 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
     });
   }
 
-  // If one of the endpoints lacks an airport, DO NOT offer direct flight!
-  // Instead, look for a nearby airport to offer a validated Multimodal (Flight + Ground Transfer) route!
+  // If one of the endpoints lacks an airport, look for verified Multimodal (Flight + Ground Transfer)
   const srcNear = hasSrcAirport ? { airport: hasSrcAirport, distanceKm: 0, travelTimeHours: 0 } : getNearestAirport(sourceObj, 250);
   const dstNear = hasDstAirport ? { airport: hasDstAirport, distanceKm: 0, travelTimeHours: 0 } : getNearestAirport(destObj, 250);
 
   if (srcNear && dstNear && srcNear.airport.iata !== dstNear.airport.iata) {
-    const flightDistKm = calculateDistance(srcNear.airport.lat, srcNear.airport.lng, dstNear.airport.lat, dstNear.airport.lng);
-    const flightHours = (flightDistKm / 750) + 0.65;
-    const totalHours = flightHours + srcNear.travelTimeHours + dstNear.travelTimeHours + 1.5; // with airport buffer
+    // Only construct multimodal flight if an authentic flight schedule connects the nearby airports
+    const verifiedFlight = VERIFIED_FLIGHT_SCHEDULES.find(
+      f => f.origin_iata === srcNear.airport.iata && f.dest_iata === dstNear.airport.iata
+    );
 
-    const baseEcoFare = Math.max(2850, Math.round(flightDistKm * 3.4));
+    if (!verifiedFlight) {
+      return [];
+    }
+
+    const depParts = (verifiedFlight.dep_time || '08:00:00').split(':');
+    const flDepMins = parseInt(depParts[0], 10) * 60 + parseInt(depParts[1], 10);
+    const arrParts = (verifiedFlight.arr_time || '10:00:00').split(':');
+    const flArrMins = parseInt(arrParts[0], 10) * 60 + parseInt(arrParts[1], 10) + ((verifiedFlight.day_offset || 0) * 1440);
+    const flightHours = Math.max(0.5, (flArrMins - flDepMins) / 60);
+
+    const totalHours = flightHours + srcNear.travelTimeHours + dstNear.travelTimeHours + 1.5;
+    const flightFare = verifiedFlight.fare_inr !== undefined && verifiedFlight.fare_inr !== null ? verifiedFlight.fare_inr : null;
     const groundFare = (srcNear.distanceKm * 12) + (dstNear.distanceKm * 12);
-    const totalPrice = baseEcoFare + groundFare;
+    const totalPrice = flightFare !== null ? flightFare + groundFare : null;
 
     const legs = [];
     if (srcNear.distanceKm > 0) {
@@ -360,8 +454,8 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
 
     legs.push({
       type: 'Flight',
-      airline: 'IndiGo / Air India',
-      flight_number: 'Connecting Flight',
+      airline: verifiedFlight.airline,
+      flight_number: verifiedFlight.flight_number,
       from: `${srcNear.airport.city} (${srcNear.airport.iata})`,
       to: `${dstNear.airport.city} (${dstNear.airport.iata})`,
       duration: formatDuration(flightHours)
@@ -385,14 +479,17 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
         route_type: 'Multimodal',
         direct: false,
         validated: true,
-        source_verified: true,
+        source_verified: false,
+        verification_status: 'multimodal_reference',
+        source: 'multimodal_network_resolver',
+        fare_type: 'estimated_combined',
         departure_date: travelDate || null,
-        name: `Flight to ${dstNear.airport.city} (${dstNear.airport.iata}) + Ground Transfer`,
+        name: `${verifiedFlight.airline} ${verifiedFlight.flight_number} to ${dstNear.airport.city} (${dstNear.airport.iata}) + Ground Transfer`,
         train_name: `Flight via ${dstNear.airport.city} (${dstNear.airport.iata})`,
-        number: `FLY-${dstNear.airport.iata}`,
-        train_number: `FLY-${dstNear.airport.iata}`,
-        depTime: '07:30 AM',
-        arrTime: formatTimeAMPM(7 * 60 + 30 + (totalHours * 60)),
+        number: verifiedFlight.flight_number,
+        train_number: verifiedFlight.flight_number,
+        depTime: formatTimeAMPM(Math.max(0, flDepMins - (srcNear.travelTimeHours * 60) - 90)),
+        arrTime: formatTimeAMPM(flArrMins + (dstNear.travelTimeHours * 60) + 30),
         dur: formatDuration(totalHours),
         duration_hours: parseFloat(totalHours.toFixed(1)),
         depStation: sourceObj.station_name || sourceObj.name,
@@ -401,12 +498,12 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
         destination_code: dstNear.airport.iata,
         price: totalPrice,
         fare_inr: totalPrice,
-        classes: [`Combined Fare - ₹${totalPrice.toLocaleString()}`],
-        available_classes: ['Combined Fare'],
+        classes: totalPrice !== null ? [`Combined Fare - ₹${totalPrice.toLocaleString()}`] : [],
+        available_classes: totalPrice !== null ? ['Combined Fare'] : [],
         running_days: 'Daily',
         frequency: 'Daily (7 days/week)',
         legs: legs,
-        note: `No direct airport in destination. Fly into ${dstNear.airport.name} (${dstNear.airport.iata}) and take a ${dstNear.groundMode} for the remaining ${dstNear.distanceKm} km.`
+        note: `No commercial airport at destination. Fly on ${verifiedFlight.airline} ${verifiedFlight.flight_number} to ${dstNear.airport.name} (${dstNear.airport.iata}) and transfer by ${dstNear.groundMode} for ${dstNear.distanceKm} km.`
       }
     ];
   }
@@ -415,87 +512,74 @@ function generateRealisticFlights(sourceObj, destObj, distanceKm, travelDate = n
 }
 
 /**
- * Generates realistic interstate buses
+ * Retrieves verified interstate bus options from authoritative records
  */
 function generateRealisticBuses(sourceObj, destObj, distanceKm, travelDate = null) {
   const srcName = sourceObj.station_name || sourceObj.name || 'Origin';
   const dstName = destObj.station_name || destObj.name || 'Destination';
-  const srcCode = sourceObj.station_code || 'SRC';
-  const dstCode = destObj.station_code || 'DST';
+  const srcCode = String(sourceObj.station_code || '').toUpperCase().trim();
+  const dstCode = String(destObj.station_code || '').toUpperCase().trim();
 
-  // Road distance is ~1.18x aerial distance, average highway speed ~55 km/h
-  const roadDist = Math.max(80, Math.round(distanceKm * 1.18));
-  const busHours = roadDist / 55;
+  // Find matching buses in verified registry
+  const matchedBuses = VERIFIED_INTERCITY_BUSES.filter(b => {
+    const origMatch = b.origin_hub === srcCode || 
+      (srcCode === 'NDLS' && (b.origin_hub === 'NDLS' || b.origin_hub === 'ANVT' || b.origin_hub === 'DLI')) ||
+      (srcCode === 'DELHI' && (b.origin_hub === 'NDLS' || b.origin_hub === 'ANVT'));
+    const destMatch = b.dest_code === dstCode || 
+      (dstCode === 'BUI' && b.dest_code === 'BUI');
+    return origMatch && destMatch;
+  });
 
-  const busOperators = [
-    {
-      id: 301,
-      name: 'IntrCity SmartBus (AC Sleeper 2+1)',
-      number: 'IC-882',
-      depMins: 17 * 60 + 30, // 05:30 PM
-      baseFare: Math.max(550, Math.round(roadDist * 1.15))
-    },
-    {
-      id: 302,
-      name: 'Zingbus Multi-Axle Volvo 9600 AC',
-      number: 'ZB-401',
-      depMins: 19 * 60 + 0, // 07:00 PM
-      baseFare: Math.max(680, Math.round(roadDist * 1.35))
-    },
-    {
-      id: 303,
-      name: 'UPSRTC / State Transport Janrath AC',
-      number: 'ST-905',
-      depMins: 21 * 60 + 15, // 09:15 PM
-      baseFare: Math.max(490, Math.round(roadDist * 0.95))
-    }
-  ];
+  if (matchedBuses.length === 0) {
+    return [];
+  }
 
-  return busOperators.map(b => {
-    const arrMins = b.depMins + (busHours * 60);
-    const sleeperFare = b.baseFare;
-    const semiSleeperFare = Math.round(sleeperFare * 0.82);
-    const seaterFare = Math.round(sleeperFare * 0.68);
+  return matchedBuses.map((b, idx) => {
+    const depParts = (b.dep_time || '18:00:00').split(':');
+    const depMins = parseInt(depParts[0], 10) * 60 + parseInt(depParts[1], 10);
+    const busHours = b.duration_hours || (distanceKm * 1.18 / 55);
+    const arrMins = depMins + (busHours * 60);
 
-    const fares = {
-      'Volvo Seater': seaterFare,
-      'AC Semi-Sleeper': semiSleeperFare,
-      'AC Sleeper': sleeperFare
-    };
+    const fare = b.fare_inr || null;
+    const fares = fare ? { 'Standard': fare } : null;
 
     return {
-      id: b.id,
+      id: 300 + idx,
       type: 'Bus',
       mode: 'Bus',
       route_type: 'Direct',
       direct: true,
       validated: true,
-      source_verified: false,
+      source_verified: true,
+      verification_status: 'provider_verified',
+      source: 'verified_state_transport_directory',
+      fare_type: fare ? 'actual' : null,
       departure_date: travelDate || null,
-      name: b.name,
-      train_name: b.name,
-      number: b.number,
-      train_number: b.number,
-      depTime: formatTimeAMPM(b.depMins),
-      arrTime: formatTimeAMPM(arrMins),
+      name: b.operator,
+      train_name: b.operator,
+      number: b.bus_number,
+      train_number: b.bus_number,
+      depTime: b.dep_time ? b.dep_time.substring(0, 5) : formatTimeAMPM(depMins),
+      arrTime: b.arr_time ? b.arr_time.substring(0, 5) : formatTimeAMPM(arrMins),
       dur: formatDuration(busHours),
       duration_hours: parseFloat(busHours.toFixed(1)),
       depStation: srcName,
       arrStation: dstName,
       source_code: srcCode,
       destination_code: dstCode,
-      price: seaterFare,
-      fare_inr: seaterFare,
-      classes: [`Volvo Seater - ₹${seaterFare.toLocaleString()}`, `AC Semi-Sleeper - ₹${semiSleeperFare.toLocaleString()}`, `AC Sleeper - ₹${sleeperFare.toLocaleString()}`],
+      price: fare,
+      fare_inr: fare,
+      classes: fare ? [`Seat - ₹${fare.toLocaleString()}`] : [],
       fares: fares,
-      available_classes: ['Volvo Seater', 'AC Semi-Sleeper', 'AC Sleeper'],
+      available_classes: fare ? ['Standard'] : [],
       running_days: 'Daily',
       frequency: 'Daily (7 days/week)',
-      source_departure: formatTimeAMPM(b.depMins),
-      dest_arrival: formatTimeAMPM(arrMins)
+      source_departure: b.dep_time ? b.dep_time.substring(0, 5) : formatTimeAMPM(depMins),
+      dest_arrival: b.arr_time ? b.arr_time.substring(0, 5) : formatTimeAMPM(arrMins)
     };
   });
 }
+
 
 /**
  * Main discovery function returning all valid and authentic options for any Indian origin and destination

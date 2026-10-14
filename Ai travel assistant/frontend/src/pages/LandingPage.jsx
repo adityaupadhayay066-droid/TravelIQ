@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   Search, MapPin, Calendar, Users, ArrowRightLeft, 
@@ -182,36 +182,54 @@ export default function LandingPage() {
     }
   }, [location.search]);
 
+  // Local Date String (YYYY-MM-DD) helper to avoid UTC off-by-one errors
+  const getLocalDateString = (daysOffset = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Robust display formatter (e.g. "15 Oct")
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return 'Select Date';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        }
+      }
+    } catch (err) {}
+    return dateStr;
+  };
+
+  // Date input refs for reliable showPicker activation
+  const depDateInputRef = useRef(null);
+  const returnDateInputRef = useRef(null);
+  const hotelCheckInRef = useRef(null);
+  const hotelCheckOutRef = useRef(null);
+
   // Transportation Form State
   const [tripType, setTripType] = useState('oneWay'); // 'oneWay' | 'roundTrip'
   const [fromStation, setFromStation] = useState(null);
   const [toStation, setToStation] = useState(null);
-  const [departureDate, setDepartureDate] = useState(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  });
-  const [returnDate, setReturnDate] = useState(() => {
-    const inThreeDays = new Date();
-    inThreeDays.setDate(inThreeDays.getDate() + 4);
-    return inThreeDays.toISOString().split('T')[0];
-  });
+  const [departureDate, setDepartureDate] = useState(() => getLocalDateString(1));
+  const [returnDate, setReturnDate] = useState(() => getLocalDateString(4));
   const [passengerConfig, setPassengerConfig] = useState({ adults: 1, children: 0, infants: 0, seniors: 0 });
   const [travelClass, setTravelClass] = useState('All Classes');
   const [isSearching, setIsSearching] = useState(false);
 
   // Hotel Form State
   const [hotelCity, setHotelCity] = useState('Goa');
-  const [hotelCheckIn, setHotelCheckIn] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 2);
-    return d.toISOString().split('T')[0];
-  });
-  const [hotelCheckOut, setHotelCheckOut] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 5);
-    return d.toISOString().split('T')[0];
-  });
+  const [hotelCheckIn, setHotelCheckIn] = useState(() => getLocalDateString(2));
+  const [hotelCheckOut, setHotelCheckOut] = useState(() => getLocalDateString(5));
   const [hotelGuests, setHotelGuests] = useState('2 Guests, 1 Room');
 
   // Personalized Picks State
@@ -334,8 +352,8 @@ export default function LandingPage() {
             {/* Category Tabs: Flights, Trains, Buses, Hotels */}
             <div className="flex items-center border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] overflow-x-auto scrollbar-none px-2 pt-1.5">
               {[
-                { id: 'trains', label: 'Trains', icon: Train, badge: 'IRCTC Live' },
                 { id: 'flights', label: 'Flights', icon: Plane, badge: 'Direct Air' },
+                { id: 'trains', label: 'Trains', icon: Train, badge: 'IRCTC Live' },
                 { id: 'buses', label: 'Buses', icon: Bus, badge: 'Interstate' },
                 { id: 'hotels', label: 'Hotels', icon: Building2, badge: 'Verified Stays' }
               ].map((tab) => {
@@ -344,7 +362,10 @@ export default function LandingPage() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      window.dispatchEvent(new CustomEvent('traveliq:set-tab', { detail: { tab: tab.id } }));
+                    }}
                     className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                       isSelected
                         ? 'border-[#244C66] text-[#244C66] dark:border-[#75A4C4] dark:text-[#75A4C4] bg-white dark:bg-[#1B242E]'
@@ -363,8 +384,8 @@ export default function LandingPage() {
               <form onSubmit={handleTransportSearch} className="p-4 sm:p-5 space-y-4">
                 
                 {/* Trip Type Selector (One Way / Round Trip) */}
-                <div className="flex items-center gap-4 text-xs font-medium text-[#66737D] dark:text-[#9CAAB5] pb-0.5">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                <div className="flex items-center gap-4 text-xs font-medium text-[#66737D] dark:text-[#94A3B8] pb-0.5">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
                     <input 
                       type="radio" 
                       name="tripType" 
@@ -372,9 +393,9 @@ export default function LandingPage() {
                       onChange={() => setTripType('oneWay')} 
                       className="accent-[#244C66] cursor-pointer"
                     />
-                    <span>One Way</span>
+                    <span className={tripType === 'oneWay' ? 'font-bold text-[#0F2942] dark:text-[#F8FAFC]' : ''}>One Way</span>
                   </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
                     <input 
                       type="radio" 
                       name="tripType" 
@@ -382,231 +403,369 @@ export default function LandingPage() {
                       onChange={() => setTripType('roundTrip')} 
                       className="accent-[#244C66] cursor-pointer"
                     />
-                    <span>Round Trip</span>
+                    <span className={tripType === 'roundTrip' ? 'font-bold text-[#0F2942] dark:text-[#F8FAFC]' : ''}>Round Trip</span>
                   </label>
                 </div>
 
-                {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                {/* Form Fields Grid — Integrated Full-Height Dock */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 items-center">
                   
-                  {/* Origin (From) */}
-                  <div className="lg:col-span-3">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      From (Origin)
-                    </label>
+                  {/* Origin (From) with Floating Divider Swap Button */}
+                  <div className={tripType === 'roundTrip' 
+                    ? 'col-span-1 md:col-span-6 xl:col-span-2 relative' 
+                    : 'col-span-1 md:col-span-6 xl:col-span-3 relative'
+                  }>
                     <StationAutocomplete 
                       value={fromStation}
                       onChange={setFromStation}
-                      placeholder="Departure City / Station"
-                      inputPlaceholder="e.g. New Delhi (NDLS), Mumbai..."
+                      icon={activeTab === 'flights' ? Plane : activeTab === 'buses' ? Bus : Train}
+                      placeholder={activeTab === 'flights' ? 'From (Airport)' : activeTab === 'buses' ? 'From (City)' : 'From (Origin)'}
+                      inputPlaceholder={activeTab === 'flights' ? 'Departure (e.g. DEL)...' : activeTab === 'buses' ? 'Departure city or stand...' : 'Departure (e.g. NDLS)...'}
                     />
-                  </div>
-
-                  {/* Swap Button */}
-                  <div className="lg:col-span-1 flex justify-center py-1 lg:py-0">
+                    
+                    {/* Floating Circular Swap Button (Centered cleanly between From & To on all screen sizes) */}
                     <button
                       type="button"
                       onClick={handleSwapStations}
-                      className="w-9 h-9 rounded-full border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] hover:bg-white dark:hover:bg-[#1B242E] text-[#66737D] hover:text-[#244C66] transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
-                      title="Swap Origin and Destination"
+                      className="absolute z-20 w-8 h-8 rounded-full border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F1F5F9] dark:hover:bg-[#233240] text-[#64748B] dark:text-[#94A3B8] hover:text-[#244C66] dark:hover:text-[#75A4C4] shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-110 active:scale-95
+                        -bottom-4 left-1/2 -translate-x-1/2
+                        md:bottom-auto md:left-auto md:-right-4 md:top-1/2 md:-translate-y-1/2 md:translate-x-0"
+                      title="Swap Departure and Arrival"
                     >
-                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      <ArrowRightLeft className="w-3.5 h-3.5 transition-transform duration-200 hover:rotate-180" />
                     </button>
                   </div>
 
                   {/* Destination (To) */}
-                  <div className="lg:col-span-3">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      To (Destination)
-                    </label>
+                  <div className={tripType === 'roundTrip' 
+                    ? 'col-span-1 md:col-span-6 xl:col-span-2' 
+                    : 'col-span-1 md:col-span-6 xl:col-span-3'
+                  }>
                     <StationAutocomplete 
                       value={toStation}
                       onChange={setToStation}
-                      placeholder="Arrival City / Station"
-                      inputPlaceholder="e.g. Varanasi Jn (BSB), Goa..."
+                      icon={MapPin}
+                      placeholder={activeTab === 'flights' ? 'To (Airport)' : activeTab === 'buses' ? 'To (City)' : 'To (Destination)'}
+                      inputPlaceholder={activeTab === 'flights' ? 'Arrival (e.g. BOM)...' : activeTab === 'buses' ? 'Arrival city or stand...' : 'Arrival (e.g. BSB)...'}
                     />
                   </div>
 
                   {/* Departure Date */}
-                  <div className={tripType === 'roundTrip' ? 'lg:col-span-2' : 'lg:col-span-3'}>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Departure Date
-                    </label>
-                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                  <div className={tripType === 'roundTrip' 
+                    ? 'col-span-1 md:col-span-3 xl:col-span-2' 
+                    : 'col-span-1 md:col-span-4 xl:col-span-2'
+                  }>
+                    <div 
+                      onClick={() => {
+                        try {
+                          depDateInputRef.current?.showPicker();
+                        } catch (e) {
+                          depDateInputRef.current?.focus();
+                        }
+                      }}
+                      className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3 cursor-pointer group"
+                    >
+                      <Calendar className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0 group-hover:text-[#244C66] dark:group-hover:text-[#75A4C4] transition-colors pointer-events-none" />
+                      <div className="flex flex-col w-full overflow-hidden pointer-events-none">
+                        <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                          Departure
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] truncate">
+                          {formatDateDisplay(departureDate)}
+                        </span>
+                      </div>
                       <input 
+                        ref={depDateInputRef}
                         type="date"
                         value={departureDate}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setDepartureDate(e.target.value)}
-                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                        min={getLocalDateString(0)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            setDepartureDate(val);
+                            if (tripType === 'roundTrip' && returnDate && val > returnDate) {
+                              setReturnDate(val);
+                            }
+                          }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            e.currentTarget.showPicker();
+                          } catch (err) {}
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                       />
                     </div>
                   </div>
 
                   {/* Return Date (if Round Trip) */}
                   {tripType === 'roundTrip' && (
-                    <div className="lg:col-span-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                        Return Date
-                      </label>
-                      <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                    <div className="col-span-1 md:col-span-3 xl:col-span-2">
+                      <div 
+                        onClick={() => {
+                          try {
+                            returnDateInputRef.current?.showPicker();
+                          } catch (e) {
+                            returnDateInputRef.current?.focus();
+                          }
+                        }}
+                        className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3 cursor-pointer group"
+                      >
+                        <Calendar className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0 group-hover:text-[#244C66] dark:group-hover:text-[#75A4C4] transition-colors pointer-events-none" />
+                        <div className="flex flex-col w-full overflow-hidden pointer-events-none">
+                          <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                            Return
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] truncate">
+                            {formatDateDisplay(returnDate)}
+                          </span>
+                        </div>
                         <input 
+                          ref={returnDateInputRef}
                           type="date"
                           value={returnDate}
-                          min={departureDate}
-                          onChange={(e) => setReturnDate(e.target.value)}
-                          className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                          min={departureDate || getLocalDateString(0)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val) setReturnDate(val);
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            try {
+                              e.currentTarget.showPicker();
+                            } catch (err) {}
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Passengers & Class */}
-                  <div className={tripType === 'roundTrip' ? 'lg:col-span-12' : 'lg:col-span-2'}>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Travelers
-                    </label>
+                  {/* Travelers */}
+                  <div className={tripType === 'roundTrip' 
+                    ? 'col-span-1 md:col-span-3 xl:col-span-2' 
+                    : 'col-span-1 md:col-span-4 xl:col-span-2'
+                  }>
                     <PassengerSelector 
                       value={passengerConfig}
                       onChange={setPassengerConfig}
                     />
                   </div>
 
+                  {/* INLINE SEARCH CTA BUTTON (Exact 58px Full Height Alignment) */}
+                  <div className={tripType === 'roundTrip' 
+                    ? 'col-span-1 md:col-span-3 xl:col-span-2' 
+                    : 'col-span-1 md:col-span-4 xl:col-span-2'
+                  }>
+                    <button
+                      type="submit"
+                      disabled={isSearching}
+                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                    >
+                      {isSearching ? (
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                          <span>{activeTab === 'flights' ? 'Search Flights' : activeTab === 'buses' ? 'Search Buses' : 'Search Trains'}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
                 </div>
 
-                {/* Submit Row */}
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E3E7EA] dark:border-[#293644]">
-                  <div className="flex items-center gap-4 text-xs text-[#66737D] dark:text-[#9CAAB5]">
+                {/* Trust Badges Row (Below Input Dock) */}
+                <div className="pt-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E2E8F0] dark:border-[#283545] text-xs text-[#64748B] dark:text-[#94A3B8]">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#287A55]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>Direct & connecting alternatives</span>
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#287A55]" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       <span>Transparent fare breakdown</span>
                     </span>
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSearching}
-                    className="w-full sm:w-auto px-7 h-11 rounded-lg bg-[#244C66] hover:bg-[#193B51] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>{isSearching ? 'Searching...' : `Search ${activeTab === 'flights' ? 'Flights' : activeTab === 'buses' ? 'Buses' : 'Trains & Routes'}`}</span>
-                  </button>
+                  <div className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-[#64748B] dark:text-[#94A3B8]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>IRCTC & DGCA Verified Data</span>
+                  </div>
                 </div>
 
               </form>
             ) : (
               /* TAB CONTENT: HOTELS SEARCH */
               <form onSubmit={handleHotelSearch} className="p-4 sm:p-5 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 items-center">
                   
                   {/* Destination City */}
-                  <div className="md:col-span-4">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Destination City or Area
-                    </label>
-                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-[#89939B] shrink-0" />
-                      <input 
-                        type="text"
-                        value={hotelCity}
-                        onChange={(e) => setHotelCity(e.target.value)}
-                        placeholder="e.g. Goa, Manali, Jaipur, Mumbai..."
-                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7]"
-                      />
+                  <div className="col-span-1 md:col-span-12 xl:col-span-3">
+                    <div className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3">
+                      <Building2 className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0" />
+                      <div className="flex flex-col w-full overflow-hidden">
+                        <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                          Destination City / Area
+                        </span>
+                        <input 
+                          type="text"
+                          value={hotelCity}
+                          onChange={(e) => setHotelCity(e.target.value)}
+                          placeholder="e.g. Goa, Manali, Jaipur, Mumbai..."
+                          className="bg-transparent border-none outline-none text-[#0F2942] dark:text-[#F8FAFC] font-bold w-full placeholder:text-[#64748B]/60 dark:placeholder:text-[#94A3B8]/60 placeholder:font-normal text-xs sm:text-sm focus:ring-0 p-0 m-0"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Check-In */}
-                  <div className="md:col-span-3">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Check-In Date
-                    </label>
-                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                  <div className="col-span-1 md:col-span-3 xl:col-span-2">
+                    <div 
+                      onClick={() => {
+                        try {
+                          hotelCheckInRef.current?.showPicker();
+                        } catch (e) {
+                          hotelCheckInRef.current?.focus();
+                        }
+                      }}
+                      className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3 cursor-pointer group"
+                    >
+                      <Calendar className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0 group-hover:text-[#244C66] dark:group-hover:text-[#75A4C4] transition-colors pointer-events-none" />
+                      <div className="flex flex-col w-full overflow-hidden pointer-events-none">
+                        <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                          Check-In Date
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] truncate">
+                          {formatDateDisplay(hotelCheckIn)}
+                        </span>
+                      </div>
                       <input 
+                        ref={hotelCheckInRef}
                         type="date"
                         value={hotelCheckIn}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setHotelCheckIn(e.target.value)}
-                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                        min={getLocalDateString(0)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            setHotelCheckIn(val);
+                            if (hotelCheckOut && val > hotelCheckOut) {
+                              setHotelCheckOut(val);
+                            }
+                          }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            e.currentTarget.showPicker();
+                          } catch (err) {}
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                       />
                     </div>
                   </div>
 
                   {/* Check-Out */}
-                  <div className="md:col-span-3">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Check-Out Date
-                    </label>
-                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-[#89939B] shrink-0" />
+                  <div className="col-span-1 md:col-span-3 xl:col-span-2">
+                    <div 
+                      onClick={() => {
+                        try {
+                          hotelCheckOutRef.current?.showPicker();
+                        } catch (e) {
+                          hotelCheckOutRef.current?.focus();
+                        }
+                      }}
+                      className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3 cursor-pointer group"
+                    >
+                      <Calendar className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0 group-hover:text-[#244C66] dark:group-hover:text-[#75A4C4] transition-colors pointer-events-none" />
+                      <div className="flex flex-col w-full overflow-hidden pointer-events-none">
+                        <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                          Check-Out Date
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] truncate">
+                          {formatDateDisplay(hotelCheckOut)}
+                        </span>
+                      </div>
                       <input 
+                        ref={hotelCheckOutRef}
                         type="date"
                         value={hotelCheckOut}
-                        min={hotelCheckIn}
-                        onChange={(e) => setHotelCheckOut(e.target.value)}
-                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7] cursor-pointer"
+                        min={hotelCheckIn || getLocalDateString(0)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) setHotelCheckOut(val);
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            e.currentTarget.showPicker();
+                          } catch (err) {}
+                        }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                       />
                     </div>
                   </div>
 
                   {/* Guests & Rooms */}
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#66737D] dark:text-[#9CAAB5] mb-1">
-                      Guests
-                    </label>
-                    <div className="h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#162029] flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#89939B] shrink-0" />
-                      <input 
-                        type="text"
-                        value={hotelGuests}
-                        onChange={(e) => setHotelGuests(e.target.value)}
-                        className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-semibold text-[#202A32] dark:text-[#F0F4F7]"
-                      />
+                  <div className="col-span-1 md:col-span-3 xl:col-span-2">
+                    <div className="relative w-full h-[58px] rounded-xl border border-[#E2E8F0] dark:border-[#283545] bg-[#FFFFFF] dark:bg-[#162029] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors p-3 flex items-center gap-3">
+                      <Users className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0" />
+                      <div className="flex flex-col w-full overflow-hidden">
+                        <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">
+                          Guests / Rooms
+                        </span>
+                        <input 
+                          type="text"
+                          value={hotelGuests}
+                          onChange={(e) => setHotelGuests(e.target.value)}
+                          className="bg-transparent border-none outline-none text-[#0F2942] dark:text-[#F8FAFC] font-bold w-full text-xs sm:text-sm focus:ring-0 p-0 m-0"
+                        />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* INLINE SEARCH HOTELS CTA BUTTON */}
+                  <div className="col-span-1 md:col-span-3 xl:col-span-3">
+                    <button
+                      type="submit"
+                      disabled={isSearching}
+                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                    >
+                      {isSearching ? (
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+                          <span>Search Hotels</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                 </div>
 
                 {/* Popular Stays Chips */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-xs">
-                  <span className="text-[#89939B] font-medium mr-1">Popular Stays:</span>
-                  {POPULAR_HOTEL_CITIES.map((city) => (
-                    <button
-                      key={city}
-                      type="button"
-                      onClick={() => setHotelCity(city)}
-                      className={`px-2.5 py-1 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
-                        hotelCity === city 
-                          ? 'bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] border-[#E3E7EA] dark:border-[#293644] font-semibold'
-                          : 'bg-[#F7F8FA] dark:bg-[#162029] text-[#66737D] dark:text-[#9CAAB5] border-[#E3E7EA] dark:border-[#293644] hover:bg-white'
-                      }`}
-                    >
-                      {city}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Submit Row */}
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E3E7EA] dark:border-[#293644]">
-                  <div className="text-xs text-[#66737D] dark:text-[#9CAAB5]">
-                    Showing verified stays, homestays, and boutique hotels.
+                <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-[#E2E8F0] dark:border-[#283545] text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[#64748B] dark:text-[#94A3B8] font-bold text-[11px] mr-1">Popular Stays:</span>
+                    {POPULAR_HOTEL_CITIES.map((city) => (
+                      <button
+                        key={city}
+                        type="button"
+                        onClick={() => setHotelCity(city)}
+                        className={`px-2.5 py-1 rounded-lg border text-xs font-semibold cursor-pointer transition-colors ${
+                          hotelCity === city 
+                            ? 'bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] border-[#E2E8F0] dark:border-[#283545]'
+                            : 'bg-[#F7F8FA] dark:bg-[#162029] text-[#64748B] dark:text-[#94A3B8] border-[#E2E8F0] dark:border-[#283545] hover:bg-white dark:hover:bg-[#1B242E]'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSearching}
-                    className="w-full sm:w-auto px-7 h-11 rounded-lg bg-[#244C66] hover:bg-[#193B51] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Search Hotels in {hotelCity}</span>
-                  </button>
+                  <span className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                    Showing verified stays & boutique hotels
+                  </span>
                 </div>
 
               </form>

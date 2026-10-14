@@ -6,6 +6,7 @@ const { trainRunsOnDate, getTrainFrequencyLabel, formatRunningDays, findConnecti
 const { MultiModalRoutingEngine } = require('../services/multiModalRoutingEngine');
 const { getTrainTrackingDetails } = require('../services/trainTrackingService');
 const { resolveStation, parseTravelDate } = require('../services/stationResolver');
+const { validateTransportRecord } = require('../services/transportValidationEngine');
 
 const predictTrip = async (req, res) => {
     try {
@@ -230,9 +231,10 @@ const searchRoutes = async (req, res) => {
                 if (durationHours < 0) durationHours += 24; 
             }
 
-            const fares = fareMap[route.train_number] || {
-                'SL': 480, '3A': 1250, '2A': 1850, '1A': 2900
-            };
+            const authenticFares = fareMap[route.train_number] || null;
+            const price = authenticFares ? (authenticFares['SL'] || Math.min(...Object.values(authenticFares))) : null;
+            const classes = authenticFares ? Object.entries(authenticFares).map(([c, p]) => `${c} - ₹${p}`) : [];
+            const fareType = authenticFares ? 'actual' : null;
 
             const runningDaysFormatted = formatRunningDays(route.runs_on);
             const frequencyLabel = route.frequency || getTrainFrequencyLabel(route.runs_on);
@@ -246,6 +248,9 @@ const searchRoutes = async (req, res) => {
                 direct: true,
                 validated: true,
                 source_verified: true,
+                verification_status: authenticFares ? 'static_reference' : 'reference_timetable',
+                source: 'irctc_sql_database',
+                fare_type: fareType,
                 departure_date: departureDate || null,
                 name: route.train_name,
                 train_name: route.train_name,
@@ -257,15 +262,16 @@ const searchRoutes = async (req, res) => {
                 arrTime: route.dest_arrival ? route.dest_arrival.substring(0, 5) : '06:00 PM',
                 dur: `${Math.floor(durationHours)}h ${Math.round((durationHours % 1) * 60)}m`,
                 duration_hours: parseFloat(durationHours.toFixed(1)),
-                price: fares['SL'] || Math.min(...Object.values(fares)),
-                fare_inr: fares['SL'] || null,
-                classes: Object.entries(fares).map(([c, p]) => `${c} - ₹${p}`),
-                fares,
-                available_seats: {},
+                price: price,
+                fare_inr: price,
+                classes: classes,
+                fares: authenticFares,
+                available_seats: null,
                 runs_on: route.runs_on,
                 running_days: runningDaysFormatted,
                 frequency: frequencyLabel,
-                available_classes: Object.keys(fares)
+                available_classes: authenticFares ? Object.keys(authenticFares) : [],
+                retrieved_at: new Date().toISOString()
             });
         }
 
@@ -275,15 +281,31 @@ const searchRoutes = async (req, res) => {
 
         const finalTrains = [...processedDbTrains];
 
-        // If direct path does not exist (processedDbTrains is empty), NEVER hallucinate fake direct trains!
-        // Instead, dynamically generate verified connecting routes via Universal Hub Architecture.
-        if (processedDbTrains.length === 0) {
+        // If direct path does not exist or direct options are limited, query verified connecting routes via Universal Hub Architecture.
+        if (processedDbTrains.length < 3) {
             const connectingDiscovery = await routingEngine.findConnectingRoutes(originStnCode, destStnCode, departureDate);
             for (const conn of (connectingDiscovery.routes || [])) {
                 if (!uniqueTrainNumbers.has(conn.id)) {
                     uniqueTrainNumbers.add(conn.id);
-                    const firstLeg = conn.legs ? conn.legs[0] : {};
-                    const lastLeg = conn.legs ? conn.legs[conn.legs.length - 1] : {};
+                    const firstLeg = conn.legs ? conn.legs[0] : null;
+                    const lastLeg = conn.legs ? conn.legs[conn.legs.length - 1] : null;
+                    if (!firstLeg || !lastLeg) continue;
+
+                    const firstNo = firstLeg.service_number || firstLeg.train_number || firstLeg.number;
+                    const lastNo = lastLeg.service_number || lastLeg.train_number || lastLeg.number;
+                    if (!firstNo || !lastNo) continue;
+                    if (String(firstNo).toUpperCase().includes('TR1') || String(lastNo).toUpperCase().includes('TR2')) {
+                        continue;
+                    }
+
+                    const firstName = firstLeg.service_name || firstLeg.train_name || firstLeg.name || `Service #${firstNo}`;
+                    const lastName = lastLeg.service_name || lastLeg.train_name || lastLeg.name || `Service #${lastNo}`;
+
+                    let combinedFare = null;
+                    if (firstLeg.fare && lastLeg.fare) {
+                        combinedFare = firstLeg.fare + lastLeg.fare;
+                    }
+
                     finalTrains.push({
                         ...conn,
                         id: conn.id,
@@ -293,64 +315,29 @@ const searchRoutes = async (req, res) => {
                         direct: false,
                         validated: true,
                         source_verified: true,
+                        verification_status: 'verified_connecting_hub',
+                        source: 'universal_hub_routing_engine',
+                        fare_type: combinedFare ? 'actual_sum' : null,
                         departure_date: departureDate || null,
-                        name: `${firstLeg.service_name || 'Train'} → ${lastLeg.service_name || 'Transit'}`,
-                        train_name: `${firstLeg.service_name || 'Train'} → ${lastLeg.service_name || 'Transit'}`,
-                        number: `${firstLeg.service_number || 'TR1'} / ${lastLeg.service_number || 'TR2'}`,
-                        train_number: `${firstLeg.service_number || 'TR1'} / ${lastLeg.service_number || 'TR2'}`,
+                        name: `${firstName} → ${lastName}`,
+                        train_name: `${firstName} → ${lastName}`,
+                        number: `${firstNo} / ${lastNo}`,
+                        train_number: `${firstNo} / ${lastNo}`,
                         depTime: firstLeg.departure_time_clock || '08:00 AM',
                         arrTime: lastLeg.arrival_time_clock || '08:00 PM',
                         dur: conn.duration || '12h 00m',
                         duration_hours: conn.duration_minutes ? parseFloat((conn.duration_minutes / 60).toFixed(1)) : 12.0,
                         depStation: sourceStation ? sourceStation.station_name : originStnCode,
                         arrStation: destStation ? destStation.station_name : destStnCode,
-                        price: 950,
-                        fare_inr: 950,
-                        classes: ['SL - ₹950', '3A - ₹1,850', '2A - ₹2,600'],
-                        fares: { 'SL': 950, '3A': 1850, '2A': 2600 },
-                        available_classes: ['SL', '3A', '2A'],
+                        price: combinedFare,
+                        fare_inr: combinedFare,
+                        classes: combinedFare ? [`Combined - ₹${combinedFare.toLocaleString()}`] : [],
+                        fares: combinedFare ? { 'Combined': combinedFare } : null,
+                        available_classes: combinedFare ? ['Combined'] : [],
                         layover: conn.layover_display,
                         frequency: 'Connecting Route (Verified Hub)',
-                        running_days: 'Daily (via Connection)'
-                    });
-                }
-            }
-        } else if (finalTrains.length < 3) {
-            // Direct trains exist, supplement with connecting routes if few direct options
-            const connectingDiscovery = await routingEngine.findConnectingRoutes(originStnCode, destStnCode, departureDate);
-            for (const conn of (connectingDiscovery.routes || [])) {
-                if (!uniqueTrainNumbers.has(conn.id)) {
-                    uniqueTrainNumbers.add(conn.id);
-                    const firstLeg = conn.legs ? conn.legs[0] : {};
-                    const lastLeg = conn.legs ? conn.legs[conn.legs.length - 1] : {};
-                    finalTrains.push({
-                        ...conn,
-                        id: conn.id,
-                        type: 'Train',
-                        mode: 'Train',
-                        route_type: 'Connecting',
-                        direct: false,
-                        validated: true,
-                        source_verified: true,
-                        departure_date: departureDate || null,
-                        name: `${firstLeg.service_name || 'Train'} → ${lastLeg.service_name || 'Transit'}`,
-                        train_name: `${firstLeg.service_name || 'Train'} → ${lastLeg.service_name || 'Transit'}`,
-                        number: `${firstLeg.service_number || 'TR1'} / ${lastLeg.service_number || 'TR2'}`,
-                        train_number: `${firstLeg.service_number || 'TR1'} / ${lastLeg.service_number || 'TR2'}`,
-                        depTime: firstLeg.departure_time_clock || '08:00 AM',
-                        arrTime: lastLeg.arrival_time_clock || '08:00 PM',
-                        dur: conn.duration || '12h 00m',
-                        duration_hours: conn.duration_minutes ? parseFloat((conn.duration_minutes / 60).toFixed(1)) : 12.0,
-                        depStation: sourceStation ? sourceStation.station_name : originStnCode,
-                        arrStation: destStation ? destStation.station_name : destStnCode,
-                        price: 950,
-                        fare_inr: 950,
-                        classes: ['SL - ₹950', '3A - ₹1,850', '2A - ₹2,600'],
-                        fares: { 'SL': 950, '3A': 1850, '2A': 2600 },
-                        available_classes: ['SL', '3A', '2A'],
-                        layover: conn.layover_display,
-                        frequency: 'Connecting Route (Verified Hub)',
-                        running_days: 'Daily (via Connection)'
+                        running_days: 'Daily (via Connection)',
+                        retrieved_at: new Date().toISOString()
                     });
                 }
             }
@@ -360,6 +347,7 @@ const searchRoutes = async (req, res) => {
         const finalFlights = discovery.flights;
         const finalBuses = discovery.buses;
         const allTransports = [...finalTrains, ...finalFlights, ...finalBuses];
+
 
         // Log search telemetry in SearchAnalytics
         try {

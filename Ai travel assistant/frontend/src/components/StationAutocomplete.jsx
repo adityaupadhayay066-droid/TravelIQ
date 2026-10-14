@@ -107,10 +107,10 @@ export default function StationAutocomplete({ value, onChange, placeholder, inpu
 
   return (
     <div className="relative flex-1 w-full" ref={wrapperRef}>
-      <div className={`flex items-center bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-3 border transition-colors h-[58px] ${active ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#FFFFFF] dark:bg-[#1B2C28]' : 'border-[#E3DED2] dark:border-[#2A403A] hover:border-[#173F3A]/50 dark:hover:border-[#EEF2ED]/50'}`}>
-        <Icon className={`w-5 h-5 mr-3 flex-shrink-0 ${active ? 'text-[#173F3A] dark:text-[#EEF2ED]' : 'text-[#66736F] dark:text-[#A3B0AB]'}`} />
+      <div className={`flex items-center bg-[#FFFFFF] dark:bg-[#162029] rounded-xl p-3 border transition-colors h-[58px] ${active ? 'border-[#244C66] dark:border-[#75A4C4]' : 'border-[#E2E8F0] dark:border-[#283545] hover:border-[#244C66]/50 dark:hover:border-[#75A4C4]/50'}`}>
+        <Icon className={`w-5 h-5 mr-3 flex-shrink-0 ${active ? 'text-[#244C66] dark:text-[#75A4C4]' : 'text-[#64748B] dark:text-[#94A3B8]'}`} />
         <div className="flex flex-col w-full relative overflow-hidden">
-          <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-medium uppercase tracking-wider truncate">{placeholder}</span>
+          <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider truncate">{placeholder}</span>
           <input 
             ref={inputRef}
             type="text" 
@@ -121,26 +121,26 @@ export default function StationAutocomplete({ value, onChange, placeholder, inpu
               if (suggestions.length > 0) setShowDropdown(true);
             }}
             placeholder={inputPlaceholder || "Search city or station code..."}
-            className="bg-transparent border-none outline-none text-[#263238] dark:text-[#F7F5EF] font-semibold w-full placeholder:text-[#66736F]/70 dark:placeholder:text-[#A3B0AB]/70 placeholder:font-normal text-xs sm:text-sm focus:ring-0 p-0 m-0" 
+            className="bg-transparent border-none outline-none text-[#0F2942] dark:text-[#F8FAFC] font-bold w-full placeholder:text-[#64748B]/60 dark:placeholder:text-[#94A3B8]/60 placeholder:font-normal text-xs sm:text-sm focus:ring-0 p-0 m-0" 
           />
         </div>
         {showVoiceBtn}
       </div>
 
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-50 mt-2 w-full bg-[#FFFFFF] dark:bg-[#1B2C28] max-h-60 overflow-y-auto rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] border border-[#E3DED2] dark:border-[#2A403A]">
+        <div className="absolute z-50 mt-2 w-full bg-[#FFFFFF] dark:bg-[#1B242E] max-h-60 overflow-y-auto rounded-xl shadow-lg border border-[#E2E8F0] dark:border-[#283545]">
           <ul className="py-2">
             {suggestions.map((station, i) => (
               <li 
                 key={station.id || i}
                 onClick={() => handleSelect(station)}
-                className="px-4 py-2 hover:bg-[#EEF2ED] dark:hover:bg-[#213530] cursor-pointer flex justify-between items-center transition-colors"
+                className="px-4 py-2 hover:bg-[#F1F5F9] dark:hover:bg-[#233240] cursor-pointer flex justify-between items-center transition-colors"
               >
                 <div className="flex flex-col">
-                  <span className="text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">{station.station_name}</span>
-                  <span className="text-[#66736F] dark:text-[#A3B0AB] text-xs">{station.city || 'India'}</span>
+                  <span className="text-[#0F2942] dark:text-[#F8FAFC] text-sm font-semibold">{station.station_name}</span>
+                  <span className="text-[#64748B] dark:text-[#94A3B8] text-xs">{station.city || 'India'}</span>
                 </div>
-                <div className="bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] text-xs px-2 py-1 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                <div className="bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] text-xs font-mono font-bold px-2 py-0.5 rounded border border-[#E2E8F0] dark:border-[#283545]">
                   {station.station_code}
                 </div>
               </li>

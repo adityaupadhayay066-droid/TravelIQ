@@ -192,6 +192,7 @@ export default function Navbar() {
     }
 
     // Flights, Trains, Buses, Hotels
+    setSelectedHomeTab(category.id);
     if (location.pathname === '/') {
       // Dispatch category event so LandingPage switches tab and scrolls
       window.dispatchEvent(new CustomEvent('traveliq:set-tab', { detail: { tab: category.id } }));
@@ -201,6 +202,20 @@ export default function Navbar() {
       navigate(`/?tab=${category.id}`, { state: { initialTab: category.id } });
     }
   };
+
+  // State to track home tab when on homepage
+  const [selectedHomeTab, setSelectedHomeTab] = useState(() => {
+    const urlParams = new URLSearchParams(location.search);
+    return urlParams.get('tab') || 'trains';
+  });
+
+  useEffect(() => {
+    const handleTab = (e) => {
+      if (e.detail?.tab) setSelectedHomeTab(e.detail.tab);
+    };
+    window.addEventListener('traveliq:set-tab', handleTab);
+    return () => window.removeEventListener('traveliq:set-tab', handleTab);
+  }, []);
 
   // Determine active category based on URL or current page
   const getActiveCategoryId = () => {
@@ -219,19 +234,29 @@ export default function Navbar() {
       return 'trains'; // default multimodal
     }
     if (location.pathname === '/') {
-      return 'trains';
+      return selectedHomeTab;
     }
     return null;
   };
 
   const activeCategory = getActiveCategoryId();
 
-  const filteredSearchItems = searchQuery.trim() === '' 
+  // Only show 'My Trips' if user is logged in
+  const visibleCategories = TRAVEL_CATEGORIES.filter((cat) => {
+    if (cat.id === 'trips' && !user) return false;
+    return true;
+  });
+
+  const filteredSearchItems = (searchQuery.trim() === '' 
     ? SEARCHABLE_ITEMS.slice(0, 7)
     : SEARCHABLE_ITEMS.filter((item) => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      )
+  ).filter((item) => {
+    if (item.to === '/dashboard/my-trips' && !user) return false;
+    return true;
+  });
 
   return (
     <>
@@ -273,9 +298,10 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* CENTER: TRAVEL CATEGORY TABS */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
-            {TRAVEL_CATEGORIES.map((cat) => {
+          {/* CENTER: TRAVEL CATEGORY TABS (Visible only after login/signup) */}
+          {user && (
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
+              {visibleCategories.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory === cat.id;
 
@@ -369,6 +395,7 @@ export default function Navbar() {
               );
             })}
           </nav>
+          )}
 
           {/* RIGHT: CONTROLS & USER ACCOUNT ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">
@@ -557,27 +584,29 @@ export default function Navbar() {
 
         </div>
 
-        {/* Mobile Horizontal Quick Category Switcher (Under Header) */}
-        <div className="lg:hidden flex items-center gap-1.5 px-4 py-2 border-t border-[#E3E7EA] dark:border-[#293644] overflow-x-auto scrollbar-none bg-[#F7F8FA] dark:bg-[#162029]">
-          {TRAVEL_CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-colors ${
-                  isActive
-                    ? 'bg-[#244C66] text-white font-semibold'
-                    : 'bg-white dark:bg-[#1B242E] text-[#66737D] dark:text-[#9CAAB5] border border-[#E3E7EA] dark:border-[#293644]'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Mobile Horizontal Quick Category Switcher (Under Header - Visible only after login/signup) */}
+        {user && (
+          <div className="lg:hidden flex items-center gap-1.5 px-4 py-2 border-t border-[#E3E7EA] dark:border-[#293644] overflow-x-auto scrollbar-none bg-[#F7F8FA] dark:bg-[#162029]">
+            {visibleCategories.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryClick(cat)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-colors ${
+                    isActive
+                      ? 'bg-[#244C66] text-white font-semibold'
+                      : 'bg-white dark:bg-[#1B242E] text-[#66737D] dark:text-[#9CAAB5] border border-[#E3E7EA] dark:border-[#293644]'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {/* ====================================================================
@@ -590,7 +619,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.18 }}
-            className="lg:hidden fixed top-[108px] left-0 right-0 max-h-[calc(100vh-108px)] overflow-y-auto bg-white dark:bg-[#1B242E] border-b border-[#E3E7EA] dark:border-[#293644] z-40 p-4 space-y-4 shadow-xl"
+            className={`lg:hidden fixed ${user ? 'top-[108px] max-h-[calc(100vh-108px)]' : 'top-[64px] max-h-[calc(100vh-64px)]'} left-0 right-0 overflow-y-auto bg-white dark:bg-[#1B242E] border-b border-[#E3E7EA] dark:border-[#293644] z-40 p-4 space-y-4 shadow-xl`}
           >
             {/* Quick Command search trigger on mobile */}
             <button
@@ -601,28 +630,30 @@ export default function Navbar() {
               <span>Search destinations, routes, trains...</span>
             </button>
 
-            {/* Travel Categories List */}
-            <div className="space-y-1">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Book & Plan</p>
-              {TRAVEL_CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryClick(cat)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
-                        <Icon className="w-4 h-4" />
+            {/* Travel Categories List (Visible only after login/signup) */}
+            {user && (
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Book & Plan</p>
+                {visibleCategories.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleCategoryClick(cat)}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200 text-sm font-semibold transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span>{cat.label}</span>
                       </div>
-                      <span>{cat.label}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </button>
-                );
-              })}
-            </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Explore Tools */}
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">

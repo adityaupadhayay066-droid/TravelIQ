@@ -146,6 +146,25 @@ def _get_corridor_hubs(source, destination):
     candidates.sort(key=lambda x: (x['tier'], x['detour']))
     return candidates
 
+STATION_ALIASES = {
+    'TATANAGAR': 'TATA',
+    'JAMSHEDPUR': 'TATA',
+    'BALLIA': 'BUI',
+    'NEW DELHI': 'NDLS',
+    'DELHI': 'NDLS',
+    'VARANASI': 'BSB',
+    'BANARAS': 'BSB',
+    'UDAIPUR': 'UDZ',
+    'PUNE': 'PUNE',
+    'LUCKNOW': 'LKO',
+    'HOWRAH': 'HWH',
+    'KOLKATA': 'HWH',
+    'MUMBAI': 'CSMT',
+    'KANPUR': 'CNB',
+    'PATNA': 'PNBE',
+    'AHMEDABAD': 'ADI'
+}
+
 def find_best_route(source, destination, preference='time'):
     """
     Graph-based multi-modal router implementing:
@@ -156,6 +175,8 @@ def find_best_route(source, destination, preference='time'):
     """
     src_clean = source.upper().strip()
     dst_clean = destination.upper().strip()
+    src_clean = STATION_ALIASES.get(src_clean, src_clean)
+    dst_clean = STATION_ALIASES.get(dst_clean, dst_clean)
 
     # Verified direct corridor routes list
     VERIFIED_DIRECT_ROUTES = {
@@ -240,53 +261,15 @@ def find_best_route(source, destination, preference='time'):
             'verified': True
         }
 
-    # 4. Universal Dynamic Hub Evaluation
-    if candidate_hubs:
-        best_hub = candidate_hubs[0]
-        h_code = best_hub['code']
-        h_name = best_hub['name']
-        lat1, lon1 = _resolve_coords(src_clean)
-        h_lat, h_lon = _resolve_coords(h_code)
-        lat2, lon2 = _resolve_coords(dst_clean)
-
-        leg1_dist = _calculate_distance(lat1, lon1, h_lat, h_lon)
-        leg2_dist = _calculate_distance(h_lat, h_lon, lat2, lon2)
-
-        leg1_time = leg1_dist / 70.0
-        leg2_time = leg2_dist / 65.0
-        layover_hours = 2.0  # 120 min safe buffer
-
-        total_hours = round(leg1_time + layover_hours + leg2_time, 2)
-        total_cost = round((leg1_dist * 1.4) + 300 + (leg2_dist * 1.3), 2)
-
-        return {
-            'route': [
-                f"{source} to {h_name} ({h_code}) via Express Train",
-                f"Transfer at {h_name} (2h layover window)",
-                f"{h_name} ({h_code}) to {destination} via Connecting Rail/Bus"
-            ],
-            'hub': h_code,
-            'route_type': 'Connecting',
-            'direct': False,
-            'layover_minutes': 120,
-            'total_time_hours': total_hours,
-            'total_cost_inr': total_cost,
-            'verified': True
-        }
-
-    # 5. Multi-Modal Fallback (Rail + Bus or Flight + Transit)
-    dist = _calculate_distance(*_resolve_coords(src_clean), *_resolve_coords(dst_clean))
+    # 4. Universal Candidate Hub Routing (Only when verified timetable links exist)
+    # If no verified timetable links exist for this corridor, do NOT invent train/bus numbers or timings!
     return {
-        'route': [
-            f"{source} to Transit Junction via Regional Rail",
-            f"Transfer at Junction ISBT (1h 30m layover)",
-            f"Transit Junction to {destination} via Verified Intercity Bus"
-        ],
-        'route_type': 'Multimodal',
+        'error': f"No verified direct or connecting route found between {source} and {destination}.",
+        'route': [],
+        'route_type': 'Unavailable',
         'direct': False,
-        'layover_minutes': 90,
-        'total_time_hours': round(dist / 55.0 + 1.5, 2),
-        'total_cost_inr': round(dist * 1.25 + 200, 2),
-        'fallback': True,
-        'verified': True
+        'verified': False,
+        'verification_status': 'unavailable',
+        'candidate_hubs': [h['code'] for h in candidate_hubs[:3]] if candidate_hubs else []
     }
+

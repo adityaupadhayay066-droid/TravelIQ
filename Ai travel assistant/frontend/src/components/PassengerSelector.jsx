@@ -68,12 +68,12 @@ export default function PassengerSelector({ value, config, onChange }) {
       {/* Clickable selector box */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-3 border border-[#E3DED2] dark:border-[#2A403A] hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-colors cursor-pointer h-[58px]"
+        className="w-full flex items-center bg-[#FFFFFF] dark:bg-[#162029] rounded-xl p-3 border border-[#E2E8F0] dark:border-[#283545] hover:border-[#244C66] dark:hover:border-[#75A4C4] transition-colors cursor-pointer h-[58px]"
       >
-        <Users className="text-[#66736F] dark:text-[#A3B0AB] w-5 h-5 mr-3 flex-shrink-0" />
+        <Users className="text-[#64748B] dark:text-[#94A3B8] w-5 h-5 mr-3 flex-shrink-0" />
         <div className="flex flex-col w-full overflow-hidden">
-          <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-medium uppercase tracking-wider">Travellers</span>
-          <span className="text-[#263238] dark:text-[#F7F5EF] text-xs sm:text-sm font-bold truncate block select-none">
+          <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] font-bold uppercase tracking-wider">Travellers</span>
+          <span className="text-[#0F2942] dark:text-[#F8FAFC] text-xs sm:text-sm font-bold truncate block select-none">
             {getSummary()}
           </span>
         </div>
@@ -87,34 +87,34 @@ export default function PassengerSelector({ value, config, onChange }) {
             animate={{ opacity: 1, y: 5, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-[calc(100vw-2.5rem)] sm:w-80 max-w-sm bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 sm:p-5 shadow-lg z-[999] space-y-4"
+            className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-[calc(100vw-2.5rem)] sm:w-80 max-w-sm bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E2E8F0] dark:border-[#283545] rounded-xl p-4 sm:p-5 shadow-lg z-[999] space-y-4"
           >
-            <div className="flex justify-between items-center border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#173F3A] dark:text-[#EEF2ED]">Select Passengers</span>
-              <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] bg-[#EEF2ED] dark:bg-[#213530] px-2 py-0.5 rounded font-mono">Max 9</span>
+            <div className="flex justify-between items-center border-b border-[#E2E8F0] dark:border-[#283545] pb-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#0F2942] dark:text-[#F8FAFC]">Select Passengers</span>
+              <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#233240] px-2 py-0.5 rounded font-mono font-bold">Max 9</span>
             </div>
 
             {/* Counters List */}
-            <div className="space-y-4.5">
+            <div className="space-y-4">
               {/* Adults */}
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] leading-none">Adults</h4>
-                  <span className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] mt-1 block">Ages 12+ years</span>
+                  <h4 className="text-xs font-bold text-[#0F2942] dark:text-[#F8FAFC] leading-none">Adults</h4>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#94A3B8] mt-1 block">Ages 12+ years</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
                     type="button"
                     onClick={() => handleDecrement('adults')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.adults}</span>
+                  <span className="text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] font-mono w-4 text-center">{activeValue.adults}</span>
                   <button 
                     type="button"
                     onClick={() => handleIncrement('adults')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -122,24 +122,24 @@ export default function PassengerSelector({ value, config, onChange }) {
               </div>
 
               {/* Seniors */}
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-3">
                 <div>
-                  <h4 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] leading-none">Senior Citizens</h4>
-                  <span className="text-[9px] text-[#D96C4F] dark:text-[#C75D43] mt-1 block font-semibold">Ages 60+ (Concession)</span>
+                  <h4 className="text-xs font-bold text-[#0F2942] dark:text-[#F8FAFC] leading-none">Senior Citizens</h4>
+                  <span className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 block font-semibold">Ages 60+ (Concession)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
                     type="button"
                     onClick={() => handleDecrement('seniors')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.seniors}</span>
+                  <span className="text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] font-mono w-4 text-center">{activeValue.seniors}</span>
                   <button 
                     type="button"
                     onClick={() => handleIncrement('seniors')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -147,26 +147,26 @@ export default function PassengerSelector({ value, config, onChange }) {
               </div>
 
               {/* Children */}
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-3">
                 <div>
-                  <h4 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] leading-none">Children</h4>
-                  <span className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] mt-1 block">Ages 2–11 years</span>
+                  <h4 className="text-xs font-bold text-[#0F2942] dark:text-[#F8FAFC] leading-none">Children</h4>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#94A3B8] mt-1 block">Ages 2–11 years</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}
                     onClick={() => handleDecrement('children')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.children}</span>
+                  <span className="text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] font-mono w-4 text-center">{activeValue.children}</span>
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}
                     onClick={() => handleIncrement('children')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -174,26 +174,26 @@ export default function PassengerSelector({ value, config, onChange }) {
               </div>
 
               {/* Infants */}
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-3">
                 <div>
-                  <h4 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] leading-none">Infants</h4>
-                  <span className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] mt-1 block">Under 2 years</span>
+                  <h4 className="text-xs font-bold text-[#0F2942] dark:text-[#F8FAFC] leading-none">Infants</h4>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#94A3B8] mt-1 block">Under 2 years</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}
                     onClick={() => handleDecrement('infants')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-mono w-4 text-center">{activeValue.infants}</span>
+                  <span className="text-sm font-bold text-[#0F2942] dark:text-[#F8FAFC] font-mono w-4 text-center">{activeValue.infants}</span>
                   <button 
                     type="button"
                     disabled={guardiansCount < 1}
                     onClick={() => handleIncrement('infants')}
-                    className="w-7 h-7 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-7 h-7 rounded-lg bg-[#F1F5F9] dark:bg-[#233240] hover:bg-[#E2E8F0] dark:hover:bg-[#2C3E50] border border-[#E2E8F0] dark:border-[#283545] text-[#0F2942] dark:text-[#F8FAFC] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -206,11 +206,11 @@ export default function PassengerSelector({ value, config, onChange }) {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="bg-[#E5B85C]/10 border border-[#E5B85C]/20 rounded-xl p-3 text-[10px] text-[#263238] dark:text-[#F7F5EF] leading-normal flex items-start gap-2 mt-4"
+                className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[10px] text-[#0F2942] dark:text-[#F8FAFC] leading-normal flex items-start gap-2 mt-4"
               >
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#E5B85C]" />
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
                 <div>
-                  <span className="font-bold block mb-0.5 text-[#E5B85C]">Senior Concession Activated</span>
+                  <span className="font-bold block mb-0.5 text-amber-600 dark:text-amber-400">Senior Concession Activated</span>
                   Seniors are entitled to booking discounts. Male: 60+ (40% off), Female: 58+ (50% off). Select genders on checkout.
                 </div>
               </motion.div>
@@ -220,7 +220,7 @@ export default function PassengerSelector({ value, config, onChange }) {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="w-full mt-4 bg-[#173F3A] dark:bg-[#EEF2ED] hover:bg-[#0F332F] dark:hover:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#173F3A] rounded-lg py-2 text-xs font-bold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+              className="w-full mt-4 bg-[#244C66] dark:bg-[#75A4C4] hover:bg-[#193B51] dark:hover:bg-[#6091B3] text-white dark:text-[#0F172A] rounded-xl py-2.5 text-xs font-bold cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             >
               <Check className="w-4 h-4" /> Apply Selection
             </button>

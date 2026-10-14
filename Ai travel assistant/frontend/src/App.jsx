@@ -271,12 +271,12 @@ function AnimatedRoutes() {
 
 function GlobalAssistants() {
   const location = useLocation();
-  const { isAuthModalOpen } = useAuth();
+  const { isAuthModalOpen, user } = useAuth();
 
   const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
   const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
 
-  if (authRoutes.includes(currentPath) || isAuthModalOpen) {
+  if (!user || authRoutes.includes(currentPath) || isAuthModalOpen) {
     return null;
   }
 

@@ -1,4 +1,4 @@
-const { Station, Train, TrainSchedule, FoodRecommendation, sequelize } = require('../models');
+const { Station, Train, TrainSchedule, FoodRecommendation, TrainFare, sequelize } = require('../models');
 const hotelService = require('../services/hotelService');
 
 const STATION_CITY_MAP = {
@@ -53,17 +53,28 @@ const runAgentSimulation = async (req, res) => {
 
         const train = routes.length > 0 ? routes[0] : null;
 
+        let authenticTrainFare = null;
+        if (train) {
+            try {
+                const fareRow = await TrainFare.findOne({
+                    where: { train_number: train.train_number }
+                });
+                if (fareRow) {
+                    authenticTrainFare = fareRow.fare;
+                }
+            } catch (fareErr) {
+                console.warn('[AgentSimulation Fare Query]:', fareErr.message);
+            }
+        }
+
         let primaryRoute = `${sourceCode} -> ${destCode}`;
         let trainDesc = "Direct Route";
-        let bookingProb = 'Medium (60%)';
         
         if (train) {
             primaryRoute = `${train.train_number} (${train.train_name}) from ${sourceCode} to ${destCode}`;
             trainDesc = train.train_name;
-            bookingProb = 'High (92%)';
         } else {
             primaryRoute = `No direct trains found in database between ${sourceCode} and ${destCode}`;
-            bookingProb = 'N/A';
         }
 
         // Determine destination city for dataset lookups
@@ -197,11 +208,11 @@ const runAgentSimulation = async (req, res) => {
         }
 
         // Realistic budget calculations
-        const estTicketCost = train ? 1850 : Math.min(1500, Math.round(parsedBudget * 0.35));
+        const estTicketCost = authenticTrainFare || (train ? null : Math.min(1500, Math.round(parsedBudget * 0.35)));
         const estHotelCost = budgetHotelBasePrice;
         const estMealsCost = Math.min(800, Math.round(parsedBudget * 0.15));
         const estLocalTransport = Math.min(500, Math.round(parsedBudget * 0.08));
-        const totalEstCost = estTicketCost + estHotelCost + estMealsCost + estLocalTransport;
+        const totalEstCost = (estTicketCost || 0) + estHotelCost + estMealsCost + estLocalTransport;
         const remainingBudget = Math.max(0, parsedBudget - totalEstCost);
         const savingsPercent = Math.max(5, Math.round(((parsedBudget - totalEstCost) / Math.max(parsedBudget, 1)) * 100));
 
@@ -235,17 +246,19 @@ const runAgentSimulation = async (req, res) => {
                     status: 'completed',
                     progress: 100,
                     logs: [
-                        'Polling class seat inventories...',
-                        'Estimating booking availability probabilities via historical occupancy networks...',
-                        'Calculating optimal reservation window rules...',
-                        'Analyzed ticket pricing indices from database.'
+                        'Inspecting database schedule and authenticated fare registry...',
+                        'Evaluating reservation booking channels...',
+                        'Verified seat inventory requires live IRCTC transaction gateway.'
                     ],
-                    reasoning: `Seat availability based on train load and demand curves. ${train ? 'Route active.' : 'Alternative connections available.'}`,
+                    reasoning: train ? `Route verified in database for ${trainDesc}. Live seat inventory requires IRCTC confirmation.` : `No direct train route in database between ${sourceCode} and ${destCode}.`,
                     result: {
                         recommendedClass: '3A',
-                        availableSeats: train ? 48 : 32,
-                        bookingProbability: bookingProb !== 'N/A' ? bookingProb : 'High (84%)',
-                        fareEst: estTicketCost
+                        availableSeats: null,
+                        seat_availability_status: 'Live seat counts not provided by static timetable; verify on IRCTC before booking',
+                        bookingProbability: null,
+                        booking_probability_status: 'Seat prediction model unavailable without live PNR telemetry',
+                        fareEst: authenticTrainFare || null,
+                        fare_status: authenticTrainFare ? 'verified_static_fare' : 'Fare unavailable at source'
                     }
                 },
                 {

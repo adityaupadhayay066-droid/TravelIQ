@@ -250,7 +250,7 @@ export default function AIVoiceAssistant() {
 
     const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
     const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
-    if (authRoutes.includes(currentPath) || isAuthModalOpen || isChatOpen) {
+    if (!user || authRoutes.includes(currentPath) || isAuthModalOpen || isChatOpen) {
         return null;
     }
 

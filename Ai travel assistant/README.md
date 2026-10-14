@@ -38,7 +38,7 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 python generate_data.py
 python train_models.py
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload
 ```
 
 ### 2. Backend (Node.js)

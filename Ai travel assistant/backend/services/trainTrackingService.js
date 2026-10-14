@@ -22,7 +22,19 @@ const ALL_WEEK_DAYS = [
  * Generates comprehensive live running status, weekly running days, and route timeline for a train
  * Similar to 'Where is My Train' app.
  */
-async function getTrainTrackingDetails({ trainNumber, journeyDate, selectedDay }) {
+async function getTrainTrackingDetails(params) {
+    let trainNumber = null;
+    let journeyDate = null;
+    let selectedDay = null;
+
+    if (typeof params === 'object' && params !== null) {
+        trainNumber = params.trainNumber || params.train_number || null;
+        journeyDate = params.journeyDate || null;
+        selectedDay = params.selectedDay || null;
+    } else {
+        trainNumber = params;
+    }
+
     if (!trainNumber) return null;
 
     const trimmed = String(trainNumber).trim();
@@ -236,7 +248,7 @@ async function getTrainTrackingDetails({ trainNumber, journeyDate, selectedDay }
             }
         }
 
-        const pfNum = ((stop.station_code.charCodeAt(0) + parseInt(train.train_number.slice(-1) || '1') + idx) % 4) + 1;
+        const authenticPlatform = (liveRecord && liveRecord.station_code === stop.station_code) ? liveRecord.platform : null;
         const distKm = Math.round((idx / Math.max(1, totalStopsCount - 1)) * totalDistanceEst);
 
         return {
@@ -252,7 +264,8 @@ async function getTrainTrackingDetails({ trainNumber, journeyDate, selectedDay }
             actual_arr: formatTimeOnly(stop.actualArr),
             actual_dep: formatTimeOnly(stop.actualDep),
             halt_minutes: haltMinutes,
-            platform: `PF #${pfNum}`,
+            platform: authenticPlatform,
+            platform_display: authenticPlatform ? `PF #${authenticPlatform}` : 'Unassigned / TBA',
             distance_km: distKm,
             day_count: stop.day_count,
             latitude: stop.latitude,
@@ -287,6 +300,10 @@ async function getTrainTrackingDetails({ trainNumber, journeyDate, selectedDay }
             status: finalStatus,
             delay_minutes: delayMinutes,
             delay_text: delayMinutes > 0 ? `${delayMinutes} min late` : 'On Time',
+            is_live_telemetry: Boolean(liveRecord),
+            telemetry_source: liveRecord ? 'live_railway_gps' : 'scheduled_timetable',
+            verification_status: liveRecord ? 'verified' : 'static_reference',
+            telemetry_disclaimer: liveRecord ? null : 'Estimated from scheduled timetable; live GPS telemetry not active for this train run.',
             current_station_code: active_station_code,
             current_station_name: activeStop?.station_name || active_station_code,
             next_station_code: next_station_code,

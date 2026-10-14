@@ -253,7 +253,7 @@ export default function AIChatbot() {
 
   const authRoutes = ['/login', '/signup', '/admin/login', '/admin/signup'];
   const currentPath = (location?.pathname || '').toLowerCase().replace(/\/+$/, '') || '/';
-  if (authRoutes.includes(currentPath) || isAuthModalOpen) {
+  if (!user || authRoutes.includes(currentPath) || isAuthModalOpen) {
     return null;
   }
 

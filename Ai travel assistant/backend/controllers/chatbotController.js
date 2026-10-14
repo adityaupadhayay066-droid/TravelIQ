@@ -68,7 +68,11 @@ const sendMessage = async (req, res) => {
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
                         const gRes = await axios.post(url, {
                             contents: [{
-                                parts: [{ text: `You are TravelIQ AI, a helpful senior travel assistant. Answer concisely in 2-3 friendly sentences: ${message}` }]
+                                parts: [{ text: `You are TravelIQ AI, a strictly grounded travel assistant.
+CRITICAL INTEGRITY INSTRUCTIONS:
+- You must NEVER invent or guess train numbers, train names, flight numbers, bus services, departure/arrival times, station/airport codes, seat availability, or fares.
+- If the user asks for specific travel schedules, platform numbers, or ticket prices, politely instruct them to search on the TravelIQ "Route Comparison" or "Live Train Status" dashboard for authentic verified results.
+Answer concisely in 2-3 friendly sentences: ${message}` }]
                             }],
                             generationConfig: {
                                 temperature: 0.0
@@ -123,7 +127,7 @@ const sendMessage = async (req, res) => {
                 } else if (/\b(hotel|hostel|dorm|homestay|stay in|room)\b/i.test(lowerMsg)) {
                     botReply = "🏨 TravelIQ Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
                 } else if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
-                    botReply = "To check ticket fares and price trends for flights or trains (e.g. IGI Delhi to RNC Ranchi), visit the 'Route Optimizer' or 'Smart Fare Predictor' tab on your TravelIQ dashboard! Direct flight fares typically range between ₹3,500 and ₹6,500.";
+                    botReply = "To check verified ticket fares and price trends for flights or trains, search your origin and destination on the TravelIQ Route Search tab for verified provider schedules and fares.";
                 } else if (/\b(delay|late|time|status|cancel|reschedule)\b/i.test(lowerMsg)) {
                     botReply = "Train delays are monitored using historical weather and route statistics. Enter your train number in our 'Delay Predictor' tab for real-time risk predictions!";
                 } else if (/\b(food|eat|meal|thali|restaurant|snacks)\b/i.test(lowerMsg)) {

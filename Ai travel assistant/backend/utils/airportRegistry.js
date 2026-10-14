@@ -73,20 +73,34 @@ const AIRPORT_REGISTRY = {
  */
 const KNOWN_CITY_COORDINATES = {
   'ballia': { lat: 25.7615, lng: 84.1487, city: 'Ballia' },
+  'bui': { lat: 25.7615, lng: 84.1487, city: 'Ballia' },
   'buxar': { lat: 25.5647, lng: 83.9777, city: 'Buxar' },
+  'bxr': { lat: 25.5647, lng: 83.9777, city: 'Buxar' },
   'mathura': { lat: 27.4924, lng: 77.6737, city: 'Mathura' },
+  'mtj': { lat: 27.4924, lng: 77.6737, city: 'Mathura' },
   'jhansi': { lat: 25.4484, lng: 78.5685, city: 'Jhansi' },
+  'vglb': { lat: 25.4484, lng: 78.5685, city: 'Jhansi' },
   'alwar': { lat: 27.5530, lng: 76.6346, city: 'Alwar' },
+  'awr': { lat: 27.5530, lng: 76.6346, city: 'Alwar' },
   'mirzapur': { lat: 25.1460, lng: 82.5690, city: 'Mirzapur' },
+  'mzp': { lat: 25.1460, lng: 82.5690, city: 'Mirzapur' },
   'chhapra': { lat: 25.7848, lng: 84.7274, city: 'Chhapra' },
+  'cpr': { lat: 25.7848, lng: 84.7274, city: 'Chhapra' },
   'siwan': { lat: 26.2196, lng: 84.3567, city: 'Siwan' },
+  'sv': { lat: 26.2196, lng: 84.3567, city: 'Siwan' },
   'haridwar': { lat: 29.9457, lng: 78.1642, city: 'Haridwar' },
+  'hw': { lat: 29.9457, lng: 78.1642, city: 'Haridwar' },
   'rishikesh': { lat: 30.0869, lng: 78.2676, city: 'Rishikesh' },
   'roorkee': { lat: 29.8543, lng: 77.8880, city: 'Roorkee' },
+  'rk': { lat: 29.8543, lng: 77.8880, city: 'Roorkee' },
   'muzaffarnagar': { lat: 29.4727, lng: 77.7085, city: 'Muzaffarnagar' },
+  'moj': { lat: 29.4727, lng: 77.7085, city: 'Muzaffarnagar' },
   'meerut': { lat: 28.9845, lng: 77.7064, city: 'Meerut' },
+  'mut': { lat: 28.9845, lng: 77.7064, city: 'Meerut' },
   'moradabad': { lat: 28.8386, lng: 78.7733, city: 'Moradabad' },
-  'aligarh': { lat: 27.8974, lng: 78.0880, city: 'Aligarh' }
+  'mb': { lat: 28.8386, lng: 78.7733, city: 'Moradabad' },
+  'aligarh': { lat: 27.8974, lng: 78.0880, city: 'Aligarh' },
+  'aljn': { lat: 27.8974, lng: 78.0880, city: 'Aligarh' }
 };
 
 /**
@@ -220,17 +234,18 @@ function getNearestAirport(location, maxDistanceKm = 300) {
   let locLat = null;
   let locLng = null;
 
-  if (typeof location === 'object') {
-    if (location.latitude && location.longitude) {
-      locLat = Number(location.latitude);
-      locLng = Number(location.longitude);
-    }
-  }
-
   const locNorm = typeof location === 'string' ? normalizeString(location) : normalizeString(location.city || location.station_name || '');
-  if (!locLat && KNOWN_CITY_COORDINATES[locNorm]) {
+  const codeNorm = location && location.station_code ? normalizeString(location.station_code) : '';
+
+  if (codeNorm && KNOWN_CITY_COORDINATES[codeNorm]) {
+    locLat = KNOWN_CITY_COORDINATES[codeNorm].lat;
+    locLng = KNOWN_CITY_COORDINATES[codeNorm].lng;
+  } else if (KNOWN_CITY_COORDINATES[locNorm]) {
     locLat = KNOWN_CITY_COORDINATES[locNorm].lat;
     locLng = KNOWN_CITY_COORDINATES[locNorm].lng;
+  } else if (typeof location === 'object' && location.latitude && location.longitude) {
+    locLat = Number(location.latitude);
+    locLng = Number(location.longitude);
   }
 
   // Fallback lookups for known non-airport regions

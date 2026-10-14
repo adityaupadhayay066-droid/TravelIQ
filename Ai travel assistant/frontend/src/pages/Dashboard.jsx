@@ -336,6 +336,7 @@ export default function Dashboard() {
                   value={date} 
                   min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setDate(e.target.value)} 
+                  onClick={(e) => { try { e.currentTarget.showPicker(); } catch (err) {} }}
                   className="w-full h-11 px-3 rounded-lg border border-[#E3E7EA] dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-[#202A32] dark:text-white cursor-pointer" 
                 />
               </div>
@@ -561,11 +562,13 @@ export default function Dashboard() {
                     const isFlight = item.type === 'Flight';
                     const isBus = item.type === 'Bus';
                     const title = item.name || item.train_name || 'Express Service';
-                    const number = item.number || item.train_number || '12301';
-                    const dep = item.depTime || item.departure_time || item.source_departure || '06:00 AM';
-                    const arr = item.arrTime || item.arrival_time || item.dest_arrival || '02:00 PM';
-                    const dur = item.dur || item.duration || '8h 00m';
-                    const price = item.price || (item.fares ? Math.min(...Object.values(item.fares)) : 850);
+                    const number = item.number || item.train_number || '--';
+                    const dep = item.depTime || item.departure_time || item.source_departure || '--:--';
+                    const arr = item.arrTime || item.arrival_time || item.dest_arrival || '--:--';
+                    const dur = item.dur || item.duration || '--';
+                    const price = (item.price !== null && item.price !== undefined) 
+                      ? item.price 
+                      : (item.fares && Object.keys(item.fares).length > 0 ? Math.min(...Object.values(item.fares)) : null);
                     const depStn = item.depStation || getStationName(source);
                     const arrStn = item.arrStation || getStationName(dest);
                     const runningDays = item.running_days || item.frequency || 'Daily (7 days/week)';
@@ -594,9 +597,17 @@ export default function Dashboard() {
                                 <span className="text-[10px] font-bold uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                   {item.type || 'Train'}
                                 </span>
-                                {item.verified !== false && (
-                                  <span className="text-[9px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-0.5">
+                                {item.verification_status === 'provider_verified' || item.source_verified === true ? (
+                                  <span className="text-[9px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-0.5 bg-teal-50 dark:bg-teal-950/60 px-1.5 py-0.5 rounded">
                                     <CheckCircle2 className="w-2.5 h-2.5" /> Verified
+                                  </span>
+                                ) : item.verification_status === 'static_reference' || item.verification_status === 'reference_timetable' ? (
+                                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded">
+                                    <ShieldCheck className="w-2.5 h-2.5" /> Timetable
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-0.5 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                                    <AlertCircle className="w-2.5 h-2.5" /> Unverified
                                   </span>
                                 )}
                               </div>
@@ -639,10 +650,23 @@ export default function Dashboard() {
                           {/* Price & Action */}
                           <div className="flex items-center justify-between lg:justify-end gap-5 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
                             <div className="text-left lg:text-right">
-                              <p className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">
-                                ₹{typeof price === 'number' ? price.toLocaleString('en-IN') : price}
-                              </p>
-                              <p className="text-[10px] text-slate-400">per traveler</p>
+                              {price !== null ? (
+                                <>
+                                  <p className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">
+                                    ₹{price.toLocaleString('en-IN')}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400">
+                                    {item.fare_type === 'estimated_distance_rule' ? 'est. distance fare' : 'per traveler'}
+                                  </p>
+                                </>
+                              ) : (
+                                <div className="text-left lg:text-right">
+                                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                                    Fare unavailable
+                                  </p>
+                                  <p className="text-[10px] text-slate-400">Check at station / IRCTC</p>
+                                </div>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -714,14 +738,10 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     {alternativeRoutes.map((conn) => {
                       const transferStation = conn.transfer_station || 'Interchange Hub';
-                      const layover = conn.layover || '1h 30m Connection Time';
-                      const totalDur = conn.duration || '10h 30m';
-                      const combinedFare = conn.price || 1650;
-                      const legs = conn.legs || [
-                        { type: 'Train', from: getStationName(source), to: transferStation, departure: '07:00 AM', arrival: '12:30 PM', train_name: 'Leg 1 Express' },
-                        { type: 'Layover', station: transferStation, duration: layover },
-                        { type: 'Train', from: transferStation, to: getStationName(dest), departure: '02:00 PM', arrival: '05:30 PM', train_name: 'Leg 2 Express' }
-                      ];
+                      const layover = conn.layover || 'Connection Window';
+                      const totalDur = conn.duration || '--';
+                      const combinedFare = (conn.price !== null && conn.price !== undefined) ? conn.price : null;
+                      const legs = conn.legs || [];
 
                       return (
                         <div 
@@ -739,10 +759,21 @@ export default function Dashboard() {
                             </div>
 
                             <div className="text-right">
-                              <span className="text-lg font-black text-slate-900 dark:text-white font-mono">
-                                ₹{combinedFare.toLocaleString('en-IN')}
-                              </span>
-                              <span className="text-[10px] text-slate-400 block">Combined Total Fare</span>
+                              {combinedFare !== null ? (
+                                <>
+                                  <span className="text-lg font-black text-slate-900 dark:text-white font-mono">
+                                    ₹{combinedFare.toLocaleString('en-IN')}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 block">Combined Total Fare</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-bold text-amber-600 dark:text-amber-400 block">
+                                    Fare unavailable
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 block">Book separate legs</span>
+                                </>
+                              )}
                             </div>
                           </div>
 
@@ -865,30 +896,30 @@ export default function Dashboard() {
                 <p className="text-slate-500">{detailModalItem.depStation || getStationName(source)}</p>
               </div>
               <div className="text-center">
-                <span className="text-[11px] font-bold text-teal-600">{detailModalItem.dur || detailModalItem.duration || '8h 00m'}</span>
+                <span className="text-[11px] font-bold text-teal-600">{detailModalItem.dur || detailModalItem.duration || '--'}</span>
                 <p className="text-[10px] text-slate-400">Direct Route</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-slate-900 dark:text-white text-sm">{detailModalItem.arrTime || detailModalItem.dest_arrival || '02:00 PM'}</p>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">{detailModalItem.arrTime || detailModalItem.dest_arrival || '--:--'}</p>
                 <p className="text-slate-500">{detailModalItem.arrStation || getStationName(dest)}</p>
               </div>
             </div>
 
-            {/* Intermediate Route Timetable */}
+            {/* Service Timings & Schedule */}
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase text-slate-500">Route Highlights & Stops</h4>
+              <h4 className="text-xs font-bold uppercase text-slate-500">Service Timings & Schedule</h4>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                  <span>Origin Station Departure</span>
-                  <span className="font-bold">{detailModalItem.depTime || '06:00 AM'}</span>
+                  <span>Departure from {detailModalItem.depStation || 'Origin'}</span>
+                  <span className="font-bold">{detailModalItem.depTime || '--:--'}</span>
                 </div>
                 <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                  <span>Intermediate Junction Stop (Aligarh / Kanpur)</span>
-                  <span className="text-slate-500">Scheduled 5m halt</span>
+                  <span>Arrival at {detailModalItem.arrStation || 'Destination'}</span>
+                  <span className="font-bold">{detailModalItem.arrTime || '--:--'}</span>
                 </div>
                 <div className="flex justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                  <span>Destination Arrival</span>
-                  <span className="font-bold">{detailModalItem.arrTime || '02:00 PM'}</span>
+                  <span>Operating Days</span>
+                  <span className="font-semibold text-slate-600 dark:text-slate-300">{detailModalItem.running_days || detailModalItem.frequency || 'Daily'}</span>
                 </div>
               </div>
             </div>
@@ -898,7 +929,11 @@ export default function Dashboard() {
               <div>
                 <span className="text-[10px] text-slate-400 block">Starting Fare</span>
                 <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">
-                  ₹{detailModalItem.price || (detailModalItem.fares ? Math.min(...Object.values(detailModalItem.fares)) : 850)}
+                  {(detailModalItem.price !== null && detailModalItem.price !== undefined)
+                    ? `₹${detailModalItem.price.toLocaleString('en-IN')}`
+                    : (detailModalItem.fares && Object.keys(detailModalItem.fares).length > 0
+                        ? `₹${Math.min(...Object.values(detailModalItem.fares)).toLocaleString('en-IN')}`
+                        : 'Unavailable at source')}
                 </span>
               </div>
               <button

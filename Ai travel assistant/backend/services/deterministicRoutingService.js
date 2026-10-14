@@ -135,9 +135,7 @@ async function getVerifiedDirectTrains(originInput, destInput, travelDate = null
       durStr = `${h}h ${m}m`;
     }
 
-    const fares = fareMap[trainNum] || {
-      'SL': 480, '3A': 1250, '2A': 1850, '1A': 2900
-    };
+    const fares = fareMap[trainNum] || null;
 
     uniqueTrains.set(trainNum, {
       train_number: trainNum,
@@ -152,8 +150,9 @@ async function getVerifiedDirectTrains(originInput, destInput, travelDate = null
       duration: durStr,
       runs_on: formatRunningDays(r.runs_on_days),
       frequency: r.frequency || getTrainFrequencyLabel(r.runs_on_days),
-      fares: Object.entries(fares).map(([cls, amt]) => `${cls}: ₹${amt}`).join(', ')
+      fares: fares ? Object.entries(fares).map(([cls, amt]) => `${cls}: ₹${amt}`).join(', ') : 'Unavailable at source'
     });
+
   }
 
   return Array.from(uniqueTrains.values());

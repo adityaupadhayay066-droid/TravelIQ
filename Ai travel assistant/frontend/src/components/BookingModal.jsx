@@ -37,7 +37,7 @@ const classDisplayNames = {
 
 function extractNormalizedFares(transportItem) {
   if (!transportItem) {
-    return { '3A': 1250, '2A': 1850, '1A': 2900, 'SL': 520 };
+    return {};
   }
 
   const parsedFares = {};
@@ -63,54 +63,30 @@ function extractNormalizedFares(transportItem) {
           const code = parts[0]?.trim();
           const priceStr = parts[1] || parts[0];
           const price = parseInt(priceStr.replace(/[^\d]/g, ''), 10);
-          if (code && !isNaN(price)) {
+          if (code && !isNaN(price) && price > 0) {
             parsedFares[code] = price;
           }
-        } else {
-          const base = transportItem.price || 1200;
-          parsedFares[item.trim()] = base;
         }
       } else if (typeof item === 'object' && item !== null) {
         const code = item.class || item.className || item.type || item.name;
         const price = item.fare || item.price || item.amount;
-        if (code && price) {
+        if (code && price && Number(price) > 0) {
           parsedFares[code] = typeof price === 'number' ? price : parseInt(String(price).replace(/[^\d]/g, ''), 10);
         }
       }
     });
   }
 
-  // 3. available_classes array
-  if (Object.keys(parsedFares).length === 0 && Array.isArray(transportItem.available_classes)) {
-    transportItem.available_classes.forEach(cls => {
-      const base = transportItem.price || 1200;
-      parsedFares[cls] = base;
-    });
+  // 3. Fallback to direct price if valid positive number
+  if (Object.keys(parsedFares).length === 0 && transportItem.price && Number(transportItem.price) > 0) {
+    const defaultCls = transportItem.type === 'Flight' ? 'Economy' : transportItem.type === 'Bus' ? 'Standard' : 'SL';
+    parsedFares[defaultCls] = Number(transportItem.price);
   }
 
-  // 4. Default fallback based on transport type and base price
-  if (Object.keys(parsedFares).length === 0) {
-    const isFlight = transportItem.type === 'Flight' || transportItem.name?.toLowerCase().includes('indigo') || transportItem.name?.toLowerCase().includes('air');
-    const isBus = transportItem.type === 'Bus' || transportItem.name?.toLowerCase().includes('bus') || transportItem.name?.toLowerCase().includes('vrl');
-    const basePrice = transportItem.price || (isFlight ? 3450 : isBus ? 980 : 1250);
-
-    if (isFlight) {
-      parsedFares['Economy'] = basePrice;
-      parsedFares['Flexi'] = Math.round(basePrice * 1.25);
-      parsedFares['Business'] = Math.round(basePrice * 2.4);
-    } else if (isBus) {
-      parsedFares['AC Sleeper'] = basePrice;
-      parsedFares['AC Semi-Sleeper'] = Math.round(basePrice * 0.8);
-    } else {
-      parsedFares['3A'] = basePrice;
-      parsedFares['2A'] = Math.round(basePrice * 1.48);
-      parsedFares['1A'] = Math.round(basePrice * 2.32);
-      parsedFares['SL'] = Math.round(basePrice * 0.38);
-    }
-  }
-
+  // Never synthesize fake 3A / 2A / 1A prices if source has no fare data
   return parsedFares;
 }
+
 
 const CLASS_SORT_ORDER = [
   'EC', '1A', '2A', '3A', '3E', 'CC', 'SL', '2S', 'UR', 'General', 'GN',
@@ -713,16 +689,19 @@ export default function BookingModal({ train, onClose }) {
                         })}
                       </div>
                     ) : (
-                      <div className="p-5 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl text-center text-sm text-[#66736F] dark:text-[#A3B0AB] flex flex-col items-center gap-2">
-                        <AlertCircle className="w-6 h-6 text-[#D96C4F]" />
-                        <span>Standard Sleeper & AC options available at ₹{train?.price || 1250}.</span>
+                      <div className="p-6 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-center text-sm text-amber-800 dark:text-amber-200 flex flex-col items-center gap-2">
+                        <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                        <span className="font-bold">Official Fare Unavailable at Source</span>
+                        <p className="text-xs text-amber-700 dark:text-amber-300 max-w-md">
+                          Verified reservation fares for this transport service are not published in the timetable database. To avoid inaccurate booking charges, please book directly on the official IRCTC portal or carrier ticketing counter.
+                        </p>
                       </div>
                     )}
 
                     <div className="pt-4 flex justify-end">
                       <button 
                         onClick={handleNextStep}
-                        disabled={!selectedClass}
+                        disabled={!selectedClass || availableClasses.length === 0}
                         className="bg-[#D96C4F] hover:bg-[#C75D43] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-7 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer text-sm"
                       >
                         Continue to Passenger Details
