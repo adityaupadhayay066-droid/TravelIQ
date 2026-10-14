@@ -319,6 +319,138 @@ const DEFAULT_TRAINS = [
             { station_code: 'KYN', arrival_time: '16:22:00', departure_time: '16:25:00', day_count: 2, stop_sequence: 5 },
             { station_code: 'CSMT', arrival_time: '17:30:00', departure_time: null, day_count: 2, stop_sequence: 6 }
         ]
+    },
+    {
+        train_number: '12310',
+        train_name: 'Patna Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '17:10:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '21:52:00', departure_time: '21:57:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'PRYJ', arrival_time: '00:05:00', departure_time: '00:07:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'DDU', arrival_time: '02:00:00', departure_time: '02:10:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'DNR', arrival_time: '04:40:00', departure_time: '04:42:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'PNBE', arrival_time: '05:15:00', departure_time: '05:25:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'RJPB', arrival_time: '05:40:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '12309',
+        train_name: 'Patna - New Delhi Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'RJPB', arrival_time: null, departure_time: '19:10:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'PNBE', arrival_time: '19:25:00', departure_time: '19:35:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DNR', arrival_time: '19:50:00', departure_time: '19:52:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'DDU', arrival_time: '22:12:00', departure_time: '22:22:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'PRYJ', arrival_time: '00:10:00', departure_time: '00:12:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'CNB', arrival_time: '02:15:00', departure_time: '02:20:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'NDLS', arrival_time: '07:40:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '12394',
+        train_name: 'Sampoorna Kranti Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '17:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '22:22:00', departure_time: '22:30:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DDU', arrival_time: '02:25:00', departure_time: '02:35:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'DNR', arrival_time: '05:45:00', departure_time: '05:47:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'PNBE', arrival_time: '06:50:00', departure_time: '07:00:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'RJPB', arrival_time: '07:20:00', departure_time: null, day_count: 2, stop_sequence: 6 }
+        ]
+    },
+    {
+        train_number: '12393',
+        train_name: 'Sampoorna Kranti Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'RJPB', arrival_time: null, departure_time: '19:25:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'PNBE', arrival_time: '19:40:00', departure_time: '19:50:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DNR', arrival_time: '20:08:00', departure_time: '20:10:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'DDU', arrival_time: '22:20:00', departure_time: '22:30:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'CNB', arrival_time: '02:25:00', departure_time: '02:30:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'NDLS', arrival_time: '07:55:00', departure_time: null, day_count: 2, stop_sequence: 6 }
+        ]
+    },
+    {
+        train_number: '12566',
+        train_name: 'Bihar Sampark Kranti Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '13:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '18:10:00', departure_time: '18:15:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GKP', arrival_time: '00:55:00', departure_time: '01:05:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'CPR', arrival_time: '03:45:00', departure_time: '03:50:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'PPTA', arrival_time: '05:20:00', departure_time: null, day_count: 2, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '12565',
+        train_name: 'Bihar Sampark Kranti Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'PPTA', arrival_time: null, departure_time: '11:25:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CPR', arrival_time: '12:55:00', departure_time: '13:05:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GKP', arrival_time: '15:45:00', departure_time: '15:55:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'CNB', arrival_time: '22:48:00', departure_time: '22:58:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'NDLS', arrival_time: '05:15:00', departure_time: null, day_count: 2, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '18183',
+        train_name: 'Tatanagar - Danapur Super Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'TATA', arrival_time: null, departure_time: '08:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'PRR', arrival_time: '09:28:00', departure_time: '09:30:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BKSC', arrival_time: '10:40:00', departure_time: '10:45:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'GMO', arrival_time: '11:55:00', departure_time: '12:00:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'KQR', arrival_time: '13:05:00', departure_time: '13:07:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'GAYA', arrival_time: '14:45:00', departure_time: '14:50:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'PNBE', arrival_time: '18:25:00', departure_time: '18:35:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'DNR', arrival_time: '19:00:00', departure_time: null, day_count: 1, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '18184',
+        train_name: 'Danapur - Tatanagar Super Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'DNR', arrival_time: null, departure_time: '05:45:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'PNBE', arrival_time: '06:05:00', departure_time: '06:15:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GAYA', arrival_time: '08:00:00', departure_time: '08:05:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'KQR', arrival_time: '09:28:00', departure_time: '09:30:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'GMO', arrival_time: '10:45:00', departure_time: '10:50:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BKSC', arrival_time: '11:55:00', departure_time: '12:00:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'PRR', arrival_time: '13:10:00', departure_time: '13:12:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'TATA', arrival_time: '14:50:00', departure_time: null, day_count: 1, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '20834',
+        train_name: 'Tatanagar - Patna Vande Bharat Express',
+        runs_on: ["MON", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'TATA', arrival_time: null, departure_time: '05:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BKSC', arrival_time: '07:33:00', departure_time: '07:35:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GMO', arrival_time: '08:08:00', departure_time: '08:10:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'GAYA', arrival_time: '09:43:00', departure_time: '09:48:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'PNBE', arrival_time: '11:55:00', departure_time: null, day_count: 1, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '20833',
+        train_name: 'Patna - Tatanagar Vande Bharat Express (Return)',
+        runs_on: ["MON", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'PNBE', arrival_time: null, departure_time: '14:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'GAYA', arrival_time: '16:15:00', departure_time: '16:20:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GMO', arrival_time: '18:00:00', departure_time: '18:02:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BKSC', arrival_time: '18:40:00', departure_time: '18:42:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'TATA', arrival_time: '20:45:00', departure_time: null, day_count: 1, stop_sequence: 5 }
+        ]
     }
 ];
 

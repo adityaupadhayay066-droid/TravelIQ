@@ -1,6 +1,8 @@
 const { ChatbotKnowledge, ChatHistory, User } = require('../models');
 const { Op } = require('sequelize');
 const axios = require('axios');
+const { generateGroundedResponse } = require('../services/deterministicRoutingService');
+const { isTransitRoutingQuery, extractTransitEntities } = require('../services/transitIntentService');
 
 // ══════════════════════════════════════════════════════
 // PUBLIC CHATBOT ENDPOINTS
@@ -22,18 +24,40 @@ const sendMessage = async (req, res) => {
     try {
         let botReply = null;
 
-        // 1. Try Python AI Service (/chat endpoint) first (Domain Expert + Neural Engine + RAG)
-        try {
-            const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-            const aiRes = await axios.post(`${aiUrl}/chat`, { message }, { timeout: 6000 });
-            if (aiRes.data && aiRes.data.response) {
-                botReply = aiRes.data.response;
+        // 0. Zero Generative Routing: Deterministic Data Pipeline for Transit/Route Inquiries
+        if (isTransitRoutingQuery(message)) {
+            const transitEntities = extractTransitEntities(message);
+            if (transitEntities && transitEntities.origin && transitEntities.destination) {
+                try {
+                    const grounded = await generateGroundedResponse(
+                        message,
+                        transitEntities.origin,
+                        transitEntities.destination,
+                        transitEntities.isDefaultDate ? null : transitEntities.travelDate
+                    );
+                    if (grounded && grounded.response) {
+                        botReply = grounded.response;
+                    }
+                } catch (groundErr) {
+                    console.error('[Grounded Routing Error]:', groundErr.message);
+                }
             }
-        } catch (aiErr) {
-            // Fallback if AI service is offline
         }
 
-        // 2. Try Google Gemini API if configured with a valid key (starts with AIzaSy)
+        // 1. Try Python AI Service (/chat endpoint) if transit query was not handled
+        if (!botReply) {
+            try {
+                const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+                const aiRes = await axios.post(`${aiUrl}/chat`, { message }, { timeout: 6000 });
+                if (aiRes.data && aiRes.data.response) {
+                    botReply = aiRes.data.response;
+                }
+            } catch (aiErr) {
+                // Fallback if AI service is offline
+            }
+        }
+
+        // 2. Try Google Gemini API with STRICT ZERO TEMPERATURE (0.0) for non-transit general inquiries
         if (!botReply) {
             const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
             if (rawApiKey && rawApiKey.startsWith('AIzaSy')) {
@@ -45,7 +69,10 @@ const sendMessage = async (req, res) => {
                         const gRes = await axios.post(url, {
                             contents: [{
                                 parts: [{ text: `You are TravelIQ AI, a helpful senior travel assistant. Answer concisely in 2-3 friendly sentences: ${message}` }]
-                            }]
+                            }],
+                            generationConfig: {
+                                temperature: 0.0
+                            }
                         }, { timeout: 8000 });
 
                         if (gRes.data && gRes.data.candidates && gRes.data.candidates.length > 0) {

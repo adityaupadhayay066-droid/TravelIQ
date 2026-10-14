@@ -5,6 +5,7 @@ const { discoverMultiModalRoutes } = require('../services/multiModalDiscoverySer
 const { trainRunsOnDate, getTrainFrequencyLabel, formatRunningDays, findConnectingTrains, getDayOfWeek } = require('../services/routeValidationEngine');
 const { MultiModalRoutingEngine } = require('../services/multiModalRoutingEngine');
 const { getTrainTrackingDetails } = require('../services/trainTrackingService');
+const { resolveStation, parseTravelDate } = require('../services/stationResolver');
 
 const predictTrip = async (req, res) => {
     try {
@@ -85,7 +86,7 @@ const getUserAnalytics = async (req, res) => {
 
 const searchRoutes = async (req, res) => {
     try {
-        const { source, destination, departureDate, returnDate, tripType, passengers } = req.body;
+        let { source, destination, departureDate, returnDate, tripType, passengers } = req.body;
         
         console.log(`[Backend] Route Search Request Payload:`, {
             source, destination, departureDate, returnDate, tripType, passengers
@@ -95,43 +96,66 @@ const searchRoutes = async (req, res) => {
             return res.status(400).json({ message: 'Source and destination required.' });
         }
 
-        const sourceCode = String(source).trim().toUpperCase();
-        const destCode = String(destination).trim().toUpperCase();
+        // Strict Entity Resolution & Fuzzy Station Matching
+        const sourceMatch = await resolveStation(source);
+        const destMatch = await resolveStation(destination);
 
-        const sourceStation = await Station.findOne({
+        const originCodes = sourceMatch?.stationCodes || [String(source).trim().toUpperCase()];
+        const destCodes = destMatch?.stationCodes || [String(destination).trim().toUpperCase()];
+
+        let sourceStation = await Station.findOne({
             where: {
                 [Op.or]: [
-                    { station_code: sourceCode },
-                    { station_name: sourceCode }
+                    { station_code: originCodes },
+                    { station_name: String(source).trim() }
                 ]
             }
         });
 
-        const destStation = await Station.findOne({
+        let destStation = await Station.findOne({
             where: {
                 [Op.or]: [
-                    { station_code: destCode },
-                    { station_name: destCode }
+                    { station_code: destCodes },
+                    { station_name: String(destination).trim() }
                 ]
             }
         });
+
+        if (!sourceStation && sourceMatch?.primaryStationCode) {
+            sourceStation = await Station.findOne({
+                where: { station_code: sourceMatch.primaryStationCode }
+            });
+        }
+
+        if (!destStation && destMatch?.primaryStationCode) {
+            destStation = await Station.findOne({
+                where: { station_code: destMatch.primaryStationCode }
+            });
+        }
+
+        // Intelligent Date Fallback: default to tomorrow if omitted
+        let dateInfo = null;
+        if (!departureDate) {
+            dateInfo = parseTravelDate(null);
+            departureDate = dateInfo.travelDate;
+        }
         
         if (sourceStation) {
             console.log(`[Backend] Resolved Source Station: ${sourceStation.station_name} (${sourceStation.station_code}) Coordinates: [${sourceStation.latitude}, ${sourceStation.longitude}]`);
         } else {
-            console.warn(`[Backend] Source Station code/name "${source}" not found in database.`);
+            console.warn(`[Backend] Source Station code/name "${source}" resolved to cluster: [${originCodes.join(', ')}]`);
         }
 
         if (destStation) {
             console.log(`[Backend] Resolved Destination Station: ${destStation.station_name} (${destStation.station_code}) Coordinates: [${destStation.latitude}, ${destStation.longitude}]`);
         } else {
-            console.warn(`[Backend] Destination Station code/name "${destination}" not found in database.`);
+            console.warn(`[Backend] Destination Station code/name "${destination}" resolved to cluster: [${destCodes.join(', ')}]`);
         }
 
         // 1. Run dynamic multi-modal discovery with departureDate filtering & multimodal flight alternatives
         const discovery = discoverMultiModalRoutes(sourceStation, destStation, source, destination, departureDate);
 
-        // 2. Query database for direct train schedules if available
+        // 2. Query database for direct train schedules across multi-station clusters
         let dbRoutes = [];
         try {
             const query = `
@@ -148,8 +172,8 @@ const searchRoutes = async (req, res) => {
                 FROM train_schedules s1
                 JOIN train_schedules s2 ON s1.train_number = s2.train_number
                 JOIN trains t ON s1.train_number = t.train_number
-                WHERE (s1.station_code = :sourceCode OR s1.station_code = :rawSource)
-                  AND (s2.station_code = :destCode OR s2.station_code = :rawDest)
+                WHERE s1.station_code IN (:origin_station_codes)
+                  AND s2.station_code IN (:dest_station_codes)
                   AND s1.stop_sequence < s2.stop_sequence
                 GROUP BY t.train_number, t.train_name, t.runs_on, t.service_type, t.frequency
                 ORDER BY source_departure ASC
@@ -158,10 +182,8 @@ const searchRoutes = async (req, res) => {
 
             dbRoutes = await sequelize.query(query, {
                 replacements: { 
-                    sourceCode, 
-                    destCode, 
-                    rawSource: sourceStation ? sourceStation.station_code : sourceCode,
-                    rawDest: destStation ? destStation.station_code : destCode
+                    origin_station_codes: originCodes, 
+                    dest_station_codes: destCodes
                 },
                 type: sequelize.QueryTypes.SELECT
             });
@@ -247,8 +269,8 @@ const searchRoutes = async (req, res) => {
             });
         }
 
-        const originStnCode = sourceStation ? sourceStation.station_code : sourceCode;
-        const destStnCode = destStation ? destStation.station_code : destCode;
+        const originStnCode = sourceStation ? sourceStation.station_code : (sourceMatch?.primaryStationCode || originCodes[0]);
+        const destStnCode = destStation ? destStation.station_code : (destMatch?.primaryStationCode || destCodes[0]);
         const routingEngine = new MultiModalRoutingEngine({ sequelize });
 
         const finalTrains = [...processedDbTrains];
@@ -346,7 +368,7 @@ const searchRoutes = async (req, res) => {
                 source,
                 destination,
                 status: allTransports.length > 0 ? 'SUCCESS' : 'NO_TRAINS',
-                ip_address: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress
+                ip_address: req.ip || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1'
             });
         } catch (analyticsErr) {
             console.error('⚠️  Failed to log search analytics:', analyticsErr.message);
@@ -361,6 +383,9 @@ const searchRoutes = async (req, res) => {
             distanceKm: discovery.distanceKm,
             hasAirport: discovery.hasAirport,
             departureDate: departureDate || null,
+            dateNotice: dateInfo && dateInfo.isDefaultDate ? dateInfo.dateNotice : null,
+            originCluster: originCodes,
+            destCluster: destCodes,
             source: sourceStation ? sourceStation.toJSON() : discovery.resolvedSource,
             destination: destStation ? destStation.toJSON() : discovery.resolvedDest,
             sourceStation: sourceStation ? sourceStation.toJSON() : discovery.resolvedSource,
