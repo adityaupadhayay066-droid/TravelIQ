@@ -13,6 +13,7 @@ import FilterPanel from '../components/FilterPanel';
 import GoogleMapComponent from '../components/GoogleMap';
 import TripPlanner from '../components/TripPlanner';
 import HotelRecommendations from '../components/HotelRecommendations';
+import HotelsView from './HotelsView';
 import BookingModal from '../components/BookingModal';
 import TravelBudgetPlanner from '../components/TravelBudgetPlanner';
 import { useAuth } from '../context/AuthContext';
@@ -841,7 +842,7 @@ export default function Dashboard() {
         {/* HOTELS & STAYS TAB */}
         {activeTab === 'hotels' && (
           <div className="max-w-7xl mx-auto">
-            <HotelRecommendations destination={getStationName(dest) || 'Goa'} />
+            <HotelsView userDestination={location.state?.hotelDestination || getStationName(dest) || ''} />
           </div>
         )}
 

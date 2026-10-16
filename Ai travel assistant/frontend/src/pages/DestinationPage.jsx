@@ -1144,7 +1144,7 @@ export default function DestinationPage() {
             </div>
 
             <Link
-              to="/dashboard/hotels"
+              to={`/hotels?city=${encodeURIComponent(dest.name)}&state=${encodeURIComponent(dest.state || '')}`}
               className="btn-secondary !h-9 !px-4 text-xs font-bold inline-flex items-center gap-1 self-start sm:self-auto"
             >
               <span>View All Hotels in {dest.name}</span>

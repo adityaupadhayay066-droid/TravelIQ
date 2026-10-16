@@ -518,3 +518,6 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
     </div>
   );
 }
+
+export { default as HotelsView } from '../pages/HotelsView';
+

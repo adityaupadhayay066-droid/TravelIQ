@@ -43,6 +43,7 @@ const AIPredictionsPage = lazy(() => import('./pages/AIPredictionsPage'));
 const DestinationsDirectoryPage = lazy(() => import('./pages/DestinationsDirectoryPage'));
 const DestinationPage = lazy(() => import('./pages/DestinationPage'));
 const DeveloperPortal = lazy(() => import('./pages/DeveloperPortal'));
+const HotelsView = lazy(() => import('./pages/HotelsView'));
 import AIVoiceAssistant from './components/AIVoiceAssistant';
 
 
@@ -180,9 +181,13 @@ function AnimatedRoutes() {
         <Route path="/destinations/:cityName" element={<PageWrapper><Navbar /><DestinationPage /></PageWrapper>} />
         <Route path="/support" element={<PageWrapper><Navbar /><SupportPage /></PageWrapper>} />
         <Route path="/support/ticket/:id" element={<PageWrapper><Navbar /><TicketDetail /></PageWrapper>} />
+        <Route path="/hotels" element={<PageWrapper><Navbar /><HotelsView /></PageWrapper>} />
 
         <Route path="/dashboard" element={
           <ProtectedRoute><DashboardLayout><PageWrapper><Dashboard /></PageWrapper></DashboardLayout></ProtectedRoute>
+        } />
+        <Route path="/dashboard/hotels" element={
+          <ProtectedRoute><DashboardLayout><PageWrapper><HotelsView /></PageWrapper></DashboardLayout></ProtectedRoute>
         } />
         <Route path="/dashboard/profile" element={
           <ProtectedRoute><DashboardLayout><PageWrapper><ProfilePage /></PageWrapper></DashboardLayout></ProtectedRoute>

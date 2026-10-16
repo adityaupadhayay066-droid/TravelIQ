@@ -19,19 +19,33 @@ const COUPONS = [
   { code: 'TRAVELIQ', label: '15% Member Discount', discountPercent: 15, maxDiscount: 1500 }
 ];
 
-export default function HotelBookingModal({ hotel, isOpen, onClose, onBookingSuccess }) {
+export default function HotelBookingModal({ 
+  hotel, 
+  isOpen, 
+  onClose, 
+  onBookingSuccess,
+  initialCheckInDate,
+  initialCheckOutDate,
+  initialGuestsCount 
+}) {
   const [step, setStep] = useState(1); // 1: Choose Room, 2: Dates & Guests, 3: Guest Info & Pay, 4: Receipt
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [unitsCount, setUnitsCount] = useState(1);
-  const [guestsCount, setGuestsCount] = useState(1);
+  const [guestsCount, setGuestsCount] = useState(initialGuestsCount || 1);
   
   // Dates
   const todayStr = new Date().toISOString().split('T')[0];
   const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
   const dayAfterStr = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
 
-  const [checkInDate, setCheckInDate] = useState(tomorrowStr);
-  const [checkOutDate, setCheckOutDate] = useState(dayAfterStr);
+  const [checkInDate, setCheckInDate] = useState(initialCheckInDate || tomorrowStr);
+  const [checkOutDate, setCheckOutDate] = useState(initialCheckOutDate || dayAfterStr);
+
+  useEffect(() => {
+    if (initialCheckInDate) setCheckInDate(initialCheckInDate);
+    if (initialCheckOutDate) setCheckOutDate(initialCheckOutDate);
+    if (initialGuestsCount) setGuestsCount(initialGuestsCount);
+  }, [initialCheckInDate, initialCheckOutDate, initialGuestsCount, isOpen]);
 
   // Meal & Addons
   const [mealPlan, setMealPlan] = useState('Room Only');

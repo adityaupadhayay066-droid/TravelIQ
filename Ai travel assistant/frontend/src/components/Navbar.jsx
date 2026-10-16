@@ -18,7 +18,7 @@ const TRAVEL_CATEGORIES = [
   { id: 'flights', label: 'Flights', icon: Plane, path: '/?tab=flights' },
   { id: 'trains', label: 'Trains', icon: Train, path: '/?tab=trains' },
   { id: 'buses', label: 'Buses', icon: Bus, path: '/?tab=buses' },
-  { id: 'hotels', label: 'Hotels', icon: Building2, path: '/?tab=hotels' },
+  { id: 'hotels', label: 'Hotels', icon: Building2, path: '/hotels' },
   { id: 'explore', label: 'Explore', icon: Compass, path: '/destinations' },
   { id: 'trips', label: 'My Trips', icon: CalendarDays, path: '/dashboard/my-trips' }
 ];
@@ -77,7 +77,7 @@ const EXPLORE_MENU_ITEMS = [
 
 const SEARCHABLE_ITEMS = [
   { title: 'Search Flights, Trains & Buses', category: 'Booking', to: '/dashboard', icon: Compass },
-  { title: 'Hotel Recommendations & Stays', category: 'Hotels', to: '/dashboard', icon: Building2 },
+  { title: 'Hotel Recommendations & Stays', category: 'Hotels', to: '/hotels', icon: Building2 },
   { title: 'Explore 50+ Indian Destinations', category: 'Destinations', to: '/destinations', icon: MapPin },
   { title: 'Live GPS Train Tracking', category: 'Live Status', to: '/dashboard/track', icon: Navigation },
   { title: 'Station Food & Meal Delivery', category: 'Food', to: '/dashboard/food', icon: Utensils },

@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import StationAutocomplete from '../components/StationAutocomplete';
 import PassengerSelector from '../components/PassengerSelector';
+import { resolveCityAndState, parseGuestsCount } from '../utils/cityStateResolver';
 
 // Featured 8 Popular Destinations across India
 const POPULAR_DESTINATIONS = [
@@ -146,7 +147,7 @@ const TRAVEL_PICKS = {
   }
 };
 
-const POPULAR_HOTEL_CITIES = ['Goa', 'Manali', 'Jaipur', 'Varanasi', 'Kochi', 'Mumbai', 'New Delhi', 'Kolkata', 'Bengaluru'];
+const POPULAR_HOTEL_CITIES = ['Jamshedpur', 'Goa', 'Manali', 'Jaipur', 'Varanasi', 'Kochi', 'Mumbai', 'New Delhi', 'Kolkata', 'Bengaluru'];
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -227,7 +228,7 @@ export default function LandingPage() {
   const [isSearching, setIsSearching] = useState(false);
 
   // Hotel Form State
-  const [hotelCity, setHotelCity] = useState('Goa');
+  const [hotelCity, setHotelCity] = useState('');
   const [hotelCheckIn, setHotelCheckIn] = useState(() => getLocalDateString(2));
   const [hotelCheckOut, setHotelCheckOut] = useState(() => getLocalDateString(5));
   const [hotelGuests, setHotelGuests] = useState('2 Guests, 1 Room');
@@ -290,18 +291,22 @@ export default function LandingPage() {
     }
 
     setIsSearching(true);
+    const { city, state } = resolveCityAndState(hotelCity.trim());
+    const guestNum = parseGuestsCount(hotelGuests);
+    const checkin = hotelCheckIn || getLocalDateString(1);
+    const checkout = hotelCheckOut || getLocalDateString(2);
+
+    const params = new URLSearchParams();
+    params.set('city', city || hotelCity.trim());
+    if (state) params.set('state', state);
+    params.set('checkin', checkin);
+    params.set('checkout', checkout);
+    params.set('guests', guestNum.toString());
+
     setTimeout(() => {
-      navigate('/dashboard', {
-        state: {
-          openHotels: true,
-          hotelDestination: hotelCity.trim(),
-          checkIn: hotelCheckIn,
-          checkOut: hotelCheckOut,
-          guests: hotelGuests
-        }
-      });
+      navigate(`/hotels?${params.toString()}`);
       setIsSearching(false);
-    }, 250);
+    }, 200);
   };
 
   const handleSelectPopularDestination = (destName) => {
@@ -612,7 +617,7 @@ export default function LandingPage() {
                           type="text"
                           value={hotelCity}
                           onChange={(e) => setHotelCity(e.target.value)}
-                          placeholder="e.g. Goa, Manali, Jaipur, Mumbai..."
+                          placeholder="e.g. Jamshedpur, Goa, Manali, Jaipur, Mumbai..."
                           className="bg-transparent border-none outline-none text-[#0F2942] dark:text-[#F8FAFC] font-bold w-full placeholder:text-[#64748B]/60 dark:placeholder:text-[#94A3B8]/60 placeholder:font-normal text-xs sm:text-sm focus:ring-0 p-0 m-0"
                         />
                       </div>
@@ -1567,7 +1572,7 @@ export default function LandingPage() {
                 <li><Link to="/?tab=trains" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Indian Railways (IRCTC)</Link></li>
                 <li><Link to="/?tab=flights" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Domestic Flights</Link></li>
                 <li><Link to="/?tab=buses" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Interstate Buses</Link></li>
-                <li><Link to="/?tab=hotels" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Hotels & Stays</Link></li>
+                <li><Link to="/hotels" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Hotels & Stays</Link></li>
                 <li><Link to="/dashboard/track" className="hover:text-[#244C66] dark:hover:text-[#75A4C4] transition-colors">Live Train GPS Tracker</Link></li>
               </ul>
             </div>
