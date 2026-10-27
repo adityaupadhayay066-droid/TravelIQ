@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminProtect } = require('../middleware/authMiddleware');
 const { aiLimiter } = require('../middleware/rateLimiter');
 const {
     getDelayPrediction,
@@ -28,7 +28,7 @@ router.post('/predict-occupancy', protect, getOccupancyPrediction);
 router.post('/recommend-route', protect, getRouteRecommendation);
 router.post('/recommend-food', protect, getFoodRecommendation);
 router.post('/predict-behavior', protect, getUserBehaviorProfile);
-router.post('/retrain', protect, triggerRetraining);
+router.post('/retrain', adminProtect, triggerRetraining);
 router.get('/model-metrics', protect, getModelStatusMetrics);
 router.post('/copilot/query', protect, getCopilotQuery);
 router.get('/memory/profile', protect, getMemoryProfile);

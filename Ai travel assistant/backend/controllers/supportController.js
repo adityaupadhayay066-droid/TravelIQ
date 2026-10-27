@@ -1,5 +1,8 @@
 const { SupportTicket, SupportMessage, SupportAttachment, User } = require('../models');
+const { Op } = require('sequelize');
 const n8nService = require('../services/n8nService');
+const path = require('path');
+const fs = require('fs');
 
 // User creates a ticket
 exports.createTicket = async (req, res) => {
@@ -176,5 +179,42 @@ exports.updateTicket = async (req, res) => {
     } catch (error) {
         console.error('Update ticket error:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
+ * Controlled download of support attachments with ownership verification and safe headers
+ */
+exports.getAttachment = async (req, res) => {
+    try {
+        const { filename } = req.params;
+        const safeFilename = path.basename(filename);
+        const attachment = await SupportAttachment.findOne({
+            where: { file_url: { [Op.like]: `%${safeFilename}` } },
+            include: [{ model: SupportTicket }]
+        });
+
+        if (!attachment) {
+            return res.status(404).json({ success: false, message: 'Attachment not found.' });
+        }
+
+        const isOwner = attachment.SupportTicket && attachment.SupportTicket.user_id === req.user.id;
+        const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ success: false, message: 'Access denied: You do not own this ticket attachment.' });
+        }
+
+        const filePath = path.join(__dirname, '..', 'uploads', safeFilename);
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ success: false, message: 'File not found on server.' });
+        }
+
+        res.setHeader('Content-Disposition', `attachment; filename="${attachment.file_name || safeFilename}"`);
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Security-Policy', "default-src 'none'");
+        return res.sendFile(path.resolve(filePath));
+    } catch (error) {
+        console.error('Download attachment error:', error);
+        res.status(500).json({ success: false, message: 'Error retrieving attachment.' });
     }
 };

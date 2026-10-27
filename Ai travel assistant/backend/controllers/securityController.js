@@ -333,21 +333,44 @@ const generateBackupCodes = async (req, res) => {
  */
 const registerPasskeyChallenge = async (req, res) => {
     try {
-        const challenge = crypto.randomBytes(32).toString('hex');
+        const {
+            generateRegistrationOptions,
+            storeChallenge,
+            getRpId
+        } = require('../utils/webauthn');
+
+        const userPasskeys = await UserPasskey.findAll({ where: { user_id: req.user.id } });
+        const excludeCredentials = userPasskeys.map(pk => ({
+            id: pk.credential_id,
+            transports: pk.transports ? JSON.parse(pk.transports) : undefined
+        }));
+
+        const options = await generateRegistrationOptions({
+            rpName: 'TravelIQ',
+            rpID: getRpId(req),
+            userID: Buffer.from(String(req.user.id)),
+            userName: req.user.email,
+            userDisplayName: req.user.name || req.user.email,
+            attestationType: 'none',
+            excludeCredentials,
+            authenticatorSelection: {
+                residentKey: 'preferred',
+                userVerification: 'preferred'
+            }
+        });
+
+        const challengeToken = storeChallenge({
+            challenge: options.challenge,
+            userId: req.user.id,
+            type: 'register'
+        });
+
         res.json({
-            challenge,
-            rp: { name: 'TravelIQ' },
-            user: {
-                id: req.user.id,
-                name: req.user.email,
-                displayName: req.user.name
-            },
-            pubKeyCredParams: [
-                { type: 'public-key', alg: -7 },
-                { type: 'public-key', alg: -257 }
-            ]
+            ...options,
+            challengeToken
         });
     } catch (error) {
+        console.error('[Register Passkey Challenge Error]:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -356,17 +379,64 @@ const registerPasskeyChallenge = async (req, res) => {
  * Verify WebAuthn Passkey Registration response
  */
 const verifyPasskeyRegister = async (req, res) => {
-    const { credentialId, publicKey } = req.body;
+    const { challengeToken, response, credentialId, publicKey } = req.body;
     try {
-        if (!credentialId || !publicKey) {
-            return res.status(400).json({ message: 'Credential ID and Public Key are required.' });
+        const {
+            verifyRegistrationResponse,
+            consumeChallenge,
+            getRpId,
+            getExpectedOrigins
+        } = require('../utils/webauthn');
+
+        if (!challengeToken) {
+            return res.status(400).json({ message: 'challengeToken is required to verify registration.' });
         }
 
-        await UserPasskey.create({
-            user_id: req.user.id,
-            credential_id: credentialId,
-            public_key: publicKey
-        });
+        const stored = consumeChallenge(challengeToken);
+        if (!stored || stored.userId !== req.user.id || stored.type !== 'register') {
+            return res.status(401).json({ message: 'Registration challenge is invalid or has expired.' });
+        }
+
+        let newPasskeyId = credentialId;
+
+        if (response && response.response && response.response.clientDataJSON) {
+            const verification = await verifyRegistrationResponse({
+                response,
+                expectedChallenge: stored.challenge,
+                expectedOrigin: getExpectedOrigins(req),
+                expectedRPID: getRpId(req),
+                requireUserPresence: true
+            });
+
+            if (!verification.verified || !verification.registrationInfo) {
+                return res.status(400).json({ message: 'WebAuthn registration verification failed.' });
+            }
+
+            const { credential } = verification.registrationInfo;
+            newPasskeyId = credential.id;
+            const pubKeyBase64 = Buffer.from(credential.publicKey).toString('base64');
+            const counter = credential.counter || 0;
+            const transports = response.response.transports ? JSON.stringify(response.response.transports) : null;
+
+            await UserPasskey.create({
+                user_id: req.user.id,
+                credential_id: credential.id,
+                public_key: pubKeyBase64,
+                counter,
+                transports,
+                device_type: verification.registrationInfo.credentialDeviceType || 'unknown',
+                backed_up: verification.registrationInfo.credentialBackedUp || false
+            });
+        } else if (credentialId && publicKey) {
+            await UserPasskey.create({
+                user_id: req.user.id,
+                credential_id: credentialId,
+                public_key: publicKey,
+                counter: 0
+            });
+        } else {
+            return res.status(400).json({ message: 'Valid WebAuthn registration response is required.' });
+        }
 
         let sec = await UserSecurity.findOne({ where: { user_id: req.user.id } });
         if (!sec) {
@@ -380,10 +450,10 @@ const verifyPasskeyRegister = async (req, res) => {
             alert_type: 'passkey_added',
             ip_address: req.ip || '127.0.0.1',
             location: 'Security Portal',
-            details: { credentialId }
+            details: { credentialId: newPasskeyId }
         });
 
-        res.json({ message: 'Passkey registered successfully!' });
+        res.json({ success: true, message: 'Passkey registered successfully!' });
     } catch (error) {
         console.error('[Verify Passkey Register Error]:', error);
         res.status(500).json({ message: error.message });
@@ -514,11 +584,12 @@ const getScrapingSecurityOverview = async (req, res) => {
     }
 };
 
-/**
- * Manually unblock an IP from the anti-scraping blacklist
- */
 const unblockScrapingIP = async (req, res) => {
     try {
+        if (!req.user || (req.user.role !== 'admin' && req.user.admin_role !== 'super_admin')) {
+            return res.status(403).json({ success: false, message: 'Forbidden: Administrator authorization required.' });
+        }
+
         const { unblockIP } = require('../middleware/antiScrapingMiddleware');
         const { ip } = req.body;
         if (!ip) {

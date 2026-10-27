@@ -36,7 +36,30 @@ out/
 .vscode/
 **/.vscode/
 .idea/
-**/.idea/
+**/ .idea/
 .DS_Store
 Thumbs.db
 *.log
+
+# User Uploads and Support Attachments
+backend/uploads/
+uploads/
+**/uploads/
+!**/uploads/.gitkeep
+
+# AI Service RAG Uploads
+ai-services/rag_uploads/
+rag_uploads/
+**/rag_uploads/
+
+# Model Artifacts and Checkpoints (Use release assets or Git LFS)
+*.pth
+*.pth.bak
+*.pth.tmp
+*.pkl
+!**/encoders_schema.json
+
+# Temporary and Scratch Files
+scratch/
+coverage/
+.nyc_output/

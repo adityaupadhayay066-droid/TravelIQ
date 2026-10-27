@@ -110,7 +110,7 @@ export default function AdminSignup() {
             />
           </div>
           <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] pl-1 -mt-2">
-            🔑 Security passcode required (Default: <code className="text-[#173F3A] dark:text-[#EEF2ED] font-semibold">ADMIN2026</code>)
+            🔑 Server provisioning token or authorized Super Administrator credentials required.
           </p>
 
           <div className="relative">
@@ -120,10 +120,10 @@ export default function AdminSignup() {
               type="password"
               name="password"
               required
-              minLength={6}
+              minLength={10}
               value={formData.password}
               onChange={handleChange}
-              placeholder="Access Password (min 6 chars)"
+              placeholder="Access Password (min 10 chars, uppercase, digit & symbol)"
               className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] transition-all font-medium text-sm"
             />
           </div>

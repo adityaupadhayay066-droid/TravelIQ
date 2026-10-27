@@ -1,3 +1,9 @@
 {
-  "enforce_strong_password": false
+  "enforce_strong_password": true,
+  "min_password_length": 10,
+  "require_uppercase": true,
+  "require_lowercase": true,
+  "require_digit": true,
+  "require_special_char": true,
+  "check_pwned_passwords": true
 }

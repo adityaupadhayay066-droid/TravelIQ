@@ -327,7 +327,7 @@ RULES:
     const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     for (const model of models) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         const response = await axios.post(url, {
           contents: [{
             parts: [{ text: fullPrompt }]
@@ -336,7 +336,13 @@ RULES:
             temperature: 0.0,
             maxOutputTokens: 800
           }
-        }, { timeout: 8000 });
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': geminiApiKey
+          },
+          timeout: 8000
+        });
 
         if (response.data && response.data.candidates && response.data.candidates.length > 0) {
           const parts = response.data.candidates[0].content?.parts || [];

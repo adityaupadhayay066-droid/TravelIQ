@@ -1,4 +1,4 @@
-const { User, Trip, Booking, Analytics, UserActivityLog } = require('../models');
+const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare } = require('../models');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
 const bcrypt = require('bcryptjs');
@@ -139,28 +139,24 @@ const changePassword = async (req, res) => {
         return res.status(400).json({ message: 'This password was found in a data breach. Please choose a different one.' });
     }
 
-    // Check if strong password policy is enforced
-    let enforceStrong = false;
+    // Enforce consistent, strong password policy (min 10 chars, uppercase, lowercase, number, symbol)
+    let minLength = 10;
     try {
       const settingsPath = path.join(__dirname, '../config/security_settings.json');
       if (fs.existsSync(settingsPath)) {
         const raw = fs.readFileSync(settingsPath);
         const settings = JSON.parse(raw);
-        enforceStrong = settings.enforce_strong_password;
+        if (settings.min_password_length) minLength = settings.min_password_length;
       }
     } catch (err) {
       console.error("Failed to read security settings:", err);
     }
 
-    if (enforceStrong) {
-      const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!strongRegex.test(newPassword)) {
-        return res.status(400).json({ message: 'Strong password required: minimum 8 characters, at least one uppercase letter, one lowercase letter, one number, and one special character.' });
-      }
-    } else {
-      if (newPassword.length < 6) {
-        return res.status(400).json({ message: 'New password must be at least 6 characters' });
-      }
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+={}\[\]:;<>,.?\/~`|\\-]).{10,}$/;
+    if (!strongRegex.test(newPassword) || newPassword.length < minLength) {
+      return res.status(400).json({
+        message: `Strong password required: minimum ${minLength} characters, with at least one uppercase letter, one lowercase letter, one number, and one special character.`
+      });
     }
 
     const user = await User.findByPk(req.user.id);
@@ -316,15 +312,13 @@ const getBookings = async (req, res) => {
   }
 };
 
-// POST /api/profile/bookings — Create a new user booking
+// POST /api/profile/bookings — Create a new user booking with authoritative fare calculation
 const createBooking = async (req, res) => {
   const { 
-    trip_id = 1,
-    source_station_code = 'SRC',
-    destination_station_code = 'DST',
-    train_number = '00000',
-    travel_class = 'SL',
-    ticket_fare = 1000,
+    source_station_code = 'NDLS',
+    destination_station_code = 'CSTM',
+    train_number = '12951',
+    travel_class = '3A',
     booking_date,
     passengers = [],
     seat_preference = 'No Preference',
@@ -337,14 +331,39 @@ const createBooking = async (req, res) => {
   } = req.body;
 
   try {
-    console.log(`[Backend] Creating new Trip for booking to satisfy foreign key...`);
+    const passengerCount = Array.isArray(passengers) && passengers.length > 0
+      ? passengers.length
+      : Math.max(1, parseInt(total_passengers) || 1);
+
+    if (passengerCount < 1 || passengerCount > 10) {
+      return res.status(400).json({ message: 'Invalid passenger count: between 1 and 10 travelers permitted per booking.' });
+    }
+
+    // Authoritatively calculate ticket fare from database
+    let farePerPassenger = 480;
+    if (train_number && travel_class) {
+      const fareRow = await TrainFare.findOne({
+        where: {
+          train_number: String(train_number).trim(),
+          class_code: String(travel_class).trim().toUpperCase()
+        }
+      });
+      if (fareRow && fareRow.fare > 0) {
+        farePerPassenger = fareRow.fare;
+      } else {
+        const classFares = { '1A': 2850, '2A': 1750, '3A': 1250, 'CC': 850, 'SL': 480, '2S': 195 };
+        farePerPassenger = classFares[String(travel_class).trim().toUpperCase()] || 600;
+      }
+    }
+    const authoritativeFare = farePerPassenger * passengerCount;
+
     const newTrip = await Trip.create({
       user_id: req.user.id,
       source: source_station_code,
       destination: destination_station_code,
       departure_date: booking_date || new Date(),
       travel_mode: 'Train',
-      predicted_price: ticket_fare,
+      predicted_price: authoritativeFare,
       predicted_time: 12
     });
     const finalTripId = newTrip.id;
@@ -356,33 +375,33 @@ const createBooking = async (req, res) => {
       destination_station_code,
       train_number,
       travel_class,
-      ticket_fare,
+      ticket_fare: authoritativeFare,
       booking_date: booking_date || new Date(),
       passengers,
       seat_preference,
       berth_preference,
-      adult_count,
-      child_count,
-      infant_count,
-      senior_count,
-      total_passengers
+      adult_count: parseInt(adult_count) || passengerCount,
+      child_count: parseInt(child_count) || 0,
+      infant_count: parseInt(infant_count) || 0,
+      senior_count: parseInt(senior_count) || 0,
+      total_passengers: passengerCount
     });
 
-    // Trigger dynamic analytics sync
+    // Update user analytics with honest records (no fabricated accuracies)
     if (Analytics) {
       try {
         let userAnalytics = await Analytics.findOne({ where: { user_id: req.user.id } });
         if (!userAnalytics) {
           userAnalytics = await Analytics.create({
             user_id: req.user.id,
-            route_accuracy: 94.5,
-            ai_prediction_score: 98.2,
+            route_accuracy: null,
+            ai_prediction_score: null,
             total_saved_money: 0,
             total_saved_time: 0
           });
         }
-        userAnalytics.total_saved_money = parseFloat(userAnalytics.total_saved_money) + Math.round(ticket_fare * 0.12);
-        userAnalytics.total_saved_time = parseFloat(userAnalytics.total_saved_time) + 1.5;
+        userAnalytics.total_saved_money = parseFloat(userAnalytics.total_saved_money || 0) + Math.round(authoritativeFare * 0.12);
+        userAnalytics.total_saved_time = parseFloat(userAnalytics.total_saved_time || 0) + 1.5;
         await userAnalytics.save();
       } catch (err) {
         console.error('Failed to sync analytics on booking:', err.message);

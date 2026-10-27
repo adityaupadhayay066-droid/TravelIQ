@@ -6,22 +6,24 @@ const { User } = require('../models');
  */
 async function seedAdmin() {
     try {
-        const adminEmail = process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com';
-        const adminPassword = process.env.ADMIN_SEED_PASSWORD || 'Admin@123';
-
         const existingAdmin = await User.findOne({ where: { role: 'admin' } });
 
         if (existingAdmin) {
-            if (existingAdmin.admin_role !== 'super_admin') {
-                await existingAdmin.update({ admin_role: 'super_admin' });
-            }
-            console.log(`✅ Admin account already exists: ${existingAdmin.email} (Role: ${existingAdmin.admin_role || 'super_admin'})`);
+            return;
+        }
+
+        const adminEmail = process.env.ADMIN_SEED_EMAIL;
+        const adminPassword = process.env.ADMIN_SEED_PASSWORD;
+
+        // Never create default admin with hardcoded/weak passwords on startup
+        if (!adminEmail || !adminPassword || adminPassword === 'Admin@123' || adminPassword.length < 10) {
+            console.log('ℹ️ [Admin Seeder] No administrator found. To provision an initial administrator, configure strong ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD (min 10 characters) in your environment.');
             return;
         }
 
         const admin = await User.create({
             name: 'System Administrator',
-            email: adminEmail,
+            email: adminEmail.toLowerCase().trim(),
             password: adminPassword,
             role: 'admin',
             admin_role: 'super_admin',
@@ -31,17 +33,7 @@ async function seedAdmin() {
             two_factor_enabled: false
         });
 
-        console.log('');
-        console.log('══════════════════════════════════════════════════');
-        console.log('🔐 DEFAULT ADMIN ACCOUNT CREATED');
-        console.log('──────────────────────────────────────────────────');
-        console.log(`   Email    : ${adminEmail}`);
-        console.log(`   Password : ${adminPassword}`);
-        console.log(`   User ID  : ${admin.id}`);
-        console.log('──────────────────────────────────────────────────');
-        console.log('   ⚠️  CHANGE THIS PASSWORD AFTER FIRST LOGIN!');
-        console.log('══════════════════════════════════════════════════');
-        console.log('');
+        console.log(`✅ [Admin Seeder] Initial administrator account created for: ${adminEmail}`);
 
     } catch (error) {
         console.error('⚠️ Admin seeder warning:', error.message);

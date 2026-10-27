@@ -1,13 +1,32 @@
 const { SupportTicket, SupportMessage, User } = require('../models');
 const n8nService = require('../services/n8nService');
 
+const crypto = require('crypto');
+
 /**
- * Validates incoming webhook secret from n8n
+ * Validates incoming webhook secret from n8n.
+ * Fails securely if secret is unconfigured or uses insecure defaults.
+ * Requires secret strictly via designated 'x-traveliq-secret' HTTP header.
  */
 function isAuthorized(req) {
-  const configuredSecret = process.env.N8N_WEBHOOK_SECRET || 'traveliq_n8n_secret_token_2026';
-  const providedSecret = req.headers['x-traveliq-secret'] || req.body?.secret || req.query?.secret;
-  return !configuredSecret || providedSecret === configuredSecret;
+  const configuredSecret = process.env.N8N_WEBHOOK_SECRET;
+  if (!configuredSecret || configuredSecret === 'traveliq_n8n_secret_token_2026' || configuredSecret.length < 16) {
+    return false; // Fail securely: reject all webhooks when secret is missing or insecure default
+  }
+
+  const providedSecret = req.headers['x-traveliq-secret'];
+  if (!providedSecret || typeof providedSecret !== 'string') {
+    return false;
+  }
+
+  const bufProvided = Buffer.from(providedSecret);
+  const bufConfigured = Buffer.from(configuredSecret);
+
+  if (bufProvided.length !== bufConfigured.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(bufProvided, bufConfigured);
 }
 
 /**

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend:
     build:
@@ -19,12 +17,16 @@ services:
     environment:
       - PORT=5000
       - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASSWORD=root_traveliq
-      - DB_NAME=traveliq
+      - DB_USER=${DB_USER:-traveliq_app}
+      - DB_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
+      - DB_NAME=${DB_NAME:-traveliq}
       - DB_PORT=3306
-      - JWT_SECRET=super_secret_jwt_key_traveliq
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_min_32_chars_traveliq_2026}
       - AI_SERVICE_URL=http://ai-service:8000
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev_internal_service_key_2026}
+      - CLIENT_SHIELD_SECRET=${CLIENT_SHIELD_SECRET:-dev_client_shield_salt_2026}
+      - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-dev_n8n_webhook_secret_2026}
+      - ADMIN_PROVISIONING_TOKEN=${ADMIN_PROVISIONING_TOKEN:-dev_admin_provisioning_token_2026}
     depends_on:
       mysql:
         condition: service_healthy
@@ -34,25 +36,33 @@ services:
   ai-service:
     build:
       context: ./ai-services
-    ports:
-      - "8000:8000"
+    # Port 8000 is internal-only; not published to the public host interface
+    expose:
+      - "8000"
     environment:
       - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASSWORD=root_traveliq
-      - DB_NAME=traveliq
+      - DB_USER=${DB_USER:-traveliq_app}
+      - DB_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
+      - DB_NAME=${DB_NAME:-traveliq}
       - DB_PORT=3306
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev_internal_service_key_2026}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
       mysql:
         condition: service_healthy
 
   mysql:
     image: mysql:8.0
+    # Bound to local loopback interface only for developer tooling; not exposed publicly
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
+    expose:
+      - "3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=root_traveliq
-      - MYSQL_DATABASE=traveliq
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-root_traveliq_secure}
+      - MYSQL_DATABASE=${DB_NAME:-traveliq}
+      - MYSQL_USER=${DB_USER:-traveliq_app}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:

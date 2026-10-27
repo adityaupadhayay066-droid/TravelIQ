@@ -5,19 +5,21 @@ const { User, Session } = require('../models');
  * Core authentication middleware — verifies JWT + active database session.
  */
 const protect = async (req, res, next) => {
-    let token;
-    // Support HttpOnly cookie, Bearer header, and query parameter (for direct PDF tab links)
+    // Support HttpOnly cookie and Bearer header only (URL tokens prohibited for general authentication)
     if (req.cookies && req.cookies.accessToken) {
         token = req.cookies.accessToken;
     } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
-    } else if (req.query && req.query.token) {
-        token = req.query.token;
     }
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_jwt_key_traveliq_2026');
+            const jwtSecret = process.env.JWT_SECRET;
+            if (!jwtSecret) {
+                console.error('[authMiddleware Error]: JWT_SECRET is not configured.');
+                return res.status(500).json({ message: 'Server authentication configuration error.' });
+            }
+            const decoded = jwt.verify(token, jwtSecret);
 
             // Stateful session verification
             const activeSession = await Session.findOne({
@@ -115,7 +117,8 @@ const optionalProtect = async (req, res, next) => {
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super_secret_jwt_key_traveliq_2026');
+            if (!process.env.JWT_SECRET) return next();
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
             const activeSession = await Session.findOne({
                 where: { session_id: decoded.sessionId, user_id: decoded.id }
             });

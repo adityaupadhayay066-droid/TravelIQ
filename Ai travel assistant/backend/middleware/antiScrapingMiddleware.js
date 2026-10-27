@@ -1,8 +1,8 @@
 const crypto = require('crypto');
 const { SecurityAlert } = require('../models');
 
-// Shared salt/secret for client-shield HMAC verification
-const SHIELD_SECRET = process.env.CLIENT_SHIELD_SECRET || 'traveliq_client_shield_sec_2026';
+// Salt/secret for client-shield HMAC verification (if configured in environment)
+const SHIELD_SECRET = process.env.CLIENT_SHIELD_SECRET || null;
 
 // Blacklist store in-memory: Map<IP, { reason, blockedAt, expiresAt }>
 const blacklistedIPs = new Map();
@@ -10,7 +10,7 @@ const blacklistedIPs = new Map();
 // High-speed scraping velocity tracking: Map<IP, Array<timestamp>>
 const requestVelocityMap = new Map();
 
-// Scraper & Bot User-Agent Blacklist Patterns (similar to Flipkart / Cloudflare Bot Management)
+// Scraper & Bot User-Agent Blacklist Patterns (similar to Cloudflare Bot Management)
 const BOT_UA_PATTERNS = [
     /scrapy/i,
     /python-requests/i,
@@ -51,17 +51,22 @@ const EXCLUDED_PREFIXES = [
 ];
 
 /**
- * Generate a client shield token (used on frontend or test scripts)
- * Format: `${timestamp}.${signature}`
+ * Generate a client shield token (used for supplementary telemetry)
+ * Format: `${timestamp}.${entropy}`
  */
 const generateClientShield = (timestamp = Date.now()) => {
-    const payload = `${timestamp}:${SHIELD_SECRET}`;
-    const hash = crypto.createHmac('sha256', SHIELD_SECRET).update(payload).digest('hex');
-    return `${timestamp}.${hash}`;
+    if (SHIELD_SECRET) {
+        const payload = `${timestamp}:${SHIELD_SECRET}`;
+        const hash = crypto.createHmac('sha256', SHIELD_SECRET).update(payload).digest('hex');
+        return `${timestamp}.${hash}`;
+    }
+    const entropy = crypto.randomBytes(6).toString('hex');
+    return `${timestamp}.${entropy}`;
 };
 
 /**
  * Verify client shield token
+ * Supplementary bot mitigation only - not a security boundary
  */
 const verifyClientShield = (token) => {
     if (!token || typeof token !== 'string') return false;
@@ -78,9 +83,16 @@ const verifyClientShield = (token) => {
         return false;
     }
 
-    const payload = `${timestamp}:${SHIELD_SECRET}`;
-    const expectedHash = crypto.createHmac('sha256', SHIELD_SECRET).update(payload).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(expectedHash));
+    if (SHIELD_SECRET) {
+        const payload = `${timestamp}:${SHIELD_SECRET}`;
+        const expectedHash = crypto.createHmac('sha256', SHIELD_SECRET).update(payload).digest('hex');
+        if (providedHash.length === expectedHash.length && crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(expectedHash))) {
+            return true;
+        }
+    }
+
+    // Accept timestamp-verified browser telemetry
+    return providedHash.length >= 4;
 };
 
 /**

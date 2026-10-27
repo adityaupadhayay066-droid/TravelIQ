@@ -64,10 +64,17 @@ exports.searchHotels = async (req, res) => {
 
 /**
  * POST /api/hotels/reserve
- * Process and confirm a hotel / hostel stay reservation
+ * Process and confirm a hotel / hostel stay reservation with server-authoritative pricing
  */
 exports.reserveStay = async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required to make a hotel reservation.'
+            });
+        }
+
         const {
             hotelName,
             city,
@@ -83,18 +90,10 @@ exports.reserveStay = async (req, res) => {
             govIdVerified,
             checkInDate,
             checkOutDate,
-            nights,
-            guestsCount,
             mealPlan,
             specialRequests,
             paymentMethod,
-            ratePerNight,
-            baseTotal,
-            mealsTotal,
-            discount,
-            promoCode,
-            taxes,
-            grandTotal
+            promoCode
         } = req.body;
 
         if (!hotelName || !guestName || !guestEmail || !guestPhone || !checkInDate || !checkOutDate) {
@@ -104,33 +103,26 @@ exports.reserveStay = async (req, res) => {
             });
         }
 
-        const reservation = hotelService.createReservation({
+        const reservation = hotelService.createReservation(req.user.id, {
             hotelName,
             city,
             category,
             isHostel,
             roomType,
-            unitsCount: parseInt(unitsCount) || 1,
+            unitsCount,
             guestName,
             guestEmail: guestEmail.trim(),
             guestPhone: guestPhone.trim(),
             govIdType: govIdType || 'Aadhaar Card',
-            govIdNumber: govIdNumber || 'XXXX-XXXX-4829',
+            govIdNumber,
             govIdVerified: govIdVerified !== undefined ? govIdVerified : true,
             checkInDate,
             checkOutDate,
-            nights: parseInt(nights) || 1,
-            guestsCount: parseInt(guestsCount) || 1,
+            guestsCount: req.body.guestsCount,
             mealPlan: mealPlan || 'Room Only',
             specialRequests: specialRequests || [],
             paymentMethod: paymentMethod || 'Pay at Property',
-            ratePerNight: parseFloat(ratePerNight) || 1000,
-            baseTotal: parseFloat(baseTotal) || 1000,
-            mealsTotal: parseFloat(mealsTotal) || 0,
-            discount: parseFloat(discount) || 0,
-            promoCode,
-            taxes: parseFloat(taxes) || 120,
-            grandTotal: parseFloat(grandTotal) || 1120
+            promoCode
         });
 
         res.status(201).json({
@@ -139,6 +131,9 @@ exports.reserveStay = async (req, res) => {
             reservation
         });
     } catch (err) {
+        if (err.message && (err.message.includes('date') || err.message.includes('duration') || err.message.includes('Stay duration') || err.message.includes('past'))) {
+            return res.status(400).json({ success: false, message: err.message });
+        }
         console.error('Reservation error:', err);
         res.status(500).json({ success: false, message: 'Failed to process reservation.' });
     }
@@ -146,11 +141,22 @@ exports.reserveStay = async (req, res) => {
 
 /**
  * GET /api/hotels/reservations
- * Get user reservations
+ * Get reservations belonging strictly to the authenticated user (or all if admin)
  */
 exports.getReservations = async (req, res) => {
     try {
-        const reservations = hotelService.getAllReservations();
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.'
+            });
+        }
+
+        const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
+        const reservations = isAdmin 
+            ? hotelService.getAllReservations() 
+            : hotelService.getReservationsByUser(req.user.id);
+
         res.json({
             success: true,
             reservations,
@@ -158,6 +164,45 @@ exports.getReservations = async (req, res) => {
         });
     } catch (err) {
         console.error('Get reservations error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+/**
+ * GET /api/hotels/reservations/:id
+ * Get single reservation by ID with IDOR protection
+ */
+exports.getReservationById = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.'
+            });
+        }
+
+        const reservation = hotelService.getReservationById(req.params.id);
+        if (!reservation) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reservation not found.'
+            });
+        }
+
+        const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
+        if (reservation.userId !== String(req.user.id) && !isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden: You do not have permission to view this reservation.'
+            });
+        }
+
+        res.json({
+            success: true,
+            reservation
+        });
+    } catch (err) {
+        console.error('Get reservation by ID error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

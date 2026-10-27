@@ -4,15 +4,24 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // AES Encryption config
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.createHash('sha256').update(process.env.JWT_SECRET || 'super_secret_jwt_key_traveliq_2026').digest('hex'); // Must be 256 bits (32 bytes / 64 hex characters)
+function getEncryptionKey() {
+  if (process.env.ENCRYPTION_KEY) {
+    return process.env.ENCRYPTION_KEY;
+  }
+  if (process.env.JWT_SECRET) {
+    return crypto.createHash('sha256').update(process.env.JWT_SECRET).digest('hex');
+  }
+  throw new Error('Encryption key missing: Neither ENCRYPTION_KEY nor JWT_SECRET is configured.');
+}
 const IV_LENGTH = 16;
 
 function encrypt(text) {
   if (!text) return text;
   // If already encrypted (contains :), skip
   if (text.includes(':') && text.split(':').length === 2) return text;
+  const key = getEncryptionKey();
   let iv = crypto.randomBytes(IV_LENGTH);
-  let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+  let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), iv);
   let encrypted = cipher.update(text);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return iv.toString('hex') + ':' + encrypted.toString('hex');
@@ -25,7 +34,7 @@ function decrypt(text) {
     let textParts = text.split(':');
     let iv = Buffer.from(textParts.shift(), 'hex');
     let encryptedText = Buffer.from(textParts.join(':'), 'hex');
-    let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(getEncryptionKey(), 'hex'), iv);
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();

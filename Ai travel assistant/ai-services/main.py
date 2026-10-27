@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
@@ -8,6 +8,8 @@ import json
 import logging
 import re
 import threading
+import hmac
+import shutil
 import torch  # type: ignore
 import torch.nn as nn  # type: ignore
 from dotenv import load_dotenv
@@ -34,12 +36,39 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="TravelIQ AI Service")
 
+# ─── Service-to-Service Authentication ───
+INTERNAL_SERVICE_KEY = os.getenv("INTERNAL_SERVICE_KEY", "traveliq_internal_svc_token_secure_2026")
+
+def verify_service_key(x_internal_service_key: str = Header(None, alias="X-Internal-Service-Key")):
+    """
+    Validates constant-time service token between Express backend and FastAPI AI service.
+    Rejects unauthorized external requests without valid internal service key.
+    """
+    expected_key = os.getenv("INTERNAL_SERVICE_KEY", "traveliq_internal_svc_token_secure_2026")
+    if not x_internal_service_key or not hmac.compare_digest(str(x_internal_service_key), str(expected_key)):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Invalid or missing internal service credentials."
+        )
+    return True
+
+# ─── CORS Allowlist ───
+trusted_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+]
+allowed_env = os.getenv("ALLOWED_ORIGINS")
+if allowed_env:
+    trusted_origins.extend([o.strip() for o in allowed_env.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=trusted_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Internal-Service-Key", "X-Client-Shield", "Accept"],
 )
 
 # ─── Global PyTorch Model variables & Thread Locks ───
@@ -79,7 +108,7 @@ def load_all_models():
             'weather': len(new_encoders['delay_weather'].classes_) + 5
         }
         new_delay = TrainDelayLSTM(vocab_sizes_d, {'train': 16, 'route': 16, 'weather': 8})
-        new_delay.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'delay_model.pth'), map_location='cpu'))
+        new_delay.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'delay_model.pth'), map_location='cpu', weights_only=True))
         new_delay.eval()
         
         # 2. Load Fare Model
@@ -89,12 +118,12 @@ def load_all_models():
             'class': len(new_encoders['fare_class'].classes_) + 5
         }
         new_fare = SmartFareLSTM(vocab_sizes_f, {'source': 16, 'dest': 16, 'class': 8})
-        new_fare.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'fare_model.pth'), map_location='cpu'))
+        new_fare.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'fare_model.pth'), map_location='cpu', weights_only=True))
         new_fare.eval()
         
         # 3. Load Crowd Model
         new_crowd = StationCrowdNet(vocab_size=len(new_encoders['crowd_station'].classes_) + 5)
-        new_crowd.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'crowd_model.pth'), map_location='cpu'))
+        new_crowd.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'crowd_model.pth'), map_location='cpu', weights_only=True))
         new_crowd.eval()
         
         # 4. Load Occupancy Model
@@ -103,28 +132,28 @@ def load_all_models():
             'class': len(new_encoders['occ_class'].classes_) + 5
         }
         new_occ = TrainOccupancyNet(vocab_sizes_o, {'train': 16, 'class': 8})
-        new_occ.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'occupancy_model.pth'), map_location='cpu'))
+        new_occ.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'occupancy_model.pth'), map_location='cpu', weights_only=True))
         new_occ.eval()
         
         # 5. Load Route Recommender
         new_rec = RouteRecommenderNet(num_users=250, num_routes=100)
-        new_rec.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'route_recommender.pth'), map_location='cpu'))
+        new_rec.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'route_recommender.pth'), map_location='cpu', weights_only=True))
         new_rec.eval()
         
         # 6. Load Chatbot NLP
         tokenizer = new_encoders['chatbot_tokenizer']
         new_chatbot = ChatbotClassifierNet(vocab_size=len(tokenizer.vocab) + 10, num_classes=10)
-        new_chatbot.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'chatbot_classifier.pth'), map_location='cpu'))
+        new_chatbot.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'chatbot_classifier.pth'), map_location='cpu', weights_only=True))
         new_chatbot.eval()
         
         # 7. Load Demand Forecast
         new_demand = DemandForecastLSTM()
-        new_demand.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'demand_forecaster.pth'), map_location='cpu'))
+        new_demand.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'demand_forecaster.pth'), map_location='cpu', weights_only=True))
         new_demand.eval()
         
         # 8. Load Behavior Net
         new_behavior = UserBehaviorNet()
-        new_behavior.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'behavior_net.pth'), map_location='cpu'))
+        new_behavior.load_state_dict(torch.load(os.path.join(MODELS_DIR, 'behavior_net.pth'), map_location='cpu', weights_only=True))
         new_behavior.eval()
         
         # Atomic Thread-Safe Pointer Swap (Zero Downtime)
@@ -1026,6 +1055,17 @@ def background_retrain_task(custom_payload: dict = None):
         is_training_active = True
         try:
             logger.info("🚀 Starting Zero-Downtime background training with automated data cleaning...")
+            
+            # 1. Create rollback backup of existing model weights
+            for model_file in os.listdir(MODELS_DIR):
+                if model_file.endswith('.pth'):
+                    src = os.path.join(MODELS_DIR, model_file)
+                    dst = os.path.join(MODELS_DIR, f"{model_file}.bak")
+                    try:
+                        shutil.copy2(src, dst)
+                    except Exception as copy_err:
+                        logger.warning(f"Failed to create backup for {model_file}: {copy_err}")
+
             import train_models
             
             custom_dfs = None
@@ -1047,11 +1087,20 @@ def background_retrain_task(custom_payload: dict = None):
             load_all_models()
             logger.info("🎉 Background retraining completed! Models hot-reloaded with zero downtime.")
         except Exception as e:
-            logger.error(f"❌ Background retraining failed: {e}")
+            logger.error(f"❌ Background retraining failed: {e}. Restoring rollback models...")
+            # Restore previous model weights from .bak if training failed
+            for model_file in os.listdir(MODELS_DIR):
+                if model_file.endswith('.pth.bak'):
+                    orig = os.path.join(MODELS_DIR, model_file[:-4])
+                    try:
+                        shutil.copy2(os.path.join(MODELS_DIR, model_file), orig)
+                    except Exception as res_err:
+                        logger.error(f"Failed to restore {orig}: {res_err}")
+            load_all_models()
         finally:
             is_training_active = False
 
-@app.post("/retrain")
+@app.post("/retrain", dependencies=[Depends(verify_service_key)])
 def trigger_retrain(background_tasks: BackgroundTasks):
     global is_training_active
     if is_training_active:
@@ -1065,7 +1114,7 @@ def trigger_retrain(background_tasks: BackgroundTasks):
         "message": "Zero-downtime retraining started in the background. Incoming requests will continue to be served without interruption."
     }
 
-@app.post("/retrain-with-data")
+@app.post("/retrain-with-data", dependencies=[Depends(verify_service_key)])
 def trigger_retrain_with_data(payload: CustomRetrainPayload, background_tasks: BackgroundTasks):
     global is_training_active
     if is_training_active:
@@ -1110,35 +1159,59 @@ def get_model_metrics():
             "is_training_active": is_training_active,
             "metrics": metrics_data
         }
-    else:
-        # Return default mock metrics
-        return {
-            "status": "stub",
-            "metrics": {
-                "delay_model": {"loss": 0.045, "accuracy": 92.4, "samples": 2000},
-                "fare_model": {"loss": 0.021, "accuracy": 95.1, "samples": 2000},
-                "crowd_model": {"loss": 0.078, "accuracy": 89.8, "samples": 2000},
-                "occupancy_model": {"loss": 0.052, "accuracy": 91.2, "samples": 2000},
-                "route_recommender": {"loss": 0.095, "accuracy": 88.5, "samples": 5000},
-                "chatbot_model": {"loss": 0.012, "accuracy": 96.8, "samples": 500},
-                "demand_forecaster": {"loss": 0.018, "accuracy": 90.1, "samples": 500},
-                "behavior_net": {"loss": 0.038, "accuracy": 93.5, "samples": 500}
-            }
-        }
+    return {
+        "status": "not_trained",
+        "is_training_active": is_training_active,
+        "message": "Model metrics not available. Models must be trained to compute real evaluation metrics.",
+        "metrics": {}
+    }
 
-# 12. RAG upload indexing endpoint
-@app.post("/rag/upload")
+# 12. RAG upload indexing endpoint with strict path traversal & filetype validation
+@app.post("/rag/upload", dependencies=[Depends(verify_service_key)])
 def rag_upload(request: RAGUploadRequest):
     try:
+        raw_path = (request.file_path or '').strip()
+        filename = (request.filename or '').strip()
+
+        if not raw_path or not filename:
+            raise HTTPException(status_code=400, detail="file_path and filename are required.")
+
+        # Reject path traversal patterns
+        if ".." in raw_path or "/../" in raw_path or "\\..\\" in raw_path:
+            raise HTTPException(status_code=400, detail="Invalid file path: Directory traversal not permitted.")
+
+        # Validate file extension against allowed document types
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in {'.txt', '.csv', '.json', '.pdf'}:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Prohibited file type '{ext}'. Only .txt, .csv, .json, and .pdf documents are supported."
+            )
+
+        norm_path = os.path.normpath(os.path.abspath(raw_path))
+
+        # Disallow indexing sensitive system files
+        base_name = os.path.basename(norm_path).lower()
+        if base_name in {'.env', 'package.json', 'server.js', 'docker-compose.yml', 'encoders.pkl'} or base_name.endswith('.py') or base_name.endswith('.key') or base_name.endswith('.pem'):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Cannot index configuration, source code, or private credential files."
+            )
+
+        if not os.path.exists(norm_path):
+            raise HTTPException(status_code=404, detail="Document file does not exist on server.")
+
         from rag_engine import ingest_document
-        res = ingest_document(request.file_path, request.filename, request.category)
+        res = ingest_document(norm_path, filename, request.category)
         return res
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"RAG upload index error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # 13. RAG query Q&A endpoint
-@app.post("/rag/query")
+@app.post("/rag/query", dependencies=[Depends(verify_service_key)])
 def rag_query(request: RAGQueryRequest):
     try:
         from rag_engine import query_rag_engine
@@ -1326,27 +1399,34 @@ def copilot_query(request: CopilotRequest):
         logger.error(f"Copilot query error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/memory/profile")
+@app.post("/memory/profile", dependencies=[Depends(verify_service_key)])
 def memory_profile(request: MemoryRequest):
     user_id = request.user_id
+    if not user_id or str(user_id).strip() == "" or str(user_id) == "0":
+        raise HTTPException(status_code=400, detail="Valid authenticated user_id is required.")
+
     if user_id not in USER_MEMORIES:
         USER_MEMORIES[user_id] = {
-            "preferred_class": request.preferred_class,
-            "preferred_budget": request.preferred_budget,
-            "favorite_foods": request.favorite_foods,
-            "preferred_routes": request.preferred_routes
+            "preferred_class": request.preferred_class or "3A",
+            "preferred_budget": request.preferred_budget or "Moderate",
+            "favorite_foods": request.favorite_foods or [],
+            "preferred_routes": request.preferred_routes or []
         }
     return USER_MEMORIES[user_id]
 
-@app.post("/memory/update")
+@app.post("/memory/update", dependencies=[Depends(verify_service_key)])
 def memory_update(request: MemoryRequest):
-    USER_MEMORIES[request.user_id] = {
-        "preferred_class": request.preferred_class,
-        "preferred_budget": request.preferred_budget,
-        "favorite_foods": request.favorite_foods,
-        "preferred_routes": request.preferred_routes
+    user_id = request.user_id
+    if not user_id or str(user_id).strip() == "" or str(user_id) == "0":
+        raise HTTPException(status_code=400, detail="Valid authenticated user_id is required.")
+
+    USER_MEMORIES[user_id] = {
+        "preferred_class": request.preferred_class or "3A",
+        "preferred_budget": request.preferred_budget or "Moderate",
+        "favorite_foods": request.favorite_foods or [],
+        "preferred_routes": request.preferred_routes or []
     }
-    return {"success": True, "updated_profile": USER_MEMORIES[request.user_id]}
+    return {"success": True, "updated_profile": USER_MEMORIES[user_id]}
 
 # ─── Transport Verification & Provenance Validation Endpoint ───
 @app.post("/api/v1/transport/validate")

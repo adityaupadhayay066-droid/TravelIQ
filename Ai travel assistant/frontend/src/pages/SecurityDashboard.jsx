@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import zxcvbn from 'zxcvbn';
 import useDevice from '../hooks/useDevice';
 import DesktopFeaturePlaceholder from '../components/DesktopFeaturePlaceholder';
+import { startRegistration } from '@simplewebauthn/browser';
 
 export default function SecurityDashboard() {
   const { user } = useAuth();
@@ -211,54 +212,11 @@ export default function SecurityDashboard() {
     try {
       const { data: challengeRes } = await api.get('/security/passkey/register-challenge');
 
-      if (typeof navigator.credentials === 'undefined' || !navigator.credentials.create) {
-        toast.loading('Simulating biometric check (Windows Hello/TouchID)...', { duration: 1500 });
-        await new Promise(r => setTimeout(r, 1500));
-
-        const mockCredentialId = btoa('mock_cred_' + Math.random().toString(36).substring(2, 12));
-        const mockPublicKey = 'mock_pub_key_' + Math.random().toString(36).substring(2);
-
-        await api.post('/security/passkey/register-verify', {
-          credentialId: mockCredentialId,
-          publicKey: mockPublicKey
-        });
-
-        toast.success('Simulated biometric passkey registered successfully!');
-        fetchSecurityData();
-        return;
-      }
-
-      const challengeBuffer = Uint8Array.from(atob(challengeRes.challenge), c => c.charCodeAt(0));
-      const userIdBuffer = Uint8Array.from(challengeRes.user.id.toString(), c => c.charCodeAt(0));
-
-      const credential = await navigator.credentials.create({
-        publicKey: {
-          challenge: challengeBuffer,
-          rp: challengeRes.rp,
-          user: {
-            id: userIdBuffer,
-            name: challengeRes.user.name,
-            displayName: challengeRes.user.displayName
-          },
-          pubKeyCredParams: challengeRes.pubKeyCredParams,
-          authenticatorSelection: {
-            userVerification: "preferred",
-            residentKey: "preferred"
-          },
-          timeout: 60000
-        }
-      });
-
-      if (!credential) {
-        throw new Error('Biometric check was cancelled or failed.');
-      }
-
-      const credentialIdB64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-      const publicKey = "public_key_spki_" + btoa(String.fromCharCode(...new Uint8Array(credential.response.attestationObject || [])));
+      const regResponse = await startRegistration({ optionsJSON: challengeRes });
 
       await api.post('/security/passkey/register-verify', {
-        credentialId: credentialIdB64,
-        publicKey
+        challengeToken: challengeRes.challengeToken,
+        response: regResponse
       });
 
       toast.success('Biometric Passkey registered successfully!');

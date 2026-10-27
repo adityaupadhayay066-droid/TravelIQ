@@ -44,16 +44,22 @@ async function generateAIFallback(prompt) {
   if (rawApiKey) {
     const geminiApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
     if (geminiApiKey && !geminiApiKey.includes('your_')) {
-      const models = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.1-pro-preview'];
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
       for (const model of models) {
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
           const gRes = await axios.post(
             url,
             {
               contents: [{ parts: [{ text: prompt }] }]
             },
-            { timeout: 15000 }
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': geminiApiKey
+              },
+              timeout: 15000
+            }
           );
           if (gRes.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
             return gRes.data.candidates[0].content.parts[0].text.trim();

@@ -83,25 +83,49 @@ app.use((req, res, next) => {
   next();
 });
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+];
+
+if (process.env.ALLOWED_ORIGINS) {
+  process.env.ALLOWED_ORIGINS.split(',').forEach(o => {
+    const trimmed = o.trim();
+    if (trimmed && !allowedOrigins.includes(trimmed)) {
+      allowedOrigins.push(trimmed);
+    }
+  });
+}
+
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow non-browser server-to-server requests without Origin header
     if (!origin) return callback(null, true);
-    if (
-      origin.startsWith('http://localhost:') || 
-      origin.startsWith('http://127.0.0.1:') || 
-      origin.includes('devtunnels.ms')
-    ) {
+
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed === origin) return true;
+      if (process.env.NODE_ENV !== 'production') {
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+        if (origin.includes('.devtunnels.ms')) return true;
+      }
+      return false;
+    });
+
+    if (isAllowed) {
       return callback(null, true);
     }
-    return callback(null, origin);
+
+    return callback(new Error('Blocked by CORS policy: Origin not allowed.'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield', 'x-traveliq-secret']
 }));
 
-// ─── Parsers ───
-app.use(express.json({ limit: '10mb' }));
+// ─── Parsers (Restricted payload size to prevent memory exhaustion) ───
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 
 // ─── Dynamic robots.txt to disallow scrapers and lay honeypot traps ───
@@ -139,8 +163,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Serve uploaded files ───
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ─── Serve uploaded files with strict attachment disposition & nosniff headers ───
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => {
+    res.setHeader('Content-Disposition', 'attachment');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'");
+  }
+}));
 
 // ─── Routes ───
 app.use('/api/auth', authRoutes);
@@ -267,8 +297,13 @@ const shutdown = (signal) => {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+  console.error('Fatal Uncaught Exception:', err.message);
+  console.error(err.stack);
+  // Do not continue in potentially corrupted state; close DB and exit with non-zero status
+  sequelize.close().finally(() => {
+    process.exit(1);
+  });
 });
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason);
+  console.error('Unhandled Promise Rejection:', reason);
 });

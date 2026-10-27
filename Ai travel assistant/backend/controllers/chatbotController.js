@@ -65,7 +65,7 @@ const sendMessage = async (req, res) => {
                 const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
                 for (const model of models) {
                     try {
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
                         const gRes = await axios.post(url, {
                             contents: [{
                                 parts: [{ text: `You are TravelIQ AI, a strictly grounded travel assistant.
@@ -77,7 +77,13 @@ Answer concisely in 2-3 friendly sentences: ${message}` }]
                             generationConfig: {
                                 temperature: 0.0
                             }
-                        }, { timeout: 8000 });
+                        }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-goog-api-key': geminiApiKey
+                            },
+                            timeout: 8000
+                        });
 
                         if (gRes.data && gRes.data.candidates && gRes.data.candidates.length > 0) {
                             const parts = gRes.data.candidates[0].content?.parts || [];

@@ -18,6 +18,24 @@ const UserPasskey = sequelize.define('UserPasskey', {
   public_key: {
     type: DataTypes.TEXT,
     allowNull: false
+  },
+  counter: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: 0
+  },
+  transports: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  device_type: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  backed_up: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   tableName: 'user_passkeys',

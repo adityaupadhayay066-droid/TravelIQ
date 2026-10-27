@@ -31,6 +31,10 @@ const OtpVerification = sequelize.define('OtpVerification', {
   verified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  attempts: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   }
 }, {
   timestamps: true,

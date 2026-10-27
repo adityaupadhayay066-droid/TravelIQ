@@ -1,4 +1,5 @@
 const { User, Session, LoginHistory, RefreshToken, SecurityAlert, OtpVerification, UserSecurity, UserPasskey, UserActivityLog } = require('../models');
+const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const geoip = require('geoip-lite');
@@ -44,13 +45,17 @@ async function verifyTurnstile(token) {
 
 // ─── JWT Utilities ───
 const generateAccessToken = (id, sessionId, role) => {
-    return jwt.sign({ id, sessionId, role }, process.env.JWT_SECRET || 'super_secret_jwt_key_traveliq_2026', {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not configured');
+    return jwt.sign({ id, sessionId, role }, secret, {
         expiresIn: '15m', // Short-lived access token
     });
 };
 
 const generateRefreshToken = (id, sessionId, deviceId) => {
-    return jwt.sign({ id, sessionId, deviceId }, process.env.JWT_REFRESH_SECRET || 'refresh_super_secret_2026', {
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshSecret) throw new Error('JWT_REFRESH_SECRET is not configured');
+    return jwt.sign({ id, sessionId, deviceId }, refreshSecret, {
         expiresIn: '7d', // 7 days
     });
 };
@@ -186,12 +191,15 @@ function buildUserResponse(user, sessionId, deviceId) {
     };
 }
 
-// ─── Helper: Verify OTP code ───
+// ─── Helper: Verify OTP code with hashed verification, attempt limits, and single-use ───
 async function verifyOtp(userId, otpCode, type, purpose) {
+    if (!userId || !otpCode) {
+        return { success: false, message: 'Invalid verification details.' };
+    }
+
     const record = await OtpVerification.findOne({
         where: {
             user_id: userId,
-            otp_code: otpCode,
             type,
             purpose,
             verified: false
@@ -200,11 +208,28 @@ async function verifyOtp(userId, otpCode, type, purpose) {
     });
 
     if (!record) {
-        return { success: false, message: 'Invalid OTP code.' };
+        return { success: false, message: 'Invalid or expired verification code.' };
+    }
+
+    // Attempt limit check (maximum 5 attempts)
+    if ((record.attempts || 0) >= 5) {
+        return { success: false, message: 'Maximum verification attempts exceeded. Code has been invalidated. Please request a new one.' };
     }
 
     if (new Date() > new Date(record.expires_at)) {
-        return { success: false, message: 'OTP code has expired.' };
+        return { success: false, message: 'Verification code has expired. Please request a new one.' };
+    }
+
+    // Increment failed attempt counter
+    record.attempts = (record.attempts || 0) + 1;
+    await record.save();
+
+    const inputHash = crypto.createHash('sha256').update(String(otpCode).trim()).digest('hex');
+    const isMatch = (record.otp_code === inputHash) || (record.otp_code === String(otpCode).trim());
+
+    if (!isMatch) {
+        const remaining = Math.max(0, 5 - record.attempts);
+        return { success: false, message: `Invalid verification code. ${remaining} attempt(s) remaining.` };
     }
 
     record.verified = true;
@@ -405,15 +430,17 @@ const loginUser = async (req, res) => {
         // If 2FA is enabled and device is NOT trusted, we must prompt for 2FA verification code
         if (isTwoFactorEnabled && !isKnownDevice) {
             const otpCode = crypto.randomInt(100000, 999999).toString();
+            const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
             await OtpVerification.create({
                 user_id: user.id,
-                otp_code: otpCode,
+                otp_code: hashedOtp,
                 type: 'email',
                 purpose: 'login_2fa',
                 expires_at: expiresAt,
-                verified: false
+                verified: false,
+                attempts: 0
             });
 
             // Send Email OTP
@@ -558,15 +585,17 @@ const adminLogin = async (req, res) => {
 
         if (isTwoFactorEnabled) {
             const otpCode = crypto.randomInt(100000, 999999).toString();
+            const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
             await OtpVerification.create({
                 user_id: user.id,
-                otp_code: otpCode,
+                otp_code: hashedOtp,
                 type: 'email',
                 purpose: 'admin_2fa',
                 expires_at: expiresAt,
-                verified: false
+                verified: false,
+                attempts: 0
             });
 
             // Send Email OTP
@@ -660,17 +689,44 @@ const adminVerifyOtp = async (req, res) => {
 const registerAdmin = async (req, res) => {
     const { name, email, password, adminSecret } = req.body;
 
-    if (!name || !email || !password || !adminSecret) {
-        return res.status(400).json({ message: 'Name, email, password, and admin security key are required.' });
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required.' });
     }
 
-    const expectedSecret = process.env.ADMIN_SECRET_KEY || 'ADMIN2026';
-    if (adminSecret.trim() !== expectedSecret.trim()) {
-        return res.status(403).json({ message: 'Invalid Admin Security Key. Authorization failed.' });
+    // 1. Authorization: Only allow via existing Super Admin session or valid one-time provisioning secret
+    const isSuperAdminCaller = req.user && req.user.role === 'admin' && req.user.admin_role === 'super_admin';
+    const serverProvisioningToken = process.env.ADMIN_PROVISIONING_TOKEN || process.env.ADMIN_SECRET_KEY;
+    const providedToken = req.headers['x-admin-provisioning-token'] || adminSecret;
+
+    let isTokenAuthorized = false;
+    if (serverProvisioningToken && providedToken && serverProvisioningToken !== 'ADMIN2026' && serverProvisioningToken.length >= 16) {
+        const bufA = Buffer.from(String(providedToken));
+        const bufB = Buffer.from(String(serverProvisioningToken));
+        if (bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB)) {
+            isTokenAuthorized = true;
+        }
     }
 
-    if (password.length < 6) {
-        return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+    if (!isSuperAdminCaller && !isTokenAuthorized) {
+        return res.status(403).json({ 
+            message: 'Unauthorized: Administrator registration is strictly restricted. Super Administrator session or valid server provisioning token required.' 
+        });
+    }
+
+    // 2. Strong Password Policy for Administrators
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+    if (!strongPasswordRegex.test(password)) {
+        return res.status(400).json({ 
+            message: 'Administrator password must be at least 10 characters long, containing uppercase, lowercase, a digit, and a special character.' 
+        });
+    }
+
+    // 3. Breach check
+    const isPwned = await checkPwnedPassword(password);
+    if (isPwned) {
+        return res.status(400).json({ 
+            message: 'This password has appeared in known data breaches. Please choose a different, unique password.' 
+        });
     }
 
     try {
@@ -685,9 +741,21 @@ const registerAdmin = async (req, res) => {
             password,
             email_verified: true,
             phone_verified: false,
-            two_factor_enabled: false,
+            two_factor_enabled: true, // Require 2FA for administrators
             account_status: 'active',
-            role: 'admin'
+            role: 'admin',
+            admin_role: 'admin' // Newly registered admins receive standard admin role
+        });
+
+        await SecurityAlert.create({
+            user_id: user.id,
+            alert_type: 'admin_account_created',
+            ip_address: req.ip || '127.0.0.1',
+            location: 'System Provisioning',
+            details: {
+                message: `New administrator provisioned: ${user.email}`,
+                provisionedBy: isSuperAdminCaller ? `SuperAdmin #${req.user.id}` : 'Provisioning Token'
+            }
         });
 
         const userAgent = req.headers['user-agent'] || '';
@@ -791,28 +859,74 @@ const passkeyLoginChallenge = async (req, res) => {
     }
 
     try {
+        const {
+            generateAuthenticationOptions,
+            storeChallenge,
+            getRpId
+        } = require('../utils/webauthn');
+
         const user = await User.findOne({ where: { email: email.toLowerCase().trim() } });
+        
+        // Prevent user enumeration: if user not found or no passkeys, return generic options with dummy challenge
         if (!user) {
-            return res.status(404).json({ message: 'User not found with this email.' });
+            const dummyOptions = await generateAuthenticationOptions({
+                rpID: getRpId(req),
+                userVerification: 'preferred'
+            });
+            const challengeToken = storeChallenge({
+                challenge: dummyOptions.challenge,
+                dummy: true
+            });
+            return res.json({
+                ...dummyOptions,
+                challengeToken,
+                allowCredentials: []
+            });
         }
 
         const passkeys = await UserPasskey.findAll({ where: { user_id: user.id } });
         if (passkeys.length === 0) {
-            return res.status(400).json({ message: 'No registered passkeys found for this account.' });
+            const dummyOptions = await generateAuthenticationOptions({
+                rpID: getRpId(req),
+                userVerification: 'preferred'
+            });
+            const challengeToken = storeChallenge({
+                challenge: dummyOptions.challenge,
+                dummy: true
+            });
+            return res.json({
+                ...dummyOptions,
+                challengeToken,
+                allowCredentials: []
+            });
         }
 
-        const challenge = crypto.randomBytes(32).toString('hex');
-        res.json({
-            challenge,
+        const allowCredentials = passkeys.map(pk => ({
+            id: pk.credential_id,
+            transports: pk.transports ? JSON.parse(pk.transports) : undefined
+        }));
+
+        const options = await generateAuthenticationOptions({
+            rpID: getRpId(req),
+            allowCredentials,
+            userVerification: 'preferred'
+        });
+
+        const challengeToken = storeChallenge({
+            challenge: options.challenge,
             userId: user.id,
-            allowCredentials: passkeys.map(pk => ({
-                id: pk.credential_id,
-                type: 'public-key'
-            }))
+            email: user.email,
+            type: 'login'
+        });
+
+        res.json({
+            ...options,
+            challengeToken,
+            userId: user.id
         });
     } catch (error) {
         console.error('[Passkey Challenge Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Failed to generate passkey challenge.' });
     }
 };
 
@@ -820,42 +934,92 @@ const passkeyLoginChallenge = async (req, res) => {
 // PASSKEY LOGIN VERIFY (Biometric WebAuthn check)
 // ═════════════════════════════════════════════════
 const passkeyLoginVerify = async (req, res) => {
-    const { userId, credentialId, deviceId } = req.body;
+    const { challengeToken, response, credentialId, deviceId } = req.body;
     const userAgent = req.headers['user-agent'] || '';
     const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
 
-    if (!userId || !credentialId) {
-        return res.status(400).json({ message: 'User ID and credential ID are required.' });
-    }
-
     try {
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
+        const {
+            verifyAuthenticationResponse,
+            consumeChallenge,
+            getRpId,
+            getExpectedOrigins
+        } = require('../utils/webauthn');
+
+        if (!challengeToken) {
+            return res.status(400).json({ message: 'challengeToken is required for passkey verification.' });
+        }
+
+        // Single-use challenge: consuming it immediately prevents replay attacks
+        const stored = consumeChallenge(challengeToken);
+        if (!stored || stored.dummy || stored.type !== 'login' || !stored.userId) {
+            return res.status(401).json({ message: 'Passkey verification failed or challenge has expired.' });
+        }
+
+        // Obtain identity strictly from verified server-side challenge context, never trust client-supplied userId
+        const authenticatedUserId = stored.userId;
+        const targetCredId = response?.id || credentialId;
+
+        if (!targetCredId) {
+            return res.status(400).json({ message: 'Credential ID is required.' });
         }
 
         const passkey = await UserPasskey.findOne({
-            where: { user_id: userId, credential_id: credentialId }
+            where: { user_id: authenticatedUserId, credential_id: targetCredId }
         });
 
         if (!passkey) {
-            return res.status(401).json({ message: 'Invalid biometrics credential registration.' });
+            return res.status(401).json({ message: 'Credential not registered for this account.' });
         }
 
-        // Success! Log the user in
+        // Cryptographic WebAuthn signature assertion verification
+        if (response && response.response && response.response.clientDataJSON && response.response.signature) {
+            const verification = await verifyAuthenticationResponse({
+                response,
+                expectedChallenge: stored.challenge,
+                expectedOrigin: getExpectedOrigins(req),
+                expectedRPID: getRpId(req),
+                credential: {
+                    id: passkey.credential_id,
+                    publicKey: Buffer.from(passkey.public_key, 'base64'),
+                    counter: Number(passkey.counter || 0),
+                    transports: passkey.transports ? JSON.parse(passkey.transports) : undefined
+                },
+                requireUserPresence: true,
+                requireUserVerification: false
+            });
+
+            if (!verification.verified) {
+                return res.status(401).json({ message: 'Cryptographic WebAuthn signature verification failed.' });
+            }
+
+            // Update counter for authenticator clone detection
+            if (verification.authenticationInfo && typeof verification.authenticationInfo.newCounter === 'number') {
+                passkey.counter = verification.authenticationInfo.newCounter;
+                await passkey.save();
+            }
+        } else {
+            // Client failed to provide cryptographic assertion
+            return res.status(401).json({ message: 'Cryptographic WebAuthn signature assertion is required.' });
+        }
+
+        const user = await User.findByPk(authenticatedUserId);
+        if (!user || user.account_status !== 'active') {
+            return res.status(403).json({ message: 'Account is not authorized or is inactive.' });
+        }
+
+        // Success! Authenticate user and create session
         const activeDeviceId = deviceId || crypto.randomUUID();
         const sessionInfo = await createSessionAndLog(user, activeDeviceId, userAgent, ipAddress, true);
 
-        // Record a security event
         await SecurityAlert.create({
             user_id: user.id,
             alert_type: 'new_device',
             ip_address: ipAddress,
             location: sessionInfo.loginLocation,
-            details: { message: 'Signed in successfully via biometric Passkey.' }
+            details: { message: 'Signed in successfully via verified cryptographic WebAuthn passkey.' }
         });
 
-        // Set secure cookies
         const accessToken = generateAccessToken(user.id, sessionInfo.sessionId, user.role);
         setTokenCookies(res, accessToken, sessionInfo.refreshToken);
 
@@ -863,7 +1027,7 @@ const passkeyLoginVerify = async (req, res) => {
 
     } catch (error) {
         console.error('[Passkey Verify Login Error]:', error);
-        res.status(500).json({ message: 'Biometric passkey sign-in failed.' });
+        return res.status(401).json({ message: 'Biometric passkey verification failed.' });
     }
 };
 
@@ -918,38 +1082,85 @@ const logoutUser = async (req, res) => {
 };
 
 // ═════════════════════════════════════════════════
-// REFRESH SESSION (Silent Token Refresh)
+// REFRESH SESSION (Silent Token Refresh with Rotation & Reuse Detection)
 // ═════════════════════════════════════════════════
 const refreshSession = async (req, res) => {
-    const { refreshToken } = req.cookies;
+    const rawToken = req.cookies?.refreshToken || req.headers['x-refresh-token'] || req.body?.refreshToken;
 
-    if (!refreshToken) {
+    if (!rawToken) {
         return res.status(401).json({ message: 'No refresh token provided.' });
     }
 
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshSecret) {
+        return res.status(500).json({ message: 'Server authentication configuration error.' });
+    }
+
     try {
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_super_secret_2026');
+        const decoded = jwt.verify(rawToken, refreshSecret);
 
         const rtRecord = await RefreshToken.findOne({
-            where: { token: refreshToken, user_id: decoded.id }
+            where: { token: rawToken }
         });
 
-        if (!rtRecord || rtRecord.revoked || new Date() > new Date(rtRecord.expires_at)) {
-            // If compromised or expired, clear cookie
+        if (!rtRecord) {
             res.clearCookie('accessToken');
             res.clearCookie('refreshToken', { path: '/api/auth' });
-            return res.status(401).json({ message: 'Invalid or expired refresh token.' });
+            return res.status(401).json({ message: 'Invalid refresh token.' });
         }
 
-        const user = await User.findByPk(decoded.id);
+        // ─── Token Reuse Detection: If token was already revoked, terminate all sessions ───
+        if (rtRecord.revoked) {
+            console.warn(`🚨 [SECURITY ALERT] Refresh token reuse detected for User ID ${rtRecord.user_id}! Revoking all sessions.`);
+            await RefreshToken.update({ revoked: true }, { where: { user_id: rtRecord.user_id } });
+            await Session.update({ is_active: false }, { where: { user_id: rtRecord.user_id } });
+
+            try {
+                await SecurityAlert.create({
+                    user_id: rtRecord.user_id,
+                    alert_type: 'SUSPICIOUS_LOGIN',
+                    severity: 'CRITICAL',
+                    resolved: false,
+                    details: { reason: 'Refresh token reuse detected. All sessions revoked for safety.' }
+                });
+            } catch (alertErr) {}
+
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken', { path: '/api/auth' });
+            return res.status(401).json({ message: 'Compromised refresh token: Token reuse detected. All sessions terminated.' });
+        }
+
+        if (new Date() > new Date(rtRecord.expires_at)) {
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken', { path: '/api/auth' });
+            return res.status(401).json({ message: 'Refresh token has expired.' });
+        }
+
+        const user = await User.findByPk(rtRecord.user_id);
         if (!user || user.account_status !== 'active') {
-            return res.status(403).json({ message: 'User account is not active.' });
+            return res.status(403).json({ message: 'User account is inactive or suspended.' });
         }
 
-        // Issue new access token
+        // 1. Invalidate/revoke current refresh token immediately (rotation)
+        rtRecord.revoked = true;
+        await rtRecord.save();
+
+        // 2. Issue a new rotated refresh token
+        const newRefreshToken = generateRefreshToken(user.id, decoded.sessionId, decoded.deviceId || rtRecord.device_id);
+        const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        await RefreshToken.create({
+            user_id: user.id,
+            device_id: decoded.deviceId || rtRecord.device_id || 'unknown',
+            token: newRefreshToken,
+            expires_at: newExpiresAt,
+            revoked: false
+        });
+
+        // 3. Issue new access token
         const newAccessToken = generateAccessToken(user.id, decoded.sessionId, user.role);
 
-        // Optionally, rotate refresh token here, but for simplicity we'll just keep the existing one until it expires.
+        // 4. Set secure HTTP-only cookies
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -957,11 +1168,23 @@ const refreshSession = async (req, res) => {
             maxAge: 15 * 60 * 1000 // 15 minutes
         });
 
-        res.json({ message: 'Session refreshed successfully.' });
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/api/auth',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({
+            message: 'Session refreshed successfully with token rotation.',
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
     } catch (error) {
         res.clearCookie('accessToken');
         res.clearCookie('refreshToken', { path: '/api/auth' });
-        return res.status(401).json({ message: 'Invalid refresh token.' });
+        return res.status(401).json({ message: 'Invalid or expired refresh token.' });
     }
 };
 

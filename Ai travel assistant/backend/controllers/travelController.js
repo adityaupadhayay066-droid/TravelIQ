@@ -71,10 +71,10 @@ const getUserAnalytics = async (req, res) => {
     try {
         let analytics = await Analytics.findOne({ where: { user_id: req.user.id } });
         if (!analytics) {
-            // Provide default analytics if none exist yet
+            // Provide authentic initial analytics if none exist yet (no fabricated accuracies)
             analytics = {
-                route_accuracy: 94.5,
-                ai_prediction_score: 98.2,
+                route_accuracy: null,
+                ai_prediction_score: null,
                 total_saved_money: 0,
                 total_saved_time: 0
             };

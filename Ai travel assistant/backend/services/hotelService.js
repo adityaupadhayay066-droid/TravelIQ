@@ -676,46 +676,163 @@ function isDataLoaded() {
 }
 
 /**
- * Create a new verified Stay/Hostel reservation
+ * Mask government ID numbers to preserve privacy (retention minimization)
  */
-function createReservation(data) {
+function maskGovId(rawId) {
+  if (!rawId) return 'XXXX-XXXX-0000';
+  const clean = String(rawId).replace(/[^a-zA-Z0-9]/g, '');
+  const last4 = clean.slice(-4) || '0000';
+  return `XXXX-XXXX-${last4}`;
+}
+
+/**
+ * Authoritatively calculate room pricing on the server
+ */
+function calculateAuthoritativePricing(hotelName, city, roomType, nights, unitsCount, guestsCount, mealPlan, promoCode) {
+  let ratePerNight = 1200;
+
+  // Search for the hotel in cache or city fallback
+  const searchResult = searchHotels(city || '', { limit: 100 });
+  const hotel = (searchResult.hotels || []).find(h => 
+    h.name.toLowerCase().trim() === (hotelName || '').toLowerCase().trim()
+  ) || (searchResult.hotels && searchResult.hotels[0]);
+
+  if (hotel) {
+    if (Array.isArray(hotel.roomTypes) && hotel.roomTypes.length > 0) {
+      const matchedRoom = hotel.roomTypes.find(r => 
+        r.id === roomType || r.name.toLowerCase().trim() === (roomType || '').toLowerCase().trim()
+      );
+      if (matchedRoom && matchedRoom.pricePerNight) {
+        ratePerNight = matchedRoom.pricePerNight;
+      } else if (hotel.roomTypes[0].pricePerNight) {
+        ratePerNight = hotel.roomTypes[0].pricePerNight;
+      }
+    } else if (hotel.price) {
+      ratePerNight = Math.round(hotel.price);
+    }
+  }
+
+  const validNights = Math.max(1, Math.min(30, parseInt(nights) || 1));
+  const validUnits = Math.max(1, Math.min(5, parseInt(unitsCount) || 1));
+  const validGuests = Math.max(1, Math.min(20, parseInt(guestsCount) || 1));
+
+  const baseTotal = ratePerNight * validNights * validUnits;
+
+  let mealsTotal = 0;
+  const normalizedMeal = (mealPlan || '').toLowerCase();
+  if (normalizedMeal.includes('breakfast')) {
+    mealsTotal = 250 * validGuests * validNights;
+  } else if (normalizedMeal.includes('all meal') || normalizedMeal.includes('all-inclusive')) {
+    mealsTotal = 750 * validGuests * validNights;
+  }
+
+  let discount = 0;
+  const cleanPromo = (promoCode || '').trim().toUpperCase();
+  if (cleanPromo === 'TRAVELIQ10' || cleanPromo === 'WELCOME10') {
+    discount = Math.round(baseTotal * 0.10);
+  } else if (cleanPromo === 'SUPERSTAY20') {
+    discount = Math.round(baseTotal * 0.20);
+  }
+
+  const taxableAmount = Math.max(0, baseTotal + mealsTotal - discount);
+  const taxes = Math.round(taxableAmount * 0.12);
+  const grandTotal = taxableAmount + taxes;
+
+  return {
+    ratePerNight,
+    baseTotal,
+    mealsTotal,
+    discount,
+    promoCode: discount > 0 ? cleanPromo : null,
+    taxes,
+    grandTotal,
+    nights: validNights,
+    unitsCount: validUnits,
+    guestsCount: validGuests
+  };
+}
+
+/**
+ * Create a new verified Stay/Hostel reservation with server-authoritative pricing and user binding
+ */
+function createReservation(userId, data) {
+  if (!userId) {
+    throw new Error('Authentication required to make a reservation.');
+  }
+
+  // Validate dates
+  const checkIn = new Date(data.checkInDate);
+  const checkOut = new Date(data.checkOutDate);
+
+  if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+    throw new Error('Invalid check-in or check-out date format.');
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (checkIn < today) {
+    throw new Error('Check-in date cannot be in the past.');
+  }
+
+  if (checkOut <= checkIn) {
+    throw new Error('Check-out date must be after check-in date.');
+  }
+
+  const diffDays = Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 1 || diffDays > 30) {
+    throw new Error('Stay duration must be between 1 and 30 nights.');
+  }
+
+  // Authoritatively compute pricing on server
+  const pricing = calculateAuthoritativePricing(
+    data.hotelName,
+    data.city,
+    data.roomType,
+    diffDays,
+    data.unitsCount,
+    data.guestsCount,
+    data.mealPlan,
+    data.promoCode
+  );
+
   const bookingId = `TIQ-STAY-${Math.floor(100000 + Math.random() * 900000)}`;
   const reservation = {
     id: bookingId,
     bookingReference: bookingId,
+    userId: String(userId),
     createdAt: new Date().toISOString(),
     status: 'CONFIRMED',
     hotelName: data.hotelName,
     city: data.city,
     category: data.category || 'Hotel / Hostel',
-    isHostel: data.isHostel || false,
-    roomType: data.roomType,
-    unitsCount: data.unitsCount || 1,
-    guestName: data.guestName,
-    guestEmail: data.guestEmail,
-    guestPhone: data.guestPhone,
+    isHostel: !!data.isHostel,
+    roomType: data.roomType || 'Standard',
+    unitsCount: pricing.unitsCount,
+    guestName: (data.guestName || '').trim(),
+    guestEmail: (data.guestEmail || '').trim(),
+    guestPhone: (data.guestPhone || '').trim(),
     govIdType: data.govIdType || 'Aadhaar Card',
-    govIdNumber: data.govIdNumber || 'XXXX-XXXX-4829',
+    govIdNumber: maskGovId(data.govIdNumber),
     govIdVerified: data.govIdVerified !== false,
     govIdStatus: data.govIdVerified !== false ? 'VERIFIED_KYC' : 'PENDING',
     checkInDate: data.checkInDate,
     checkOutDate: data.checkOutDate,
-    nights: data.nights || 1,
-    guestsCount: data.guestsCount || 1,
+    nights: pricing.nights,
+    guestsCount: pricing.guestsCount,
     mealPlan: data.mealPlan || 'Room Only',
-    specialRequests: data.specialRequests || [],
+    specialRequests: Array.isArray(data.specialRequests) ? data.specialRequests : [],
     paymentMethod: data.paymentMethod || 'Pay at Property',
     paymentStatus: data.paymentMethod === 'Pay at Property' ? 'PENDING_AT_CHECKIN' : 'PAID',
     pricing: {
-      ratePerNight: data.ratePerNight,
-      baseTotal: data.baseTotal,
-      mealsTotal: data.mealsTotal || 0,
-      discount: data.discount || 0,
-      promoCode: data.promoCode || null,
-      taxes: data.taxes,
-      grandTotal: data.grandTotal
+      ratePerNight: pricing.ratePerNight,
+      baseTotal: pricing.baseTotal,
+      mealsTotal: pricing.mealsTotal,
+      discount: pricing.discount,
+      promoCode: pricing.promoCode,
+      taxes: pricing.taxes,
+      grandTotal: pricing.grandTotal
     },
-    qrCheckInCode: `CHECKIN:${bookingId}:${data.guestName}:${data.checkInDate}:${data.govIdType || 'AADHAAR'}`
+    qrCheckInCode: `CHECKIN:${bookingId}:${(data.guestName || '').trim()}:${data.checkInDate}`
   };
 
   reservationsCache.unshift(reservation);
@@ -723,7 +840,22 @@ function createReservation(data) {
 }
 
 /**
- * Get all reservations
+ * Get reservations belonging strictly to an authenticated user
+ */
+function getReservationsByUser(userId) {
+  if (!userId) return [];
+  return reservationsCache.filter(r => String(r.userId) === String(userId));
+}
+
+/**
+ * Get reservation by ID
+ */
+function getReservationById(id) {
+  return reservationsCache.find(r => r.id === id || r.bookingReference === id) || null;
+}
+
+/**
+ * Get all reservations (administrator access only)
  */
 function getAllReservations() {
   return reservationsCache;
@@ -735,6 +867,10 @@ module.exports = {
   getHotelsWithRestaurant,
   getAvailableCities,
   isDataLoaded,
+  calculateAuthoritativePricing,
   createReservation,
-  getAllReservations
+  getReservationsByUser,
+  getReservationById,
+  getAllReservations,
+  maskGovId
 };

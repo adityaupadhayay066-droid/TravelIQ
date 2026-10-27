@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminProtect } = require('../middleware/authMiddleware');
 const {
     getLoginHistory,
     getActiveSessions,
@@ -34,9 +34,9 @@ router.get('/alerts', protect, getSecurityAlerts);
 router.post('/alerts/:alertId/resolve', protect, resolveAlert);
 router.post('/sos', protect, triggerSOS);
 
-// Anti-Scraping / Bot Protection Controls
-router.get('/anti-scraping/stats', protect, getScrapingSecurityOverview);
-router.post('/anti-scraping/unblock', protect, unblockScrapingIP);
+// Anti-Scraping / Bot Protection Controls (Admin authorization required)
+router.get('/anti-scraping/stats', adminProtect, getScrapingSecurityOverview);
+router.post('/anti-scraping/unblock', adminProtect, unblockScrapingIP);
 
 router.get('/settings', protect, getUserSecuritySettings);
 router.post('/recovery', protect, updateRecoveryOptions);

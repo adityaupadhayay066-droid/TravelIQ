@@ -1,42 +1,109 @@
 {
   "delay_model": {
-    "loss": 2106.376953125,
-    "accuracy": 92.4,
-    "samples": 2000
+    "model_type": "regression",
+    "test_loss": 2164.7991,
+    "arrival_delay_mae_minutes": 42.73,
+    "arrival_delay_rmse_minutes": 56.3,
+    "departure_delay_mae_minutes": 43.77,
+    "delay_probability_mae": 0.6002,
+    "train_samples": 1600,
+    "test_samples": 400,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.458248",
+    "model_version": "1.0.0",
+    "loss": 2164.7991
   },
   "fare_model": {
-    "loss": 0.10716395825147629,
-    "accuracy": 95.1,
-    "samples": 2000
+    "model_type": "regression",
+    "test_loss": 0.0901,
+    "fare_mae_rupees": 1277.07,
+    "fare_rmse_rupees": 1837.09,
+    "train_samples": 1600,
+    "test_samples": 400,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.498268",
+    "model_version": "1.0.0",
+    "loss": 0.0901
   },
   "crowd_model": {
-    "loss": 1.899301528930664,
-    "accuracy": 89.8,
-    "samples": 2000
+    "model_type": "hybrid_classification_regression",
+    "test_loss": 1.9212,
+    "crowd_level_accuracy_pct": 43.5,
+    "crowd_level_macro_f1": 0.155,
+    "crowd_density_mae_pct": 0.21,
+    "congestion_mae_pct": 0.21,
+    "train_samples": 1600,
+    "test_samples": 400,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.535419",
+    "model_version": "1.0.0",
+    "accuracy": 43.5,
+    "loss": 1.9212
   },
   "occupancy_model": {
-    "loss": 231.52874755859375,
-    "accuracy": 91.2,
-    "samples": 2000
+    "model_type": "hybrid_classification_regression",
+    "test_loss": 190.4903,
+    "demand_level_accuracy_pct": 43.5,
+    "demand_level_macro_f1": 0.2123,
+    "occupancy_mae_pct": 0.3,
+    "availability_probability_mae": 0.2225,
+    "train_samples": 1600,
+    "test_samples": 400,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.585030",
+    "model_version": "1.0.0",
+    "accuracy": 43.5,
+    "loss": 190.4903
   },
   "route_recommender": {
-    "loss": 1.9103888273239136,
-    "accuracy": 88.5,
-    "samples": 5000
+    "model_type": "regression",
+    "test_loss": 2.4066,
+    "rating_mae_stars": 1.3,
+    "rating_rmse_stars": 1.55,
+    "train_samples": 4000,
+    "test_samples": 1000,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.618465",
+    "model_version": "1.0.0",
+    "loss": 2.4066
   },
   "chatbot_model": {
-    "loss": 0.05341452732682228,
-    "accuracy": 96.8,
-    "samples": 500
+    "model_type": "classification",
+    "test_loss": 0.0829,
+    "accuracy": 100.0,
+    "macro_f1": 1.0,
+    "intent_classes_count": 10,
+    "train_samples": 400,
+    "test_samples": 100,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.654813",
+    "model_version": "1.0.0",
+    "loss": 0.0829
   },
   "demand_forecaster": {
-    "loss": 0.04689234495162964,
-    "accuracy": 90.1,
-    "samples": 500
+    "model_type": "time_series_forecasting",
+    "split_method": "temporal_cutoff_80_20",
+    "test_loss": 0.0832,
+    "demand_mae_passengers": 2104.28,
+    "demand_rmse_passengers": 2825.22,
+    "train_samples": 370,
+    "test_samples": 100,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.858728",
+    "model_version": "1.0.0",
+    "loss": 0.0832
   },
   "behavior_net": {
-    "loss": 1.1123913526535034,
-    "accuracy": 93.5,
-    "samples": 500
+    "model_type": "classification",
+    "test_loss": 1.1327,
+    "accuracy": 45.0,
+    "macro_f1": 0.2184,
+    "persona_count": 4,
+    "train_samples": 400,
+    "test_samples": 100,
+    "dataset_provenance": "synthetic_simulation",
+    "evaluated_at": "2026-10-27T16:18:05.876431",
+    "model_version": "1.0.0",
+    "loss": 1.1327
   }
 }

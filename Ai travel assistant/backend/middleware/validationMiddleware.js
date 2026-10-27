@@ -23,8 +23,8 @@ const adminLoginSchema = z.object({
 const adminRegisterSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name too long").trim(),
   email: z.string().email("Invalid email format").trim().toLowerCase(),
-  password: z.string().min(6, "Password must be at least 6 characters").max(128, "Password too long"),
-  adminSecret: z.string().min(1, "Admin security key is required")
+  password: z.string().min(10, "Administrator password must be at least 10 characters").max(128, "Password too long"),
+  adminSecret: z.string().optional()
 }).passthrough();
 
 const passwordUpdateSchema = z.object({

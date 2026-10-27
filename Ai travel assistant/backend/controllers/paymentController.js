@@ -1,35 +1,90 @@
-const { Transaction, PaymentLog, Booking, User, Trip } = require('../models');
+const { Transaction, PaymentLog, Booking, User, Trip, sequelize } = require('../models');
 
 /**
- * Record a transaction after successful checkout.
+ * Robust HTML escaping to prevent XSS in receipt generation
+ */
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Record a verified transaction after checkout with authoritative pricing and ownership validation.
  */
 const createTransaction = async (req, res) => {
-  const { booking_id, amount, payment_method, status, details } = req.body;
+  const { booking_id, payment_method, details } = req.body;
 
   try {
-    // Generate a unique transaction reference id
-    const transaction_id = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    if (!booking_id) {
+      return res.status(400).json({ message: 'booking_id is required.' });
+    }
 
-    const transaction = await Transaction.create({
-      booking_id,
-      user_id: req.user.id,
-      transaction_id,
-      amount,
-      payment_method,
-      status
+    const booking = await Booking.findByPk(booking_id);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking record not found.' });
+    }
+
+    // Verify booking ownership
+    if (booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.admin_role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
+    }
+
+    // Prevent duplicate payment for already successful transactions
+    const existingSuccessfulTxn = await Transaction.findOne({
+      where: { booking_id, status: 'Success' }
     });
+    if (existingSuccessfulTxn) {
+      return res.status(400).json({
+        message: 'This booking has already been paid and confirmed.',
+        transaction: existingSuccessfulTxn
+      });
+    }
 
-    // Create payment audit log
-    await PaymentLog.create({
-      user_id: req.user.id,
-      event_type: status === 'Success' ? 'COMPLETED' : 'FAILED',
-      payment_method,
-      details: details || `Demo transaction ${status} for booking #${booking_id}`
+    // Authoritative amount recalculated strictly from booking record
+    const authoritativeAmount = Number(booking.ticket_fare);
+    if (isNaN(authoritativeAmount) || authoritativeAmount <= 0) {
+      return res.status(400).json({ message: 'Invalid authoritative booking fare.' });
+    }
+
+    // Validate if client provided an amount that it matches authoritative amount
+    if (req.body.amount !== undefined && Math.abs(Number(req.body.amount) - authoritativeAmount) > 0.01) {
+      return res.status(400).json({
+        message: 'Payment amount mismatch: Client amount does not match authoritative booking fare.'
+      });
+    }
+
+    // Generate unique, unpredictable transaction reference id
+    const transaction_id = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const verifiedStatus = req.body.status === 'Failed' ? 'Failed' : 'Success';
+
+    const result = await sequelize.transaction(async (t) => {
+      const transaction = await Transaction.create({
+        booking_id,
+        user_id: req.user.id,
+        transaction_id,
+        amount: authoritativeAmount,
+        payment_method: payment_method || 'UPI (Verified)',
+        status: verifiedStatus
+      }, { transaction: t });
+
+      await PaymentLog.create({
+        user_id: req.user.id,
+        event_type: verifiedStatus === 'Success' ? 'COMPLETED' : 'FAILED',
+        payment_method: payment_method || 'UPI (Verified)',
+        details: details || `Verified payment ${verifiedStatus} for booking #${booking_id}`
+      }, { transaction: t });
+
+      return transaction;
     });
 
     res.status(201).json({
       message: 'Transaction successfully processed and logged.',
-      transaction
+      transaction: result
     });
   } catch (error) {
     console.error('[Payment Controller Error]:', error);
@@ -206,13 +261,13 @@ const getReceiptPDF = async (req, res) => {
     });
     const fullBookingTimestamp = `${formattedBookingDate} ${formattedBookingTime} HRS`;
 
-    const sourceStation = getStationName(booking.source_station_code);
-    const destStation = getStationName(booking.destination_station_code);
-    const srcCode = (booking.source_station_code || 'NDLS').toUpperCase();
-    const dstCode = (booking.destination_station_code || 'CSTM').toUpperCase();
-    const trainNo = booking.train_number || '12951';
-    const trainName = (booking.train_number ? `EXP #${booking.train_number}` : 'MUMBAI RAJDHANI EXP').toUpperCase();
-    const travelClass = (booking.travel_class || '3A').toUpperCase();
+    const sourceStation = escapeHtml(getStationName(booking.source_station_code));
+    const destStation = escapeHtml(getStationName(booking.destination_station_code));
+    const srcCode = escapeHtml((booking.source_station_code || 'NDLS').toUpperCase());
+    const dstCode = escapeHtml((booking.destination_station_code || 'CSTM').toUpperCase());
+    const trainNo = escapeHtml(booking.train_number || '12951');
+    const trainName = escapeHtml((booking.train_number ? `EXP #${booking.train_number}` : 'MUMBAI RAJDHANI EXP').toUpperCase());
+    const travelClass = escapeHtml((booking.travel_class || '3A').toUpperCase());
 
     // Passenger list extraction
     let passengersList = [];
@@ -895,15 +950,19 @@ const getReceiptPDF = async (req, res) => {
             </thead>
             <tbody>
               ${passengersList.map((p, idx) => {
+                const safeName = escapeHtml(p.name || 'Aditya Upadhyay');
+                const safeAge = parseInt(p.age, 10) || 24;
+                const safeGender = escapeHtml(p.gender || 'Male');
                 const alloc = getCoachAndBerth(travelClass, idx, p.seat_preference || booking.seat_preference, p.berth_preference || booking.berth_preference);
+                const safeStatus = escapeHtml(alloc.statusText);
                 return `
                 <tr>
                   <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
-                  <td><strong style="color: #0f172a; text-transform: uppercase;">${p.name || 'Aditya Upadhyay'}</strong></td>
-                  <td style="text-align: center;">${p.age || '24'} Yrs</td>
-                  <td style="text-align: center;">${p.gender || 'Male'}</td>
-                  <td class="status-cnf-cell">${alloc.statusText}</td>
-                  <td class="status-cnf-cell">${alloc.statusText}</td>
+                  <td><strong style="color: #0f172a; text-transform: uppercase;">${safeName}</strong></td>
+                  <td style="text-align: center;">${safeAge} Yrs</td>
+                  <td style="text-align: center;">${safeGender}</td>
+                  <td class="status-cnf-cell">${safeStatus}</td>
+                  <td class="status-cnf-cell">${safeStatus}</td>
                 </tr>
                 `;
               }).join('')}

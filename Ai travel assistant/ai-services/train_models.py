@@ -14,9 +14,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-# Scikit-learn
+# Scikit-learn & utilities
+import shutil
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 
 # AI Engine architectures
 from ai_engine.delay_model import TrainDelayLSTM
@@ -302,6 +304,10 @@ def generate_comprehensive_datasets():
         'occ': df_occ,
         'rec': df_rec,
         'nlp': df_nlp,
+        'demand_series': demand_seq_records,
+        'behavior': df_behavior
+    }
+
 from data_cleaner import DataCleaner
 
 def train_and_save_all(custom_data=None):
@@ -341,311 +347,553 @@ def train_and_save_all(custom_data=None):
     # We will compile encoders & mappings to save
     encoders = {}
     metrics_log = {}
-    
+    criterion = nn.MSELoss()
+    criterion_cls = nn.CrossEntropyLoss()
+
+    def safe_encode(le, series, fit=False):
+        if fit:
+            le.fit(series)
+            return torch.tensor(le.transform(series), dtype=torch.long)
+        class_to_idx = {cls: idx for idx, cls in enumerate(le.classes_)}
+        unknown_idx = len(le.classes_)
+        mapped = [class_to_idx.get(val, unknown_idx) for val in series]
+        return torch.tensor(mapped, dtype=torch.long)
+
+    def validate_and_save_model(model, filename):
+        for name, param in model.named_parameters():
+            if torch.isnan(param).any() or torch.isinf(param).any():
+                raise ValueError(f"Model validation failed: NaN or Inf detected in parameter '{name}' of {filename}")
+        tmp_path = os.path.join(MODELS_DIR, f"{filename}.tmp")
+        final_path = os.path.join(MODELS_DIR, filename)
+        bak_path = os.path.join(MODELS_DIR, f"{filename}.bak")
+        torch.save(model.state_dict(), tmp_path)
+        if os.path.exists(final_path):
+            shutil.copyfile(final_path, bak_path)
+        os.replace(tmp_path, final_path)
+
     # --- 1. Delay Prediction Model ---
-    logger.info("Training Train Delay Predictor LSTM Model on sanitized dataset...")
+    logger.info("Training Train Delay Predictor LSTM Model with 80/20 train/test split...")
     df_d = cleaned_data['delay']
-    
-    le_train = LabelEncoder().fit(df_d['train_number'])
-    le_weather = LabelEncoder().fit(df_d['weather'])
-    
-    # Fit route encoder on unique stations combinations or simple labels
-    le_route = LabelEncoder().fit(df_d['route'])
-    
+    train_d, test_d = train_test_split(df_d, test_size=0.2, random_state=42)
+
+    le_train = LabelEncoder()
+    le_weather = LabelEncoder()
+    le_route = LabelEncoder()
+
+    train_idx_tr = safe_encode(le_train, train_d['train_number'], fit=True)
+    weather_idx_tr = safe_encode(le_weather, train_d['weather'], fit=True)
+    route_idx_tr = safe_encode(le_route, train_d['route'], fit=True)
+
     encoders['delay_train'] = le_train
     encoders['delay_weather'] = le_weather
     encoders['delay_route'] = le_route
-    
-    df_d['train_enc'] = le_train.transform(df_d['train_number'])
-    df_d['weather_enc'] = le_weather.transform(df_d['weather'])
-    df_d['route_enc'] = le_route.transform(df_d['route'])
-    
-    # Features: train, route, weather, day_of_week, month, season
-    X_num = df_d[['day_of_week', 'month', 'season']].values
-    y_reg = df_d[['arr_delay', 'dep_delay', 'probability']].values
-    
-    # PyTorch Setup
-    train_idx = torch.tensor(df_d['train_enc'].values, dtype=torch.long)
-    route_idx = torch.tensor(df_d['route_enc'].values, dtype=torch.long)
-    weather_idx = torch.tensor(df_d['weather_enc'].values, dtype=torch.long)
-    num_feats = torch.tensor(X_num, dtype=torch.float32)
-    targets = torch.tensor(y_reg, dtype=torch.float32)
-    
+
+    num_feats_tr = torch.tensor(train_d[['day_of_week', 'month', 'season']].values, dtype=torch.float32)
+    targets_tr = torch.tensor(train_d[['arr_delay', 'dep_delay', 'probability']].values, dtype=torch.float32)
+
     vocab_sizes = {
         'train': len(le_train.classes_) + 5,
         'route': len(le_route.classes_) + 5,
         'weather': len(le_weather.classes_) + 5
     }
     embedding_dims = {'train': 16, 'route': 16, 'weather': 8}
-    
+
     model_delay = TrainDelayLSTM(vocab_sizes, embedding_dims)
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model_delay.parameters(), lr=0.01)
-    
-    # Minimal epochs for fast compilation and demonstration
+    optimizer_delay = optim.Adam(model_delay.parameters(), lr=0.01)
+
     model_delay.train()
-    for epoch in range(10):
-        optimizer.zero_grad()
-        out = model_delay(train_idx, route_idx, weather_idx, num_feats)
-        loss = criterion(out, targets)
+    for epoch in range(12):
+        optimizer_delay.zero_grad()
+        out = model_delay(train_idx_tr, route_idx_tr, weather_idx_tr, num_feats_tr)
+        loss = criterion(out, targets_tr)
         loss.backward()
-        optimizer.step()
-        
-    torch.save(model_delay.state_dict(), os.path.join(MODELS_DIR, 'delay_model.pth'))
-    metrics_log['delay_model'] = {'loss': float(loss.item()), 'accuracy': 92.4, 'samples': len(df_d)}
-    
+        optimizer_delay.step()
+
+    # Evaluation on Hold-Out Test Set
+    model_delay.eval()
+    with torch.no_grad():
+        train_idx_te = safe_encode(le_train, test_d['train_number'], fit=False)
+        weather_idx_te = safe_encode(le_weather, test_d['weather'], fit=False)
+        route_idx_te = safe_encode(le_route, test_d['route'], fit=False)
+        num_feats_te = torch.tensor(test_d[['day_of_week', 'month', 'season']].values, dtype=torch.float32)
+        targets_te = test_d[['arr_delay', 'dep_delay', 'probability']].values
+
+        preds_d = model_delay(train_idx_te, route_idx_te, weather_idx_te, num_feats_te).cpu().numpy()
+        arr_delay_mae = float(np.mean(np.abs(preds_d[:, 0] - targets_te[:, 0])))
+        arr_delay_rmse = float(np.sqrt(np.mean((preds_d[:, 0] - targets_te[:, 0]) ** 2)))
+        dep_delay_mae = float(np.mean(np.abs(preds_d[:, 1] - targets_te[:, 1])))
+        prob_mae = float(np.mean(np.abs(preds_d[:, 2] - targets_te[:, 2])))
+        test_loss_d = float(criterion(torch.tensor(preds_d), torch.tensor(targets_te, dtype=torch.float32)).item())
+
+    validate_and_save_model(model_delay, 'delay_model.pth')
+    metrics_log['delay_model'] = {
+        'model_type': 'regression',
+        'test_loss': round(test_loss_d, 4),
+        'arrival_delay_mae_minutes': round(arr_delay_mae, 2),
+        'arrival_delay_rmse_minutes': round(arr_delay_rmse, 2),
+        'departure_delay_mae_minutes': round(dep_delay_mae, 2),
+        'delay_probability_mae': round(prob_mae, 4),
+        'train_samples': len(train_d),
+        'test_samples': len(test_d),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(test_loss_d, 4)
+    }
+
     # --- 2. Smart Fare Forecast Model ---
-    logger.info("Training Smart Fare Forecast LSTM Model on sanitized dataset...")
+    logger.info("Training Smart Fare Forecast LSTM Model with 80/20 train/test split...")
     df_f = cleaned_data['fare']
-    
-    le_src = LabelEncoder().fit(df_f['source'])
-    le_dst = LabelEncoder().fit(df_f['destination'])
-    le_class = LabelEncoder().fit(df_f['class_code'])
-    
+    train_f, test_f = train_test_split(df_f, test_size=0.2, random_state=42)
+
+    le_src = LabelEncoder()
+    le_dst = LabelEncoder()
+    le_class = LabelEncoder()
+
+    src_tr = safe_encode(le_src, train_f['source'], fit=True)
+    dst_tr = safe_encode(le_dst, train_f['destination'], fit=True)
+    class_tr = safe_encode(le_class, train_f['class_code'], fit=True)
+
     encoders['fare_src'] = le_src
     encoders['fare_dst'] = le_dst
     encoders['fare_class'] = le_class
-    
-    df_f['src_enc'] = le_src.transform(df_f['source'])
-    df_f['dst_enc'] = le_dst.transform(df_f['destination'])
-    df_f['class_enc'] = le_class.transform(df_f['class_code'])
-    
-    X_num_f = df_f[['month', 'season_code', 'demand_score']].values
-    y_fare = df_f['forecast_7d'].values / df_f['current_fare'].values # predict ratio
-    
-    src_tensor = torch.tensor(df_f['src_enc'].values, dtype=torch.long)
-    dst_tensor = torch.tensor(df_f['dst_enc'].values, dtype=torch.long)
-    class_tensor = torch.tensor(df_f['class_enc'].values, dtype=torch.long)
-    num_f_tensor = torch.tensor(X_num_f, dtype=torch.float32)
-    targets_f = torch.tensor(y_fare, dtype=torch.float32).unsqueeze(1)
-    
+
+    X_num_f_tr = torch.tensor(train_f[['month', 'season_code', 'demand_score']].values, dtype=torch.float32)
+    y_fare_ratio_tr = torch.tensor((train_f['forecast_7d'].values / train_f['current_fare'].values), dtype=torch.float32).unsqueeze(1)
+
     vocab_sizes_f = {
         'source': len(le_src.classes_) + 5,
         'dest': len(le_dst.classes_) + 5,
         'class': len(le_class.classes_) + 5
     }
     embedding_dims_f = {'source': 16, 'dest': 16, 'class': 8}
-    
+
     model_fare = SmartFareLSTM(vocab_sizes_f, embedding_dims_f)
     optimizer_f = optim.Adam(model_fare.parameters(), lr=0.01)
-    
+
     model_fare.train()
-    for epoch in range(10):
+    for epoch in range(12):
         optimizer_f.zero_grad()
-        out = model_fare(src_tensor, dst_tensor, class_tensor, num_f_tensor)
-        loss_f = criterion(out, targets_f)
+        out = model_fare(src_tr, dst_tr, class_tr, X_num_f_tr)
+        loss_f = criterion(out, y_fare_ratio_tr)
         loss_f.backward()
         optimizer_f.step()
-        
-    torch.save(model_fare.state_dict(), os.path.join(MODELS_DIR, 'fare_model.pth'))
-    metrics_log['fare_model'] = {'loss': float(loss_f.item()), 'accuracy': 95.1, 'samples': len(df_f)}
-    
+
+    # Evaluation on Hold-Out Test Set
+    model_fare.eval()
+    with torch.no_grad():
+        src_te = safe_encode(le_src, test_f['source'], fit=False)
+        dst_te = safe_encode(le_dst, test_f['destination'], fit=False)
+        class_te = safe_encode(le_class, test_f['class_code'], fit=False)
+        X_num_f_te = torch.tensor(test_f[['month', 'season_code', 'demand_score']].values, dtype=torch.float32)
+
+        pred_ratios = model_fare(src_te, dst_te, class_te, X_num_f_te).cpu().numpy().squeeze()
+        actual_fares = test_f['forecast_7d'].values
+        current_fares = test_f['current_fare'].values
+        predicted_fares_inr = pred_ratios * current_fares
+
+        fare_mae_inr = float(np.mean(np.abs(predicted_fares_inr - actual_fares)))
+        fare_rmse_inr = float(np.sqrt(np.mean((predicted_fares_inr - actual_fares) ** 2)))
+        ratio_loss = float(criterion(torch.tensor(pred_ratios), torch.tensor(actual_fares / current_fares, dtype=torch.float32)).item())
+
+    validate_and_save_model(model_fare, 'fare_model.pth')
+    metrics_log['fare_model'] = {
+        'model_type': 'regression',
+        'test_loss': round(ratio_loss, 4),
+        'fare_mae_rupees': round(fare_mae_inr, 2),
+        'fare_rmse_rupees': round(fare_rmse_inr, 2),
+        'train_samples': len(train_f),
+        'test_samples': len(test_f),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(ratio_loss, 4)
+    }
+
     # --- 3. Crowd Level Classifier Net ---
-    logger.info("Training Station Crowd Net Model on sanitized dataset...")
+    logger.info("Training Station Crowd Net Model with 80/20 train/test split...")
     df_c = cleaned_data['crowd']
-    
-    le_station = LabelEncoder().fit(df_c['station_code'])
+    train_c, test_c = train_test_split(df_c, test_size=0.2, random_state=42)
+
+    le_station = LabelEncoder()
+    st_tr = safe_encode(le_station, train_c['station_code'], fit=True)
     encoders['crowd_station'] = le_station
-    df_c['station_enc'] = le_station.transform(df_c['station_code'])
-    
-    st_tensor = torch.tensor(df_c['station_enc'].values, dtype=torch.long)
-    num_c_tensor = torch.tensor(df_c[['day_of_week', 'hour_of_day']].values / 24.0, dtype=torch.float32)
-    
-    targets_c_cls = torch.tensor(df_c['crowd_level'].values, dtype=torch.long)
-    targets_c_reg = torch.tensor(df_c[['crowd_pct', 'congestion_pct']].values, dtype=torch.float32)
-    
+
+    num_c_tr = torch.tensor(train_c[['day_of_week', 'hour_of_day']].values / 24.0, dtype=torch.float32)
+    targets_c_cls_tr = torch.tensor(train_c['crowd_level'].values, dtype=torch.long)
+    targets_c_reg_tr = torch.tensor(train_c[['crowd_pct', 'congestion_pct']].values, dtype=torch.float32)
+
     model_crowd = StationCrowdNet(vocab_size=len(le_station.classes_) + 5)
     optimizer_c = optim.Adam(model_crowd.parameters(), lr=0.01)
-    criterion_c_cls = nn.CrossEntropyLoss()
-    
+
     model_crowd.train()
-    for epoch in range(10):
+    for epoch in range(12):
         optimizer_c.zero_grad()
-        logits, reg = model_crowd(st_tensor, num_c_tensor)
-        l_cls = criterion_c_cls(logits, targets_c_cls)
-        l_reg = criterion(reg, targets_c_reg)
+        logits, reg = model_crowd(st_tr, num_c_tr)
+        l_cls = criterion_cls(logits, targets_c_cls_tr)
+        l_reg = criterion(reg, targets_c_reg_tr)
         total_loss = l_cls + 10.0 * l_reg
         total_loss.backward()
         optimizer_c.step()
-        
-    torch.save(model_crowd.state_dict(), os.path.join(MODELS_DIR, 'crowd_model.pth'))
-    metrics_log['crowd_model'] = {'loss': float(total_loss.item()), 'accuracy': 89.8, 'samples': len(df_c)}
-    
+
+    # Evaluation on Hold-Out Test Set
+    model_crowd.eval()
+    with torch.no_grad():
+        st_te = safe_encode(le_station, test_c['station_code'], fit=False)
+        num_c_te = torch.tensor(test_c[['day_of_week', 'hour_of_day']].values / 24.0, dtype=torch.float32)
+        logits_te, reg_te = model_crowd(st_te, num_c_te)
+
+        preds_cls_c = np.argmax(logits_te.cpu().numpy(), axis=1)
+        actual_cls_c = test_c['crowd_level'].values
+        acc_c = float(np.mean(preds_cls_c == actual_cls_c) * 100.0)
+        f1_c = float(f1_score(actual_cls_c, preds_cls_c, average='macro'))
+
+        reg_np_c = reg_te.cpu().numpy()
+        actual_reg_c = test_c[['crowd_pct', 'congestion_pct']].values
+        crowd_pct_mae = float(np.mean(np.abs(reg_np_c[:, 0] - actual_reg_c[:, 0])))
+        congestion_pct_mae = float(np.mean(np.abs(reg_np_c[:, 1] - actual_reg_c[:, 1])))
+
+    validate_and_save_model(model_crowd, 'crowd_model.pth')
+    metrics_log['crowd_model'] = {
+        'model_type': 'hybrid_classification_regression',
+        'test_loss': round(float(total_loss.item()), 4),
+        'crowd_level_accuracy_pct': round(acc_c, 2),
+        'crowd_level_macro_f1': round(f1_c, 4),
+        'crowd_density_mae_pct': round(crowd_pct_mae, 2),
+        'congestion_mae_pct': round(congestion_pct_mae, 2),
+        'train_samples': len(train_c),
+        'test_samples': len(test_c),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'accuracy': round(acc_c, 2),
+        'loss': round(float(total_loss.item()), 4)
+    }
+
     # --- 4. Coach Occupancy Prediction Model ---
-    logger.info("Training Train Occupancy Net Model on sanitized dataset...")
+    logger.info("Training Train Occupancy Net Model with 80/20 train/test split...")
     df_o = cleaned_data['occ']
-    
-    le_occ_train = LabelEncoder().fit(df_o['train_number'])
-    le_occ_class = LabelEncoder().fit(df_o['class_code'])
+    train_o, test_o = train_test_split(df_o, test_size=0.2, random_state=42)
+
+    le_occ_train = LabelEncoder()
+    le_occ_class = LabelEncoder()
+
+    t_occ_tr = safe_encode(le_occ_train, train_o['train_number'], fit=True)
+    c_occ_tr = safe_encode(le_occ_class, train_o['class_code'], fit=True)
     encoders['occ_train'] = le_occ_train
     encoders['occ_class'] = le_occ_class
-    
-    df_o['train_enc'] = le_occ_train.transform(df_o['train_number'])
-    df_o['class_enc'] = le_occ_class.transform(df_o['class_code'])
-    
-    t_occ_tensor = torch.tensor(df_o['train_enc'].values, dtype=torch.long)
-    c_occ_tensor = torch.tensor(df_o['class_enc'].values, dtype=torch.long)
-    num_occ_tensor = torch.tensor(df_o[['month', 'day_of_week', 'season_code']].values / 12.0, dtype=torch.float32)
-    
-    targets_o_reg = torch.tensor(df_o[['avail_prob', 'occupancy_pct', 'waiting_list']].values, dtype=torch.float32)
-    targets_o_cls = torch.tensor(df_o['demand_level'].values, dtype=torch.long)
-    
+
+    num_occ_tr = torch.tensor(train_o[['month', 'day_of_week', 'season_code']].values / 12.0, dtype=torch.float32)
+    targets_o_reg_tr = torch.tensor(train_o[['avail_prob', 'occupancy_pct', 'waiting_list']].values, dtype=torch.float32)
+    targets_o_cls_tr = torch.tensor(train_o['demand_level'].values, dtype=torch.long)
+
     v_sizes_o = {
         'train': len(le_occ_train.classes_) + 5,
         'class': len(le_occ_class.classes_) + 5
     }
     emb_dims_o = {'train': 16, 'class': 8}
-    
+
     model_occ = TrainOccupancyNet(v_sizes_o, emb_dims_o)
     optimizer_o = optim.Adam(model_occ.parameters(), lr=0.01)
-    
+
     model_occ.train()
-    for epoch in range(10):
+    for epoch in range(12):
         optimizer_o.zero_grad()
-        reg, logits = model_occ(t_occ_tensor, c_occ_tensor, num_occ_tensor)
-        l_reg = criterion(reg, targets_o_reg)
-        l_cls = criterion_c_cls(logits, targets_o_cls)
-        total_loss = 5.0 * l_reg + l_cls
-        total_loss.backward()
+        reg, logits = model_occ(t_occ_tr, c_occ_tr, num_occ_tr)
+        l_reg = criterion(reg, targets_o_reg_tr)
+        l_cls = criterion_cls(logits, targets_o_cls_tr)
+        total_loss_o = 5.0 * l_reg + l_cls
+        total_loss_o.backward()
         optimizer_o.step()
-        
-    torch.save(model_occ.state_dict(), os.path.join(MODELS_DIR, 'occupancy_model.pth'))
-    metrics_log['occupancy_model'] = {'loss': float(total_loss.item()), 'accuracy': 91.2, 'samples': len(df_o)}
-    
+
+    # Evaluation on Hold-Out Test Set
+    model_occ.eval()
+    with torch.no_grad():
+        t_occ_te = safe_encode(le_occ_train, test_o['train_number'], fit=False)
+        c_occ_te = safe_encode(le_occ_class, test_o['class_code'], fit=False)
+        num_occ_te = torch.tensor(test_o[['month', 'day_of_week', 'season_code']].values / 12.0, dtype=torch.float32)
+        reg_te, logits_te = model_occ(t_occ_te, c_occ_te, num_occ_te)
+
+        preds_cls_o = np.argmax(logits_te.cpu().numpy(), axis=1)
+        actual_cls_o = test_o['demand_level'].values
+        acc_o = float(np.mean(preds_cls_o == actual_cls_o) * 100.0)
+        f1_o = float(f1_score(actual_cls_o, preds_cls_o, average='macro'))
+
+        reg_np_o = reg_te.cpu().numpy()
+        actual_reg_o = test_o[['avail_prob', 'occupancy_pct', 'waiting_list']].values
+        avail_prob_mae = float(np.mean(np.abs(reg_np_o[:, 0] - actual_reg_o[:, 0])))
+        occupancy_pct_mae = float(np.mean(np.abs(reg_np_o[:, 1] - actual_reg_o[:, 1])))
+
+    validate_and_save_model(model_occ, 'occupancy_model.pth')
+    metrics_log['occupancy_model'] = {
+        'model_type': 'hybrid_classification_regression',
+        'test_loss': round(float(total_loss_o.item()), 4),
+        'demand_level_accuracy_pct': round(acc_o, 2),
+        'demand_level_macro_f1': round(f1_o, 4),
+        'occupancy_mae_pct': round(occupancy_pct_mae, 2),
+        'availability_probability_mae': round(avail_prob_mae, 4),
+        'train_samples': len(train_o),
+        'test_samples': len(test_o),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'accuracy': round(acc_o, 2),
+        'loss': round(float(total_loss_o.item()), 4)
+    }
+
     # --- 5. Route Recommendation NCF Model ---
-    logger.info("Training Route Recommender NCF Model on sanitized dataset...")
+    logger.info("Training Route Recommender NCF Model with 80/20 train/test split...")
     df_r = cleaned_data['rec']
-    
-    u_tensor = torch.tensor(df_r['user_id'].values, dtype=torch.long)
-    route_tensor = torch.tensor(df_r['route_id'].values, dtype=torch.long)
-    feats_r = torch.tensor(df_r[['cost', 'duration', 'eco', 'comfort', 'student_budget']].values, dtype=torch.float32)
-    targets_r = torch.tensor(df_r['rating'].values, dtype=torch.float32).unsqueeze(1)
-    
+    train_r, test_r = train_test_split(df_r, test_size=0.2, random_state=42)
+
+    u_tr = torch.tensor(train_r['user_id'].values, dtype=torch.long)
+    route_tr = torch.tensor(train_r['route_id'].values, dtype=torch.long)
+    feats_r_tr = torch.tensor(train_r[['cost', 'duration', 'eco', 'comfort', 'student_budget']].values, dtype=torch.float32)
+    targets_r_tr = torch.tensor(train_r['rating'].values, dtype=torch.float32).unsqueeze(1)
+
     model_rec = RouteRecommenderNet(num_users=250, num_routes=100)
     optimizer_r = optim.Adam(model_rec.parameters(), lr=0.01)
-    
+
     model_rec.train()
-    for epoch in range(10):
+    for epoch in range(12):
         optimizer_r.zero_grad()
-        out = model_rec(u_tensor, route_tensor, feats_r)
-        loss_r = criterion(out, targets_r)
+        out = model_rec(u_tr, route_tr, feats_r_tr)
+        loss_r = criterion(out, targets_r_tr)
         loss_r.backward()
         optimizer_r.step()
-        
-    torch.save(model_rec.state_dict(), os.path.join(MODELS_DIR, 'route_recommender.pth'))
-    metrics_log['route_recommender'] = {'loss': float(loss_r.item()), 'accuracy': 88.5, 'samples': len(df_r)}
-    
+
+    # Evaluation on Hold-Out Test Set
+    model_rec.eval()
+    with torch.no_grad():
+        u_te = torch.tensor(test_r['user_id'].values, dtype=torch.long)
+        route_te = torch.tensor(test_r['route_id'].values, dtype=torch.long)
+        feats_r_te = torch.tensor(test_r[['cost', 'duration', 'eco', 'comfort', 'student_budget']].values, dtype=torch.float32)
+        preds_r = model_rec(u_te, route_te, feats_r_te).cpu().numpy().squeeze()
+        actual_r = test_r['rating'].values
+
+        rating_mae = float(np.mean(np.abs(preds_r - actual_r)))
+        rating_rmse = float(np.sqrt(np.mean((preds_r - actual_r) ** 2)))
+        test_loss_r = float(criterion(torch.tensor(preds_r), torch.tensor(actual_r, dtype=torch.float32)).item())
+
+    validate_and_save_model(model_rec, 'route_recommender.pth')
+    metrics_log['route_recommender'] = {
+        'model_type': 'regression',
+        'test_loss': round(test_loss_r, 4),
+        'rating_mae_stars': round(rating_mae, 2),
+        'rating_rmse_stars': round(rating_rmse, 2),
+        'train_samples': len(train_r),
+        'test_samples': len(test_r),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(test_loss_r, 4)
+    }
+
     # --- 6. Chatbot Assistant Intent Classifier ---
-    logger.info("Training Chatbot NLP Intent Classifier on sanitized dataset...")
+    logger.info("Training Chatbot NLP Intent Classifier with 80/20 train/test split...")
     df_n = cleaned_data['nlp']
-    
+    train_n, test_n = train_test_split(df_n, test_size=0.2, random_state=42, stratify=df_n['label'])
+
     tokenizer = SimpleTokenizer()
-    tokenizer.fit_on_texts(df_n['text'].tolist())
+    tokenizer.fit_on_texts(train_n['text'].tolist())
     encoders['chatbot_tokenizer'] = tokenizer
-    
-    seqs = tokenizer.texts_to_sequences(df_n['text'].tolist())
-    
-    # Convert sequence list to flattened indices and offsets for EmbeddingBag
-    flat_indices = []
-    offsets = []
-    current_offset = 0
-    for seq in seqs:
-        offsets.append(current_offset)
-        flat_indices.extend(seq)
-        current_offset += len(seq)
-        
-    flat_indices = torch.tensor(flat_indices, dtype=torch.long)
-    offsets = torch.tensor(offsets, dtype=torch.long)
-    targets_nlp = torch.tensor(df_n['label'].values, dtype=torch.long)
-    
+
+    seqs_tr = tokenizer.texts_to_sequences(train_n['text'].tolist())
+    flat_indices_tr = []
+    offsets_tr = []
+    curr_off = 0
+    for seq in seqs_tr:
+        offsets_tr.append(curr_off)
+        flat_indices_tr.extend(seq)
+        curr_off += len(seq)
+
+    flat_indices_tr = torch.tensor(flat_indices_tr, dtype=torch.long)
+    offsets_tr = torch.tensor(offsets_tr, dtype=torch.long)
+    targets_nlp_tr = torch.tensor(train_n['label'].values, dtype=torch.long)
+
     model_chatbot = ChatbotClassifierNet(vocab_size=len(tokenizer.vocab) + 10, num_classes=10)
     optimizer_nlp = optim.Adam(model_chatbot.parameters(), lr=0.01)
-    
+
     model_chatbot.train()
     for epoch in range(25):
         optimizer_nlp.zero_grad()
-        out = model_chatbot(flat_indices, offsets)
-        loss_nlp = criterion_c_cls(out, targets_nlp)
+        out = model_chatbot(flat_indices_tr, offsets_tr)
+        loss_nlp = criterion_cls(out, targets_nlp_tr)
         loss_nlp.backward()
         optimizer_nlp.step()
-        
-    torch.save(model_chatbot.state_dict(), os.path.join(MODELS_DIR, 'chatbot_classifier.pth'))
-    metrics_log['chatbot_model'] = {'loss': float(loss_nlp.item()), 'accuracy': 96.8, 'samples': len(df_n)}
-    
-    # --- 7. Time-Series Demand Forecast ---
-    logger.info("Training Demand Forecast LSTM Model on sanitized dataset...")
+
+    # Evaluation on Hold-Out Test Set
+    model_chatbot.eval()
+    with torch.no_grad():
+        seqs_te = tokenizer.texts_to_sequences(test_n['text'].tolist())
+        flat_indices_te = []
+        offsets_te = []
+        curr_off_te = 0
+        for seq in seqs_te:
+            offsets_te.append(curr_off_te)
+            flat_indices_te.extend(seq)
+            curr_off_te += len(seq)
+
+        flat_indices_te = torch.tensor(flat_indices_te, dtype=torch.long)
+        offsets_te = torch.tensor(offsets_te, dtype=torch.long)
+        out_te = model_chatbot(flat_indices_te, offsets_te)
+        preds_nlp = np.argmax(out_te.cpu().numpy(), axis=1)
+        actual_nlp = test_n['label'].values
+
+        acc_nlp = float(np.mean(preds_nlp == actual_nlp) * 100.0)
+        f1_nlp = float(f1_score(actual_nlp, preds_nlp, average='macro'))
+        test_loss_nlp = float(criterion_cls(out_te, torch.tensor(actual_nlp, dtype=torch.long)).item())
+
+    validate_and_save_model(model_chatbot, 'chatbot_classifier.pth')
+    metrics_log['chatbot_model'] = {
+        'model_type': 'classification',
+        'test_loss': round(test_loss_nlp, 4),
+        'accuracy': round(acc_nlp, 2),
+        'macro_f1': round(f1_nlp, 4),
+        'intent_classes_count': 10,
+        'train_samples': len(train_n),
+        'test_samples': len(test_n),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(test_loss_nlp, 4)
+    }
+
+    # --- 7. Time-Series Demand Forecast (Time-Aware Split) ---
+    logger.info("Training Demand Forecast LSTM Model with temporal 80/20 train/test split...")
     series = np.array(cleaned_data['demand_series'])
-    
-    # Normalize
-    series_min = series.min()
-    series_max = series.max()
-    encoders['demand_scale'] = {'min': float(series_min), 'max': float(series_max)}
-    series_norm = (series - series_min) / (series_max - series_min)
-    
-    # Create windows of size 30 to predict the next value
+
+    # Time-Aware Split (First 80% train, last 20% test to prevent temporal data leakage)
+    split_idx = int(len(series) * 0.8)
+    train_series = series[:split_idx]
+    test_series = series[split_idx:]
+
+    series_min = float(train_series.min())
+    series_max = float(train_series.max())
+    encoders['demand_scale'] = {'min': series_min, 'max': series_max}
+
+    denom = (series_max - series_min) if (series_max - series_min) != 0 else 1.0
+    train_norm = (train_series - series_min) / denom
+    test_norm = (test_series - series_min) / denom
+
     window_size = 30
-    X_seq = []
-    y_seq = []
-    for i in range(len(series_norm) - window_size):
-        X_seq.append(series_norm[i:i+window_size])
-        y_seq.append(series_norm[i+window_size])
-        
-    X_seq = np.array(X_seq).reshape(-1, window_size, 1)
-    y_seq = np.array(y_seq).reshape(-1, 1)
-    
-    X_seq_t = torch.tensor(X_seq, dtype=torch.float32)
-    y_seq_t = torch.tensor(y_seq, dtype=torch.float32)
-    
+    X_tr_seq, y_tr_seq = [], []
+    for i in range(len(train_norm) - window_size):
+        X_tr_seq.append(train_norm[i:i + window_size])
+        y_tr_seq.append(train_norm[i + window_size])
+
+    X_tr_seq = np.array(X_tr_seq).reshape(-1, window_size, 1)
+    y_tr_seq = np.array(y_tr_seq).reshape(-1, 1)
+
+    X_tr_t = torch.tensor(X_tr_seq, dtype=torch.float32)
+    y_tr_t = torch.tensor(y_tr_seq, dtype=torch.float32)
+
     model_demand = DemandForecastLSTM()
     optimizer_d = optim.Adam(model_demand.parameters(), lr=0.01)
-    
+
     model_demand.train()
     for epoch in range(15):
         optimizer_d.zero_grad()
-        out = model_demand(X_seq_t)
-        loss_d = criterion(out, y_seq_t)
+        out = model_demand(X_tr_t)
+        loss_d = criterion(out, y_tr_t)
         loss_d.backward()
         optimizer_d.step()
-        
-    torch.save(model_demand.state_dict(), os.path.join(MODELS_DIR, 'demand_forecaster.pth'))
-    metrics_log['demand_forecaster'] = {'loss': float(loss_d.item()), 'accuracy': 90.1, 'samples': len(series)}
-    
+
+    # Evaluation on Hold-Out Temporal Test Set
+    model_demand.eval()
+    with torch.no_grad():
+        X_te_seq, y_te_seq = [], []
+        # Prepend window_size from train to test to build initial test windows
+        combined_test = np.concatenate([train_norm[-window_size:], test_norm])
+        for i in range(len(combined_test) - window_size):
+            X_te_seq.append(combined_test[i:i + window_size])
+            y_te_seq.append(combined_test[i + window_size])
+
+        X_te_t = torch.tensor(np.array(X_te_seq).reshape(-1, window_size, 1), dtype=torch.float32)
+        preds_seq_norm = model_demand(X_te_t).cpu().numpy().squeeze()
+        actual_seq_norm = np.array(y_te_seq)
+
+        # Unscale back to passenger count units
+        preds_passengers = preds_seq_norm * denom + series_min
+        actual_passengers = actual_seq_norm * denom + series_min
+
+        demand_mae = float(np.mean(np.abs(preds_passengers - actual_passengers)))
+        demand_rmse = float(np.sqrt(np.mean((preds_passengers - actual_passengers) ** 2)))
+        test_loss_seq = float(criterion(torch.tensor(preds_seq_norm), torch.tensor(actual_seq_norm, dtype=torch.float32)).item())
+
+    validate_and_save_model(model_demand, 'demand_forecaster.pth')
+    metrics_log['demand_forecaster'] = {
+        'model_type': 'time_series_forecasting',
+        'split_method': 'temporal_cutoff_80_20',
+        'test_loss': round(test_loss_seq, 4),
+        'demand_mae_passengers': round(demand_mae, 2),
+        'demand_rmse_passengers': round(demand_rmse, 2),
+        'train_samples': len(X_tr_seq),
+        'test_samples': len(X_te_seq),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(test_loss_seq, 4)
+    }
+
     # --- 8. User Behavior Net ---
-    logger.info("Training User Behavior Analytics Net on sanitized dataset...")
+    logger.info("Training User Behavior Analytics Net with 80/20 train/test split...")
     df_b = cleaned_data['behavior']
-    
-    X_b = df_b[['bookings', 'avg_budget', 'pref_mode', 'frequency', 'satisfaction']].values
-    y_b = df_b['persona'].values
-    
-    X_b_tensor = torch.tensor(X_b, dtype=torch.float32)
-    y_b_tensor = torch.tensor(y_b, dtype=torch.long)
-    
+    train_b, test_b = train_test_split(df_b, test_size=0.2, random_state=42, stratify=df_b['persona'])
+
+    X_b_tr = torch.tensor(train_b[['bookings', 'avg_budget', 'pref_mode', 'frequency', 'satisfaction']].values, dtype=torch.float32)
+    y_b_tr = torch.tensor(train_b['persona'].values, dtype=torch.long)
+
     model_behavior = UserBehaviorNet()
     optimizer_b = optim.Adam(model_behavior.parameters(), lr=0.01)
-    
+
     model_behavior.train()
     for epoch in range(15):
         optimizer_b.zero_grad()
-        out = model_behavior(X_b_tensor)
-        loss_b = criterion_c_cls(out, y_b_tensor)
+        out = model_behavior(X_b_tr)
+        loss_b = criterion_cls(out, y_b_tr)
         loss_b.backward()
         optimizer_b.step()
-        
-    torch.save(model_behavior.state_dict(), os.path.join(MODELS_DIR, 'behavior_net.pth'))
-    metrics_log['behavior_net'] = {'loss': float(loss_b.item()), 'accuracy': 93.5, 'samples': len(df_b)}
-    
+
+    # Evaluation on Hold-Out Test Set
+    model_behavior.eval()
+    with torch.no_grad():
+        X_b_te = torch.tensor(test_b[['bookings', 'avg_budget', 'pref_mode', 'frequency', 'satisfaction']].values, dtype=torch.float32)
+        out_b = model_behavior(X_b_te)
+        preds_b = np.argmax(out_b.cpu().numpy(), axis=1)
+        actual_b = test_b['persona'].values
+
+        acc_b = float(np.mean(preds_b == actual_b) * 100.0)
+        f1_b = float(f1_score(actual_b, preds_b, average='macro'))
+        test_loss_b = float(criterion_cls(out_b, torch.tensor(actual_b, dtype=torch.long)).item())
+
+    validate_and_save_model(model_behavior, 'behavior_net.pth')
+    metrics_log['behavior_net'] = {
+        'model_type': 'classification',
+        'test_loss': round(test_loss_b, 4),
+        'accuracy': round(acc_b, 2),
+        'macro_f1': round(f1_b, 4),
+        'persona_count': len(PERSONA_DETAILS),
+        'train_samples': len(train_b),
+        'test_samples': len(test_b),
+        'dataset_provenance': 'synthetic_simulation',
+        'evaluated_at': datetime.now().isoformat(),
+        'model_version': '1.0.0',
+        'loss': round(test_loss_b, 4)
+    }
+
     # --- Save Encoders & Meta ---
     with open(os.path.join(MODELS_DIR, 'encoders.pkl'), 'wb') as f:
         pickle.dump(encoders, f)
-        
+
     # Save metrics log to metadata JSON
     with open(os.path.join(MODELS_DIR, 'model_metrics.json'), 'w') as f:
         json.dump(metrics_log, f, indent=2)
-        
+
     # Write to MySQL model_metrics table if MySQL connection works, else log
     write_metrics_to_db(metrics_log)
-    
-    logger.info("🎉 All PyTorch travel intelligence models trained and saved successfully!")
+
+    logger.info("🎉 All PyTorch travel intelligence models trained, evaluated on test sets, and saved successfully!")
 
 def write_metrics_to_db(metrics_log):
     # Try connecting to MySQL using standard credentials and inserting
@@ -673,10 +921,10 @@ def write_metrics_to_db(metrics_log):
             """
             cursor.execute(query, (
                 model_name,
-                "1.0.0",
-                metrics['accuracy'],
-                metrics['loss'],
-                metrics['samples'],
+                metrics.get("model_version", "1.0.0"),
+                metrics.get("accuracy"),
+                metrics.get("loss", metrics.get("test_loss")),
+                metrics.get("train_samples", metrics.get("samples", 0)),
                 "Active",
                 json.dumps(metrics)
             ))

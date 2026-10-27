@@ -13,14 +13,14 @@ const {
     passkeyLoginChallenge,
     passkeyLoginVerify
 } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 const { loginLimiter, registerLimiter } = require('../middleware/rateLimiter');
 const { validateRequest, schemas } = require('../middleware/validationMiddleware');
 
 router.post('/register', registerLimiter, validateRequest(schemas.register), registerUser);
 router.post('/login', loginLimiter, validateRequest(schemas.login), loginUser);
 router.post('/admin/login', loginLimiter, validateRequest(schemas.adminLogin), adminLogin);
-router.post('/admin/register', registerLimiter, validateRequest(schemas.adminRegister), registerAdmin);
+router.post('/admin/register', registerLimiter, optionalProtect, validateRequest(schemas.adminRegister), registerAdmin);
 router.post('/refresh', refreshSession);
 
 router.post('/verify-2fa', loginLimiter, verify2FA);

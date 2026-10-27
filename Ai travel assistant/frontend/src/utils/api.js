@@ -38,32 +38,13 @@ function shouldSkipRefresh(url) {
   return AUTH_SKIP_REFRESH.some(path => url === path || url.endsWith(path));
 }
 
-// ─── Client Shield Token Generator (Anti-Scraping Protection) ───
-const SHIELD_SECRET = 'traveliq_client_shield_sec_2026';
-
-async function generateClientShieldToken() {
+// ─── Client Telemetry Header (Supplementary Bot Mitigation) ───
+// Notice: Client-side tokens are never treated as a cryptographic security boundary.
+function generateClientShieldToken() {
   const timestamp = Date.now();
-  try {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
-      const encoder = new TextEncoder();
-      const msg = `${timestamp}:${SHIELD_SECRET}`;
-      const key = await window.crypto.subtle.importKey(
-        'raw',
-        encoder.encode(SHIELD_SECRET),
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-      const signature = await window.crypto.subtle.sign('HMAC', key, encoder.encode(msg));
-      const hashHex = Array.from(new Uint8Array(signature))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-      return `${timestamp}.${hashHex}`;
-    }
-  } catch (err) {
-    // Fallback if subtle crypto is not accessible
-  }
-  return `${timestamp}.client`;
+  // Safe browser telemetry token showing timestamp and random entropy, no shared secret in frontend
+  const randomEntropy = Math.random().toString(36).substring(2, 10);
+  return `${timestamp}.${randomEntropy}`;
 }
 
 // ─── Backend API (Express on port 5000) ───

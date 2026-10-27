@@ -8,6 +8,8 @@ import { api } from '../utils/api';
 import toast from 'react-hot-toast';
 import AuthSuccessOverlay from '../components/AuthSuccessOverlay';
 
+import { startAuthentication } from '@simplewebauthn/browser';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -94,57 +96,20 @@ export default function Login() {
 
     setIsSubmitting(true);
     try {
-      // 1. Fetch challenge and credentials list
+      // 1. Fetch challenge and credentials list from backend
       const { data: challengeRes } = await api.post('/auth/passkey/login-challenge', { email });
       
       if (!challengeRes.allowCredentials || challengeRes.allowCredentials.length === 0) {
         throw new Error('No registered passkeys found for this email address.');
       }
 
-      // 2. Fallback check for systems without native WebAuthn support
-      if (typeof navigator.credentials === 'undefined' || !navigator.credentials.get) {
-        toast.loading('Simulating biometric check (Windows Hello/TouchID)...', { duration: 1500 });
-        await new Promise(r => setTimeout(r, 1500));
-        
-        // Directly verify with the first credential to mock success
-        const { data: userData } = await api.post('/auth/passkey/login-verify', {
-          userId: challengeRes.userId,
-          credentialId: challengeRes.allowCredentials[0].id,
-          deviceId: localStorage.getItem('deviceId') || ''
-        });
+      // 2. Perform native WebAuthn authentication via @simplewebauthn/browser
+      const authResponse = await startAuthentication({ optionsJSON: challengeRes });
 
-        completeLogin(userData);
-        setIsSuccess(true);
-        setSuccessUser(userData);
-        return;
-      }
-
-      // 3. Trigger native WebAuthn window
-      const challengeBuffer = Uint8Array.from(atob(challengeRes.challenge), c => c.charCodeAt(0));
-      const allowCredentials = challengeRes.allowCredentials.map(pk => ({
-        id: Uint8Array.from(atob(pk.id), c => c.charCodeAt(0)),
-        type: 'public-key'
-      }));
-
-      const credential = await navigator.credentials.get({
-        publicKey: {
-          challenge: challengeBuffer,
-          allowCredentials,
-          userVerification: "preferred",
-          timeout: 60000
-        }
-      });
-
-      if (!credential) {
-        throw new Error('Biometric check cancelled or failed.');
-      }
-
-      const credentialIdB64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-
-      // 4. Verify biometric credential response on backend
+      // 3. Verify cryptographic assertion on backend
       const { data: userData } = await api.post('/auth/passkey/login-verify', {
-        userId: challengeRes.userId,
-        credentialId: credentialIdB64,
+        challengeToken: challengeRes.challengeToken,
+        response: authResponse,
         deviceId: localStorage.getItem('deviceId') || ''
       });
 
