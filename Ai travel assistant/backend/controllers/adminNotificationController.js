@@ -1,4 +1,4 @@
-﻿const { AdminNotification } = require('../models');
+const { AdminNotification } = require('../models');
 
 // GET /api/admin/notifications
 const getNotifications = async (req, res) => {
@@ -39,7 +39,8 @@ const markAsRead = async (req, res) => {
         await notification.update({ read: true });
         return res.json({ success: true, message: 'Marked as read.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminNotificationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -49,7 +50,8 @@ const markAllAsRead = async (req, res) => {
         await AdminNotification.update({ read: true }, { where: { read: false } });
         return res.json({ success: true, message: 'All notifications marked as read.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminNotificationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -64,7 +66,8 @@ const deleteNotification = async (req, res) => {
         await notification.destroy();
         return res.json({ success: true, message: 'Notification deleted.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminNotificationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 

@@ -55,9 +55,14 @@ exports.handleSupportReply = async (req, res) => {
       return res.status(404).json({ success: false, message: `Support Ticket #${ticket_id} not found.` });
     }
 
+    // Output validation & prompt injection containment
+    const validation = n8nService.validateAiSupportReply(message);
+    const safeContent = validation.safeText;
+    const isBlocked = validation.requiresAdminReview || !validation.isValid;
+
     // Format reply prefix to clearly identify n8n automation
     const replySource = sender_name ? `🤖 [${sender_name} via n8n]` : '🤖 [AI Assistant via n8n]';
-    const formattedMessage = message.startsWith('🤖') ? message : `${replySource}:\n${message}`;
+    const formattedMessage = safeContent.startsWith('🤖') ? safeContent : `${replySource}:\n${safeContent}`;
 
     const newMsg = await SupportMessage.create({
       ticket_id: ticket.id,
@@ -66,21 +71,35 @@ exports.handleSupportReply = async (req, res) => {
       message: formattedMessage
     });
 
-    ticket.admin_reply = message;
-    ticket.status = status || 'In Progress';
+    ticket.admin_reply = safeContent;
+    ticket.status = isBlocked ? 'Needs Review' : (status || 'In Progress');
     await ticket.save();
 
-    console.log(`[n8nController] ✅ Successfully ingested AI reply from n8n for Ticket #${ticket.id}`);
+    // Audit log
+    const { AdminLog } = require('../models');
+    if (AdminLog && AdminLog.create) {
+      await AdminLog.create({
+        admin_id: ticket.user_id || 1,
+        action: isBlocked ? 'AI_SUPPORT_REPLY_INJECTION_BLOCKED' : 'AI_SUPPORT_REPLY_INGESTED',
+        target_id: String(ticket.id),
+        ip_address: req.ip || '127.0.0.1',
+        details: { reason: validation.reason, isBlocked, summary: safeContent.slice(0, 100) }
+      }).catch(() => {});
+    }
+
+    console.log(`[n8nController] ${isBlocked ? '⚠️ Blocked suspicious' : '✅ Successfully ingested'} AI reply from n8n for Ticket #${ticket.id}`);
 
     res.status(201).json({
       success: true,
-      message: 'AI Support reply successfully posted to ticket conversation.',
+      message: isBlocked 
+        ? 'AI reply flagged for manual administrator review due to security policy.'
+        : 'AI Support reply successfully posted to ticket conversation.',
       messageId: newMsg.id,
       ticket_status: ticket.status
     });
   } catch (error) {
     console.error('[n8nController] Error handling support reply:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
   }
 };
 
@@ -106,7 +125,7 @@ exports.handleBookingNotification = async (req, res) => {
     });
   } catch (error) {
     console.error('[n8nController] Error handling booking notification:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
   }
 };
 
@@ -131,7 +150,7 @@ exports.handleDelayAlert = async (req, res) => {
     });
   } catch (error) {
     console.error('[n8nController] Error handling delay alert:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
   }
 };
 
@@ -148,7 +167,7 @@ exports.getStatus = async (req, res) => {
       telemetry
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
   }
 };
 
@@ -166,6 +185,6 @@ exports.testWebhook = async (req, res) => {
       results
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
   }
 };

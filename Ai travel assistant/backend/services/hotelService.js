@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
+const crypto = require('crypto');
 
 // ─── In-memory hotel cache & reservations ───
 let hotelsCache = [];
@@ -752,6 +753,19 @@ function calculateAuthoritativePricing(hotelName, city, roomType, nights, unitsC
   };
 }
 
+let HotelReservationModel = null;
+function getHotelReservationModel() {
+  if (!HotelReservationModel) {
+    try {
+      const models = require('../models');
+      HotelReservationModel = models.HotelReservation;
+    } catch (e) {
+      // Test environment or DB unavailable
+    }
+  }
+  return HotelReservationModel;
+}
+
 /**
  * Create a new verified Stay/Hostel reservation with server-authoritative pricing and user binding
  */
@@ -795,13 +809,53 @@ function createReservation(userId, data) {
     data.promoCode
   );
 
-  const bookingId = `TIQ-STAY-${Math.floor(100000 + Math.random() * 900000)}`;
+  // Validate room availability across active overlapping bookings
+  const requestedUnits = pricing.unitsCount || 1;
+  const checkInTime = checkIn.getTime();
+  const checkOutTime = checkOut.getTime();
+
+  const targetHotelName = (data.hotelName || '').toLowerCase().trim();
+  const searchResult = searchHotels(data.city || '', { limit: 100 });
+  const hotel = (searchResult.hotels || []).find(h => {
+    const cur = (h.name || '').toLowerCase().trim();
+    return cur === targetHotelName || cur.includes(targetHotelName) || targetHotelName.includes(cur);
+  }) || (searchResult.hotels && searchResult.hotels[0]) || hotelsCache[0];
+
+  let totalCapacity = 10;
+  let resolvedRoomName = data.roomType || 'Standard';
+  if (hotel && Array.isArray(hotel.roomTypes) && hotel.roomTypes.length > 0) {
+    const room = hotel.roomTypes.find(r => 
+      r.id === data.roomType || (r.name || '').toLowerCase().trim() === (data.roomType || '').toLowerCase().trim()
+    ) || hotel.roomTypes[0];
+    if (room) {
+      resolvedRoomName = room.name;
+      if (room.availableUnits) {
+        totalCapacity = room.availableUnits;
+      }
+    }
+  }
+
+  const overlappingUnits = reservationsCache.filter(r => {
+    const existingName = (r.hotelName || '').toLowerCase().trim();
+    if (existingName !== targetHotelName && !existingName.includes(targetHotelName) && !targetHotelName.includes(existingName)) return false;
+    if (r.status === 'CANCELLED' || r.status === 'REFUNDED') return false;
+    const existingIn = new Date(r.checkInDate).getTime();
+    const existingOut = new Date(r.checkOutDate).getTime();
+    return checkInTime < existingOut && checkOutTime > existingIn;
+  }).reduce((sum, r) => sum + (r.unitsCount || 1), 0);
+
+  if (overlappingUnits + requestedUnits > totalCapacity) {
+    throw new Error(`Requested room is not available for the selected dates. Only ${Math.max(0, totalCapacity - overlappingUnits)} unit(s) remaining.`);
+  }
+
+  const randSuffix = crypto.randomBytes(6).toString('hex').toUpperCase();
+  const bookingId = `TIQ-STAY-${randSuffix}`;
   const reservation = {
     id: bookingId,
     bookingReference: bookingId,
     userId: String(userId),
     createdAt: new Date().toISOString(),
-    status: 'CONFIRMED',
+    status: data.paymentMethod === 'Pay at Property' ? 'CONFIRMED' : 'PENDING',
     hotelName: data.hotelName,
     city: data.city,
     category: data.category || 'Hotel / Hostel',
@@ -813,8 +867,8 @@ function createReservation(userId, data) {
     guestPhone: (data.guestPhone || '').trim(),
     govIdType: data.govIdType || 'Aadhaar Card',
     govIdNumber: maskGovId(data.govIdNumber),
-    govIdVerified: data.govIdVerified !== false,
-    govIdStatus: data.govIdVerified !== false ? 'VERIFIED_KYC' : 'PENDING',
+    govIdVerified: false, // Never trust client-supplied govIdVerified
+    govIdStatus: 'PENDING_KYC',
     checkInDate: data.checkInDate,
     checkOutDate: data.checkOutDate,
     nights: pricing.nights,
@@ -822,7 +876,7 @@ function createReservation(userId, data) {
     mealPlan: data.mealPlan || 'Room Only',
     specialRequests: Array.isArray(data.specialRequests) ? data.specialRequests : [],
     paymentMethod: data.paymentMethod || 'Pay at Property',
-    paymentStatus: data.paymentMethod === 'Pay at Property' ? 'PENDING_AT_CHECKIN' : 'PAID',
+    paymentStatus: data.paymentMethod === 'Pay at Property' ? 'PENDING_AT_CHECKIN' : 'PENDING',
     pricing: {
       ratePerNight: pricing.ratePerNight,
       baseTotal: pricing.baseTotal,
@@ -836,7 +890,237 @@ function createReservation(userId, data) {
   };
 
   reservationsCache.unshift(reservation);
+
+  // Persist asynchronously to MySQL
+  const HotelReservation = getHotelReservationModel();
+  if (HotelReservation && HotelReservation.create) {
+    HotelReservation.create({
+      reservation_code: bookingId,
+      user_id: parseInt(userId) || 1,
+      hotel_name: data.hotelName,
+      city: data.city,
+      category: data.category || 'Hotel / Hostel',
+      is_hostel: !!data.isHostel,
+      room_type: data.roomType || 'Standard',
+      units_count: pricing.unitsCount,
+      guests_count: pricing.guestsCount,
+      guest_name: (data.guestName || '').trim(),
+      guest_email: (data.guestEmail || '').trim(),
+      guest_phone: (data.guestPhone || '').trim(),
+      gov_id_type: data.govIdType || 'Aadhaar Card',
+      gov_id_number: maskGovId(data.govIdNumber),
+      gov_id_verified: false,
+      gov_id_status: 'PENDING_KYC',
+      check_in_date: data.checkInDate,
+      check_out_date: data.checkOutDate,
+      nights: pricing.nights,
+      meal_plan: data.mealPlan || 'Room Only',
+      special_requests: Array.isArray(data.specialRequests) ? data.specialRequests : [],
+      payment_method: data.paymentMethod || 'Pay at Property',
+      payment_status: data.paymentMethod === 'Pay at Property' ? 'PENDING_AT_CHECKIN' : 'PENDING',
+      status: data.paymentMethod === 'Pay at Property' ? 'CONFIRMED' : 'PENDING',
+      rate_per_night: pricing.ratePerNight,
+      base_total: pricing.baseTotal,
+      meals_total: pricing.mealsTotal,
+      discount: pricing.discount,
+      promo_code: pricing.promoCode || null,
+      taxes: pricing.taxes,
+      grand_total: pricing.grandTotal,
+      qr_checkin_code: reservation.qrCheckInCode
+    }).catch(err => {
+      console.error('[HotelService] Error persisting reservation to DB:', err.message);
+    });
+  }
+
+  // Support both synchronous callers and async/await
+  reservation.then = function (resolve) {
+    resolve(reservation);
+  };
+
   return reservation;
+}
+
+/**
+ * Idempotently cancel a reservation with IDOR and safe refund transitions
+ */
+async function cancelReservation(reservationId, userId, reason = 'User requested cancellation', isAdmin = false) {
+  if (!reservationId) throw new Error('Reservation ID is required.');
+
+  let reservation = reservationsCache.find(r => r.id === reservationId || r.bookingReference === reservationId);
+  const HotelReservation = getHotelReservationModel();
+  let dbRecord = null;
+
+  if (HotelReservation && HotelReservation.findOne) {
+    try {
+      const { Op } = require('sequelize');
+      dbRecord = await HotelReservation.findOne({
+        where: {
+          [Op.or]: [
+            { reservation_code: reservationId },
+            ...(Number.isInteger(Number(reservationId)) ? [{ id: Number(reservationId) }] : [])
+          ]
+        }
+      });
+    } catch (err) {
+      console.warn('[HotelService] DB lookup warning:', err.message);
+    }
+  }
+
+  if (!reservation && !dbRecord) {
+    throw new Error('Reservation not found.');
+  }
+
+  // IDOR check: only owning user or administrator
+  const ownerId = reservation ? String(reservation.userId) : String(dbRecord.user_id);
+  if (String(userId) !== ownerId && !isAdmin) {
+    const err = new Error('Forbidden: You do not have permission to cancel this reservation.');
+    err.status = 403;
+    throw err;
+  }
+
+  // Idempotency: if already cancelled, return existing cancelled state
+  const currentStatus = reservation ? reservation.status : dbRecord.status;
+  if (currentStatus === 'CANCELLED' || currentStatus === 'REFUNDED' || currentStatus === 'REFUND_PENDING') {
+    return {
+      success: true,
+      message: 'Reservation is already cancelled.',
+      alreadyCancelled: true,
+      reservation: reservation || dbRecord
+    };
+  }
+
+  // Determine refund state
+  const isPaid = (reservation && reservation.paymentStatus === 'PAID') || (dbRecord && dbRecord.payment_status === 'PAID');
+  let newStatus = 'CANCELLED';
+  let newPaymentStatus = 'CANCELLED';
+  let refundStatus = null;
+  let refundAmount = 0;
+
+  if (isPaid) {
+    newStatus = 'REFUND_PENDING';
+    newPaymentStatus = 'REFUND_PENDING';
+    refundStatus = 'PROCESSING_WITH_GATEWAY';
+    refundAmount = reservation ? reservation.pricing.grandTotal : dbRecord.grand_total;
+  }
+
+  const cancelledAt = new Date().toISOString();
+
+  if (reservation) {
+    reservation.status = newStatus;
+    reservation.paymentStatus = newPaymentStatus;
+    reservation.cancellationReason = reason;
+    reservation.cancelledAt = cancelledAt;
+    reservation.refundStatus = refundStatus;
+    reservation.refundAmount = refundAmount;
+  }
+
+  if (dbRecord) {
+    await dbRecord.update({
+      status: newStatus,
+      payment_status: newPaymentStatus,
+      cancellation_reason: reason,
+      cancelled_at: cancelledAt,
+      refund_status: refundStatus,
+      refund_amount: refundAmount
+    });
+  }
+
+  return {
+    success: true,
+    message: isPaid 
+      ? 'Reservation cancelled. Refund has been initiated with the payment provider.' 
+      : 'Reservation cancelled successfully.',
+    alreadyCancelled: false,
+    reservation: reservation || dbRecord
+  };
+}
+
+/**
+ * Verify Government ID / KYC (restricted to administrators)
+ */
+async function verifyGovernmentId(reservationId, adminUser, verificationStatus = 'VERIFIED') {
+  if (!adminUser || (adminUser.role !== 'admin' && adminUser.admin_role !== 'super_admin')) {
+    const err = new Error('Forbidden: Only administrators can verify government identity documents.');
+    err.status = 403;
+    throw err;
+  }
+
+  let reservation = reservationsCache.find(r => r.id === reservationId || r.bookingReference === reservationId);
+  const HotelReservation = getHotelReservationModel();
+  let dbRecord = null;
+
+  if (HotelReservation && HotelReservation.findOne) {
+    try {
+      const { Op } = require('sequelize');
+      dbRecord = await HotelReservation.findOne({
+        where: {
+          [Op.or]: [
+            { reservation_code: reservationId },
+            ...(Number.isInteger(Number(reservationId)) ? [{ id: Number(reservationId) }] : [])
+          ]
+        }
+      });
+    } catch (err) {
+      console.warn('[HotelService] DB lookup warning:', err.message);
+    }
+  }
+
+  if (!reservation && !dbRecord) {
+    throw new Error('Reservation not found.');
+  }
+
+  const isVerified = verificationStatus === 'VERIFIED';
+  if (reservation) {
+    reservation.govIdVerified = isVerified;
+    reservation.govIdStatus = verificationStatus;
+  }
+  if (dbRecord) {
+    await dbRecord.update({
+      gov_id_verified: isVerified,
+      gov_id_status: verificationStatus
+    });
+  }
+
+  return {
+    success: true,
+    message: `Government ID status updated to ${verificationStatus}.`,
+    reservation: reservation || dbRecord
+  };
+}
+
+/**
+ * Paginated query for reservations
+ */
+async function getReservationsPaged({ userId = null, page = 1, limit = 20, offset = 0 } = {}) {
+  const HotelReservation = getHotelReservationModel();
+  if (HotelReservation && HotelReservation.findAndCountAll) {
+    try {
+      const where = {};
+      if (userId) {
+        where.user_id = userId;
+      }
+      const { rows, count } = await HotelReservation.findAndCountAll({
+        where,
+        order: [['created_at', 'DESC']],
+        limit,
+        offset
+      });
+      return {
+        reservations: rows,
+        total: count
+      };
+    } catch (err) {
+      console.warn('[HotelService] DB query warning:', err.message);
+    }
+  }
+
+  let list = reservationsCache;
+  if (userId) {
+    list = list.filter(r => String(r.userId) === String(userId));
+  }
+  const total = list.length;
+  const reservations = list.slice(offset, offset + limit);
+  return { reservations, total };
 }
 
 /**
@@ -869,6 +1153,9 @@ module.exports = {
   isDataLoaded,
   calculateAuthoritativePricing,
   createReservation,
+  cancelReservation,
+  verifyGovernmentId,
+  getReservationsPaged,
   getReservationsByUser,
   getReservationById,
   getAllReservations,

@@ -1,4 +1,4 @@
-﻿const { Report, User, sequelize } = require('../models');
+const { Report, User, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // GET /api/admin/reports
@@ -74,7 +74,8 @@ const updateReport = async (req, res) => {
 
         return res.json({ success: true, report, message: 'Report updated successfully.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminReportController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -98,7 +99,8 @@ const createReport = async (req, res) => {
 
         return res.status(201).json({ success: true, report: newReport });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminReportController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 

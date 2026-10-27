@@ -1,0 +1,15 @@
+.env
+.env.*
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.venv
+venv
+rag_storage/*
+!rag_storage/.gitkeep
+*.bak
+tests
+.git
+.gitignore

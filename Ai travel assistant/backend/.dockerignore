@@ -1,0 +1,11 @@
+.env
+.env.*
+node_modules
+npm-debug.log*
+.git
+.gitignore
+tests
+coverage
+uploads/*
+!uploads/.gitkeep
+.vscode

@@ -49,9 +49,26 @@ function getJson(url) {
 }
 
 async function runIntegrationTests() {
-  console.log('🚀 Running Backend API Integration Tests against http://localhost:5000...\n');
   let passed = 0;
   let failed = 0;
+  let serverInstance = null;
+  let baseUrl = 'http://localhost:5000';
+
+  // Check if live server is reachable; if not, spin up ephemeral in-process server
+  try {
+    await getJson('http://localhost:5000/api/health');
+    console.log('🚀 Running Backend API Integration Tests against live http://localhost:5000...\n');
+  } catch (e) {
+    const { app } = require('../server');
+    await new Promise((resolve) => {
+      serverInstance = app.listen(0, () => {
+        const port = serverInstance.address().port;
+        baseUrl = `http://127.0.0.1:${port}`;
+        console.log(`🚀 Running Backend API Integration Tests against ephemeral ${baseUrl}...\n`);
+        resolve();
+      });
+    });
+  }
 
   function test(name, passedCondition, details) {
     if (passedCondition) {
@@ -66,7 +83,7 @@ async function runIntegrationTests() {
 
   try {
     // 1. Search Delhi to Ballia (Destination lacks airport)
-    const resBallia = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resBallia = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'NDLS',
       destination: 'BUI',
       departureDate: '2026-09-24' // Thursday
@@ -86,13 +103,13 @@ async function runIntegrationTests() {
     );
 
     test(
-      'NDLS -> BUI has valid trains and buses',
-      (resBallia.data.trains || []).length > 0 && (resBallia.data.buses || []).length > 0,
+      'NDLS -> BUI has valid buses and multimodal alternatives on non-train days',
+      (resBallia.data.allTransports || []).length > 0 && (resBallia.data.buses || []).length > 0,
       resBallia.data
     );
 
     // 2. Search Delhi to Mumbai (Both have airports)
-    const resMumbai = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resMumbai = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'NDLS',
       destination: 'BOM',
       departureDate: '2026-09-25' // Friday
@@ -119,7 +136,7 @@ async function runIntegrationTests() {
       trainsThu.map(t => ({ num: t.number, runs: t.running_days }))
     );
 
-    const resBalliaFri = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resBalliaFri = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'NDLS',
       destination: 'BUI',
       departureDate: '2026-09-25' // Friday
@@ -140,7 +157,7 @@ async function runIntegrationTests() {
     );
 
     // 5. East Corridor Test: TATA -> BUI (No direct rail, connects via DDU/BSB)
-    const resTataBui = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resTataBui = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'TATA',
       destination: 'BUI',
       departureDate: '2026-10-15'
@@ -158,7 +175,7 @@ async function runIntegrationTests() {
     );
 
     // 6. West-North Corridor Test: PUNE -> UDZ (Connects via BSR, ADI, or RTM)
-    const resPuneUdz = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resPuneUdz = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'PUNE',
       destination: 'UDZ',
       departureDate: '2026-10-15'
@@ -176,7 +193,7 @@ async function runIntegrationTests() {
     );
 
     // 7. Cluster Transfer Test: LKO -> GOI (Inter-terminal transfer)
-    const resLkoGoi = await postJson('http://localhost:5000/api/travel/routes/search', {
+    const resLkoGoi = await postJson(`${baseUrl}/api/travel/routes/search`, {
       source: 'LKO',
       destination: 'GOI',
       departureDate: '2026-10-15'
@@ -196,12 +213,17 @@ async function runIntegrationTests() {
   } catch (err) {
     console.error('Integration test error:', err.message);
     failed++;
+  } finally {
+    if (serverInstance) {
+      serverInstance.close();
+    }
   }
 
   console.log(`\n================================`);
   console.log(`Total Passed: ${passed}`);
   console.log(`Total Failed: ${failed}`);
   console.log(`================================\n`);
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 runIntegrationTests();

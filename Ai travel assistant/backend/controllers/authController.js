@@ -1,5 +1,8 @@
+'use strict';
+
 const { User, Session, LoginHistory, RefreshToken, SecurityAlert, OtpVerification, UserSecurity, UserPasskey, UserActivityLog } = require('../models');
 const { Op } = require('sequelize');
+const sequelize = require('../config/db');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const geoip = require('geoip-lite');
@@ -191,51 +194,67 @@ function buildUserResponse(user, sessionId, deviceId) {
     };
 }
 
-// ─── Helper: Verify OTP code with hashed verification, attempt limits, and single-use ───
+// ─── Helper: Verify OTP code with atomic transaction, row lock, attempt limits, and single-use ───
 async function verifyOtp(userId, otpCode, type, purpose) {
     if (!userId || !otpCode) {
         return { success: false, message: 'Invalid verification details.' };
     }
 
-    const record = await OtpVerification.findOne({
-        where: {
-            user_id: userId,
-            type,
-            purpose,
-            verified: false
-        },
-        order: [['created_at', 'DESC']]
-    });
+    const cleanCode = String(otpCode).trim();
+    const inputHash = crypto.createHash('sha256').update(cleanCode).digest('hex');
 
-    if (!record) {
-        return { success: false, message: 'Invalid or expired verification code.' };
+    const t = await sequelize.transaction();
+    try {
+        const record = await OtpVerification.findOne({
+            where: {
+                user_id: userId,
+                type,
+                purpose,
+                verified: false
+            },
+            order: [['created_at', 'DESC']],
+            lock: t.LOCK.UPDATE,
+            transaction: t
+        });
+
+        if (!record) {
+            await t.rollback();
+            return { success: false, message: 'Invalid or expired verification code.' };
+        }
+
+        // Attempt limit check (maximum 5 attempts)
+        if ((record.attempts || 0) >= 5) {
+            await t.rollback();
+            return { success: false, message: 'Maximum verification attempts exceeded. Code has been invalidated. Please request a new one.' };
+        }
+
+        if (new Date() > new Date(record.expires_at)) {
+            await t.rollback();
+            return { success: false, message: 'Verification code has expired. Please request a new one.' };
+        }
+
+        // Increment failed attempt counter atomically under row lock
+        record.attempts = (record.attempts || 0) + 1;
+
+        const isMatch = (record.otp_code === inputHash) || (record.otp_code === cleanCode);
+
+        if (!isMatch) {
+            await record.save({ transaction: t });
+            await t.commit();
+            const remaining = Math.max(0, 5 - record.attempts);
+            return { success: false, message: `Invalid verification code. ${remaining} attempt(s) remaining.` };
+        }
+
+        // Consume OTP atomically: single-use guaranteed
+        record.verified = true;
+        await record.save({ transaction: t });
+        await t.commit();
+
+        return { success: true };
+    } catch (err) {
+        await t.rollback();
+        throw err;
     }
-
-    // Attempt limit check (maximum 5 attempts)
-    if ((record.attempts || 0) >= 5) {
-        return { success: false, message: 'Maximum verification attempts exceeded. Code has been invalidated. Please request a new one.' };
-    }
-
-    if (new Date() > new Date(record.expires_at)) {
-        return { success: false, message: 'Verification code has expired. Please request a new one.' };
-    }
-
-    // Increment failed attempt counter
-    record.attempts = (record.attempts || 0) + 1;
-    await record.save();
-
-    const inputHash = crypto.createHash('sha256').update(String(otpCode).trim()).digest('hex');
-    const isMatch = (record.otp_code === inputHash) || (record.otp_code === String(otpCode).trim());
-
-    if (!isMatch) {
-        const remaining = Math.max(0, 5 - record.attempts);
-        return { success: false, message: `Invalid verification code. ${remaining} attempt(s) remaining.` };
-    }
-
-    record.verified = true;
-    await record.save();
-
-    return { success: true };
 }
 
 // ═════════════════════════════════════════════════
@@ -306,7 +325,7 @@ const registerUser = async (req, res) => {
 
         // ─── Direct login post-registration ───
         const userAgent = req.headers['user-agent'] || '';
-        const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+        const ipAddress = req.ip || '127.0.0.1';
         const deviceId = crypto.randomUUID();
         
         const sessionInfo = await createSessionAndLog(user, deviceId, userAgent, ipAddress, true);
@@ -328,7 +347,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const { email, password, device_id: clientDeviceId, trust_device, turnstileToken } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ipAddress = req.ip || '127.0.0.1';
 
     if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required.' });
@@ -414,9 +433,22 @@ const loginUser = async (req, res) => {
         const { device_type, device_name, os, browser } = parseUserAgent(userAgent);
         const deviceId = clientDeviceId || crypto.randomUUID();
 
-        // Check if this is a trusted/known device
-        const trustedDevices = user.trusted_devices || [];
-        const isKnownDevice = trustedDevices.includes(deviceId);
+        // Check if this is a verified trusted device using cryptographic server-side token
+        let isKnownDevice = false;
+        const trustedDeviceCookie = req.cookies?.trusted_device_token;
+        if (trustedDeviceCookie && process.env.JWT_SECRET) {
+            try {
+                const decoded = jwt.verify(trustedDeviceCookie, process.env.JWT_SECRET);
+                if (decoded.purpose === 'trusted_device' && Number(decoded.userId) === Number(user.id)) {
+                    const trustedDevices = user.trusted_devices || [];
+                    if (trustedDevices.includes(decoded.deviceId)) {
+                        isKnownDevice = true;
+                    }
+                }
+            } catch (err) {
+                // Invalid or expired trusted device cookie
+            }
+        }
 
         // Check if 2FA (Email OTP) is enabled for this user in user_security
         let isTwoFactorEnabled = false;
@@ -463,8 +495,15 @@ const loginUser = async (req, res) => {
                     `
             });
 
+            const challengeToken = jwt.sign(
+                { userId: user.id, email: user.email, purpose: '2fa_challenge' },
+                process.env.JWT_SECRET,
+                { expiresIn: '5m' }
+            );
+
             return res.json({
                 two_factor_required: true,
+                challengeToken,
                 userId: user.id,
                 email: user.email,
                 recovery_email: recoveryEmail
@@ -523,7 +562,7 @@ const loginUser = async (req, res) => {
 const adminLogin = async (req, res) => {
     const { email, password } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ipAddress = req.ip || '127.0.0.1';
 
     if (!email || !password) {
         return res.status(400).json({ message: 'Admin email and password are required.' });
@@ -618,8 +657,15 @@ const adminLogin = async (req, res) => {
                     `
             });
 
+            const challengeToken = jwt.sign(
+                { userId: user.id, email: user.email, role: 'admin', purpose: 'admin_2fa_challenge' },
+                process.env.JWT_SECRET,
+                { expiresIn: '5m' }
+            );
+
             return res.json({
                 two_factor_required: true,
+                challengeToken,
                 userId: user.id,
                 email: user.email
             });
@@ -644,15 +690,26 @@ const adminLogin = async (req, res) => {
 // ADMIN OTP VERIFY (Separate endpoint)
 // ═════════════════════════════════════════════════
 const adminVerifyOtp = async (req, res) => {
-    const { userId, otpCode } = req.body;
+    const { userId, otpCode, challengeToken } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ipAddress = req.ip || '127.0.0.1';
 
-    if (!userId || !otpCode) {
-        return res.status(400).json({ message: 'User ID and OTP code are required.' });
+    if (!userId || !otpCode || !challengeToken) {
+        return res.status(400).json({ message: 'User ID, OTP code, and administrator challenge token are required.' });
     }
 
     try {
+        let challengePayload;
+        try {
+            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ message: 'Administrator challenge token is invalid or has expired.' });
+        }
+
+        if (!challengePayload || challengePayload.purpose !== 'admin_2fa_challenge' || Number(challengePayload.userId) !== Number(userId)) {
+            return res.status(401).json({ message: 'Unauthorized administrator challenge verification attempt.' });
+        }
+
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'Administrator account not found.' });
@@ -759,7 +816,7 @@ const registerAdmin = async (req, res) => {
         });
 
         const userAgent = req.headers['user-agent'] || '';
-        const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+        const ipAddress = req.ip || '127.0.0.1';
         const deviceId = crypto.randomUUID();
 
         const sessionInfo = await createSessionAndLog(user, deviceId, userAgent, ipAddress, true);
@@ -778,15 +835,26 @@ const registerAdmin = async (req, res) => {
 // USER OTP VERIFY (Optional 2FA verification)
 // ═════════════════════════════════════════════════
 const verify2FA = async (req, res) => {
-    const { userId, otpCode, deviceId, trustDevice } = req.body;
+    const { userId, otpCode, challengeToken, deviceId, trustDevice } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ipAddress = req.ip || '127.0.0.1';
 
-    if (!userId || !otpCode) {
-        return res.status(400).json({ message: 'User ID and OTP code are required.' });
+    if (!userId || !otpCode || !challengeToken) {
+        return res.status(400).json({ message: 'User ID, OTP code, and login challenge token are required.' });
     }
 
     try {
+        let challengePayload;
+        try {
+            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ message: 'Login challenge token is invalid or has expired.' });
+        }
+
+        if (!challengePayload || challengePayload.purpose !== '2fa_challenge' || Number(challengePayload.userId) !== Number(userId)) {
+            return res.status(401).json({ message: 'Unauthorized login challenge verification attempt.' });
+        }
+
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
@@ -796,11 +864,16 @@ const verify2FA = async (req, res) => {
         let isBackupCode = false;
         const sec = await UserSecurity.findOne({ where: { user_id: userId } });
         if (sec && sec.backup_codes && Array.isArray(sec.backup_codes)) {
-            const index = sec.backup_codes.indexOf(otpCode.toUpperCase().trim());
-            if (index !== -1) {
-                // Valid backup code! Remove it
+            const cleanCandidate = String(otpCode).toUpperCase().trim();
+            const candidateHash = crypto.createHash('sha256').update(cleanCandidate).digest('hex');
+            const hashIndex = sec.backup_codes.indexOf(candidateHash);
+            const plainIndex = sec.backup_codes.indexOf(cleanCandidate);
+            const matchedIndex = hashIndex !== -1 ? hashIndex : plainIndex;
+
+            if (matchedIndex !== -1) {
+                // Valid backup code! Single use: remove it atomically
                 const updatedCodes = [...sec.backup_codes];
-                updatedCodes.splice(index, 1);
+                updatedCodes.splice(matchedIndex, 1);
                 sec.backup_codes = updatedCodes;
                 await sec.save();
                 isBackupCode = true;
@@ -816,7 +889,7 @@ const verify2FA = async (req, res) => {
         }
 
         if (!isBackupCode) {
-            // Verify via OTP table
+            // Verify via OTP table with atomic row-lock
             const verificationResult = await verifyOtp(userId, otpCode, 'email', 'login_2fa');
             if (!verificationResult.success) {
                 return res.status(400).json({ message: verificationResult.message });
@@ -832,6 +905,19 @@ const verify2FA = async (req, res) => {
                 user.trusted_devices = trusted;
                 await user.save();
             }
+
+            // Cryptographically bind trusted device state to HTTP-only cookie
+            const trustedDeviceToken = jwt.sign(
+                { userId: user.id, deviceId: activeDeviceId, purpose: 'trusted_device' },
+                process.env.JWT_SECRET,
+                { expiresIn: '30d' }
+            );
+            res.cookie('trusted_device_token', trustedDeviceToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 30 * 24 * 60 * 60 * 1000
+            });
         }
 
         // Generate session & login
@@ -921,8 +1007,7 @@ const passkeyLoginChallenge = async (req, res) => {
 
         res.json({
             ...options,
-            challengeToken,
-            userId: user.id
+            challengeToken
         });
     } catch (error) {
         console.error('[Passkey Challenge Error]:', error);
@@ -936,7 +1021,7 @@ const passkeyLoginChallenge = async (req, res) => {
 const passkeyLoginVerify = async (req, res) => {
     const { challengeToken, response, credentialId, deviceId } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ipAddress = req.ip || '127.0.0.1';
 
     try {
         const {

@@ -1,4 +1,4 @@
-﻿const { Destination, sequelize } = require('../models');
+const { Destination, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // GET /api/admin/destinations
@@ -49,7 +49,8 @@ const getDestinationById = async (req, res) => {
         }
         return res.json({ success: true, destination });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminDestinationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -86,7 +87,8 @@ const createDestination = async (req, res) => {
         return res.status(201).json({ success: true, destination, message: 'Destination created successfully.' });
     } catch (error) {
         console.error('createDestination error:', error);
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminDestinationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -113,7 +115,8 @@ const updateDestination = async (req, res) => {
         await destination.update(updates);
         return res.json({ success: true, destination, message: 'Destination updated successfully.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminDestinationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -128,7 +131,8 @@ const deleteDestination = async (req, res) => {
         await destination.destroy();
         return res.json({ success: true, message: 'Destination deleted successfully.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminDestinationController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 

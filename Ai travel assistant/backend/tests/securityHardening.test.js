@@ -233,15 +233,18 @@ async function runSecurityHardeningTests() {
   // ─── 7. Anti-Scraping & Client Shield Telemetry ───
   console.log('\n--- Test Suite 7: Anti-Scraping & Client Shield Telemetry ---');
 
-  test('verifyClientShield accepts fresh timestamp telemetry and rejects expired tokens', () => {
+  test('verifyClientShield accepts fresh timestamp telemetry and rejects expired or weak tokens', () => {
     const freshTimestamp = Date.now();
-    const freshToken = `${freshTimestamp}.randomentropy`;
+    const validEntropy = crypto.randomBytes(16).toString('hex');
+    const freshToken = `${freshTimestamp}.${validEntropy}`;
     assert.ok(verifyClientShield(freshToken), 'Fresh telemetry token must be accepted');
 
     const expiredTimestamp = Date.now() - 15 * 60 * 1000; // 15 mins ago (TTL is 10 min)
-    const expiredToken = `${expiredTimestamp}.randomentropy`;
+    const expiredToken = `${expiredTimestamp}.${validEntropy}`;
     assert.strictEqual(verifyClientShield(expiredToken), false, 'Expired telemetry token must be rejected');
 
+    // Audit Requirement: Reject arbitrary 4-character strings
+    assert.strictEqual(verifyClientShield(`${freshTimestamp}.abcd`), false, 'Arbitrary 4-character string must be rejected');
     assert.strictEqual(verifyClientShield(null), false, 'Null token rejected');
     assert.strictEqual(verifyClientShield('invalid-format'), false, 'Malformed token rejected');
   });

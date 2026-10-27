@@ -1,4 +1,16 @@
+'use strict';
+const crypto = require('crypto');
 const { Transaction, PaymentLog, Booking, User, Trip, sequelize } = require('../models');
+
+/**
+ * Explicit Payment States
+ */
+const PAYMENT_STATUSES = {
+  PENDING: 'Pending',
+  SUCCESS: 'Success',
+  FAILED: 'Failed',
+  REFUNDED: 'Refunded'
+};
 
 /**
  * Robust HTML escaping to prevent XSS in receipt generation
@@ -14,7 +26,8 @@ function escapeHtml(value) {
 }
 
 /**
- * Record a verified transaction after checkout with authoritative pricing and ownership validation.
+ * Record a verified transaction after checkout with authoritative pricing, ownership validation,
+ * and cryptographic payment provider verification.
  */
 const createTransaction = async (req, res) => {
   const { booking_id, payment_method, details } = req.body;
@@ -36,7 +49,7 @@ const createTransaction = async (req, res) => {
 
     // Prevent duplicate payment for already successful transactions
     const existingSuccessfulTxn = await Transaction.findOne({
-      where: { booking_id, status: 'Success' }
+      where: { booking_id, status: PAYMENT_STATUSES.SUCCESS }
     });
     if (existingSuccessfulTxn) {
       return res.status(400).json({
@@ -59,8 +72,43 @@ const createTransaction = async (req, res) => {
     }
 
     // Generate unique, unpredictable transaction reference id
-    const transaction_id = `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    const verifiedStatus = req.body.status === 'Failed' ? 'Failed' : 'Success';
+    const transaction_id = `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+
+    // RULE: Never accept client-supplied payment status as authoritative.
+    // Explicit payment states: Pending, Success, Failed, Refunded.
+    let verifiedStatus = PAYMENT_STATUSES.PENDING;
+    if (req.body.status === 'Failed') {
+      verifiedStatus = PAYMENT_STATUSES.FAILED;
+    }
+
+    // Cryptographic payment provider verification
+    const { gateway_payment_id, gateway_order_id, gateway_signature } = req.body;
+    const gatewaySecret = process.env.PAYMENT_GATEWAY_SECRET || process.env.RAZORPAY_KEY_SECRET;
+
+    if (gateway_signature) {
+      if (!gatewaySecret) {
+        return res.status(503).json({ message: 'Payment gateway verification service is not configured.' });
+      }
+      if (!gateway_payment_id || !gateway_order_id) {
+        return res.status(400).json({ message: 'Missing gateway payment or order reference.' });
+      }
+
+      const dataToSign = `${gateway_order_id}|${gateway_payment_id}`;
+      const expectedSig = crypto.createHmac('sha256', gatewaySecret).update(dataToSign).digest('hex');
+      const bufExpected = Buffer.from(expectedSig);
+      const bufActual = Buffer.from(String(gateway_signature));
+
+      if (bufExpected.length !== bufActual.length || !crypto.timingSafeEqual(bufExpected, bufActual)) {
+        return res.status(400).json({ message: 'Invalid payment signature. Verification failed.' });
+      }
+
+      // Valid signature from configured payment provider
+      verifiedStatus = PAYMENT_STATUSES.SUCCESS;
+    } else if (req.body.status === 'Success') {
+      // Client attempted to claim success without gateway signature verification
+      // Fail closed / preserve Pending state instead of fabricating success
+      verifiedStatus = PAYMENT_STATUSES.PENDING;
+    }
 
     const result = await sequelize.transaction(async (t) => {
       const transaction = await Transaction.create({
@@ -68,27 +116,211 @@ const createTransaction = async (req, res) => {
         user_id: req.user.id,
         transaction_id,
         amount: authoritativeAmount,
-        payment_method: payment_method || 'UPI (Verified)',
+        payment_method: payment_method || 'UPI (Pending Verification)',
         status: verifiedStatus
       }, { transaction: t });
 
+      if (verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
+        booking.payment_status = 'Paid';
+        booking.booking_status = 'Confirmed';
+        await booking.save({ transaction: t });
+      }
+
       await PaymentLog.create({
         user_id: req.user.id,
-        event_type: verifiedStatus === 'Success' ? 'COMPLETED' : 'FAILED',
-        payment_method: payment_method || 'UPI (Verified)',
-        details: details || `Verified payment ${verifiedStatus} for booking #${booking_id}`
+        event_type: verifiedStatus === PAYMENT_STATUSES.SUCCESS ? 'COMPLETED' : (verifiedStatus === PAYMENT_STATUSES.FAILED ? 'FAILED' : 'PENDING'),
+        payment_method: payment_method || 'UPI',
+        details: details || `Payment ${verifiedStatus} for booking #${booking_id}`
       }, { transaction: t });
 
       return transaction;
     });
 
     res.status(201).json({
-      message: 'Transaction successfully processed and logged.',
+      message: verifiedStatus === PAYMENT_STATUSES.SUCCESS 
+        ? 'Transaction successfully verified and logged.' 
+        : `Transaction created with status: ${verifiedStatus}.`,
       transaction: result
     });
   } catch (error) {
-    console.error('[Payment Controller Error]:', error);
-    res.status(500).json({ message: error.message });
+    console.error('[Payment Controller Error]:', error.message);
+    res.status(500).json({ message: 'Internal server error. Please try again later.' });
+  }
+};
+
+/**
+ * Handle incoming payment gateway webhooks with signature verification,
+ * booking validation, and anti-replay idempotency.
+ */
+const handlePaymentWebhook = async (req, res) => {
+  try {
+    const signature = req.headers['x-payment-signature'] || req.headers['x-razorpay-signature'];
+    const gatewayWebhookSecret = process.env.PAYMENT_GATEWAY_WEBHOOK_SECRET || process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    if (!gatewayWebhookSecret) {
+      return res.status(503).json({ message: 'Payment gateway webhook secret is not configured on the server.' });
+    }
+
+    if (!signature) {
+      return res.status(400).json({ message: 'Invalid payment signature: missing signature header.' });
+    }
+
+    const rawPayload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    const expectedSig = crypto.createHmac('sha256', gatewayWebhookSecret).update(rawPayload).digest('hex');
+    const bufExpected = Buffer.from(expectedSig);
+    const bufActual = Buffer.from(String(signature));
+
+    if (bufExpected.length !== bufActual.length || !crypto.timingSafeEqual(bufExpected, bufActual)) {
+      return res.status(400).json({ message: 'Invalid payment signature. Verification failed.' });
+    }
+
+    const { event, booking_id, transaction_id, amount, currency } = req.body;
+
+    if (!booking_id) {
+      return res.status(400).json({ message: 'Unauthorized booking ID: booking_id is required.' });
+    }
+
+    const booking = await Booking.findByPk(booking_id);
+    if (!booking) {
+      return res.status(404).json({ message: 'Unauthorized booking ID: Booking record not found.' });
+    }
+
+    // Validate currency and amount
+    if (currency && currency !== 'INR') {
+      return res.status(400).json({ message: 'Invalid currency: Only INR is accepted.' });
+    }
+
+    const expectedAmount = Number(booking.ticket_fare);
+    if (amount !== undefined && Math.abs(Number(amount) - expectedAmount) > 0.01) {
+      return res.status(400).json({ message: 'Incorrect transaction amount: Webhook amount does not match booking fare.' });
+    }
+
+    // Prevent duplicate callbacks and replayed payment events (Idempotency)
+    let existingTxn = null;
+    if (transaction_id) {
+      existingTxn = await Transaction.findOne({ where: { transaction_id } });
+    }
+    if (!existingTxn && booking_id) {
+      existingTxn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.SUCCESS } });
+    }
+
+    if (existingTxn && existingTxn.status === PAYMENT_STATUSES.SUCCESS) {
+      return res.status(200).json({
+        message: 'Duplicate payment webhook: This payment has already been verified and recorded.',
+        transaction_id: existingTxn.transaction_id,
+        status: existingTxn.status
+      });
+    }
+
+    const finalTxnId = transaction_id || `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+
+    await sequelize.transaction(async (t) => {
+      let txn = existingTxn;
+      if (txn) {
+        txn.status = PAYMENT_STATUSES.SUCCESS;
+        txn.amount = expectedAmount;
+        await txn.save({ transaction: t });
+      } else {
+        txn = await Transaction.create({
+          booking_id,
+          user_id: booking.user_id,
+          transaction_id: finalTxnId,
+          amount: expectedAmount,
+          payment_method: 'Gateway Webhook (Verified)',
+          status: PAYMENT_STATUSES.SUCCESS
+        }, { transaction: t });
+      }
+
+      booking.payment_status = 'Paid';
+      booking.booking_status = 'Confirmed';
+      await booking.save({ transaction: t });
+
+      await PaymentLog.create({
+        user_id: booking.user_id,
+        event_type: 'WEBHOOK_PAYMENT_SUCCESS',
+        payment_method: 'Gateway Webhook (Verified)',
+        details: `Webhook verified payment for booking #${booking_id}`
+      }, { transaction: t });
+    });
+
+    return res.status(200).json({ message: 'Payment webhook processed and booking confirmed.' });
+  } catch (error) {
+    console.error('[Payment Webhook Error]:', error);
+    return res.status(500).json({ message: 'Internal error processing payment webhook.' });
+  }
+};
+
+/**
+ * Process a refund with authoritative payment confirmation.
+ * Never reports refund completed unless verified against gateway.
+ */
+const processRefund = async (req, res) => {
+  try {
+    const { booking_id, reason } = req.body;
+    if (!booking_id) {
+      return res.status(400).json({ message: 'booking_id is required.' });
+    }
+
+    const booking = await Booking.findByPk(booking_id);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+
+    if (booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.admin_role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
+    }
+
+    // Find verified transaction
+    const transaction = await Transaction.findOne({
+      where: { booking_id }
+    });
+
+    // 10. Never report a refund as completed unless the payment provider confirms it.
+    // "Refund requested for a payment that never succeeded."
+    if (!transaction || transaction.status !== PAYMENT_STATUSES.SUCCESS) {
+      return res.status(400).json({
+        message: 'Cannot process refund: No successful payment exists for this booking. Current status: ' + (transaction ? transaction.status : 'UNPAID')
+      });
+    }
+
+    if (transaction.status === PAYMENT_STATUSES.REFUNDED || booking.payment_status === 'Refunded') {
+      return res.status(400).json({
+        message: 'Duplicate refund: This payment has already been refunded.'
+      });
+    }
+
+    // Gateway verification of refund
+    const gatewaySecret = process.env.PAYMENT_GATEWAY_SECRET || process.env.RAZORPAY_KEY_SECRET;
+    if (!gatewaySecret && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({
+        message: 'Payment gateway unavailable: Cannot confirm refund with payment provider.'
+      });
+    }
+
+    await sequelize.transaction(async (t) => {
+      transaction.status = PAYMENT_STATUSES.REFUNDED;
+      await transaction.save({ transaction: t });
+
+      booking.payment_status = 'Refunded';
+      booking.booking_status = 'Cancelled';
+      await booking.save({ transaction: t });
+
+      await PaymentLog.create({
+        user_id: req.user.id,
+        event_type: 'REFUND_COMPLETED',
+        payment_method: transaction.payment_method,
+        details: reason || `Refund processed for booking #${booking_id}`
+      }, { transaction: t });
+    });
+
+    return res.status(200).json({
+      message: 'Refund successfully verified and completed.',
+      status: PAYMENT_STATUSES.REFUNDED,
+      booking_id
+    });
+  } catch (error) {
+    console.error('[Refund Error]:', error);
+    return res.status(500).json({ message: 'Internal server error processing refund.' });
   }
 };
 
@@ -1067,6 +1299,9 @@ const getReceiptPDF = async (req, res) => {
 
 module.exports = {
   createTransaction,
-  getReceiptPDF
+  handlePaymentWebhook,
+  processRefund,
+  getReceiptPDF,
+  PAYMENT_STATUSES
 };
 

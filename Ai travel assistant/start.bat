@@ -9,13 +9,10 @@ echo.
 
 :: Check MySQL
 echo [1/4] Checking MySQL...
-mysql -u root -pbatman -e "SELECT 1" >nul 2>&1
+mysqladmin ping -h localhost >nul 2>&1
 if errorlevel 1 (
-    echo [WARN] MySQL may not be running or password may differ.
-    echo        Make sure MySQL is running on port 3306
-    echo        with user=root, password=batman, database=traveliq
+    echo [WARN] MySQL service check failed. Make sure MySQL is running on port 3306.
     echo.
-    pause
 )
 echo [OK] MySQL check done.
 echo.

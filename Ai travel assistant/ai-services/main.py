@@ -37,14 +37,24 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="TravelIQ AI Service")
 
 # ─── Service-to-Service Authentication ───
-INTERNAL_SERVICE_KEY = os.getenv("INTERNAL_SERVICE_KEY", "traveliq_internal_svc_token_secure_2026")
+INTERNAL_SERVICE_KEY = os.getenv("INTERNAL_SERVICE_KEY")
+
+if not INTERNAL_SERVICE_KEY and os.getenv("ENVIRONMENT") == "production":
+    logger.critical("FATAL: INTERNAL_SERVICE_KEY is required in production.")
+    raise RuntimeError("Missing mandatory INTERNAL_SERVICE_KEY in production.")
 
 def verify_service_key(x_internal_service_key: str = Header(None, alias="X-Internal-Service-Key")):
     """
     Validates constant-time service token between Express backend and FastAPI AI service.
     Rejects unauthorized external requests without valid internal service key.
     """
-    expected_key = os.getenv("INTERNAL_SERVICE_KEY", "traveliq_internal_svc_token_secure_2026")
+    expected_key = os.getenv("INTERNAL_SERVICE_KEY")
+    if not expected_key:
+        logger.error("Authentication configuration error: INTERNAL_SERVICE_KEY not configured on server.")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Server service authentication configuration error."
+        )
     if not x_internal_service_key or not hmac.compare_digest(str(x_internal_service_key), str(expected_key)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -263,7 +273,7 @@ def health_check():
     }
 
 # 1. Train Delay Prediction
-@app.post("/predict-delay")
+@app.post("/predict-delay", dependencies=[Depends(verify_service_key)])
 def predict_delay(req: DelayRequest):
     if not model_delay:
         raise HTTPException(status_code=500, detail="Delay prediction model not loaded.")
@@ -291,8 +301,8 @@ def predict_delay(req: DelayRequest):
             preds = model_delay(t_tensor, r_tensor, w_tensor, num_feats)
             arr_delay = float(preds[0][0].item())
             dep_delay = float(preds[0][1].item())
-            prob_logit = float(preds[0][2].item())
-            prob = float(torch.sigmoid(torch.tensor([prob_logit])).item())
+            prob = float(preds[0][2].item())
+            prob = min(1.0, max(0.0, prob))
             
         # Format outputs nicely
         return {
@@ -312,7 +322,7 @@ def predict_delay(req: DelayRequest):
         }
 
 # 2. Smart Fare Prediction
-@app.post("/predict-fare")
+@app.post("/predict-fare", dependencies=[Depends(verify_service_key)])
 def predict_fare(req: FareForecastRequest):
     if not model_fare:
         raise HTTPException(status_code=500, detail="Fare prediction model not loaded.")
@@ -362,7 +372,7 @@ def predict_fare(req: FareForecastRequest):
         }
 
 # 3. Crowd Prediction
-@app.post("/predict-crowd")
+@app.post("/predict-crowd", dependencies=[Depends(verify_service_key)])
 def predict_crowd(req: CrowdRequest):
     if not model_crowd:
         raise HTTPException(status_code=500, detail="Crowd prediction model not loaded.")
@@ -403,7 +413,7 @@ def predict_crowd(req: CrowdRequest):
         }
 
 # 4. Train Occupancy Prediction
-@app.post("/predict-occupancy")
+@app.post("/predict-occupancy", dependencies=[Depends(verify_service_key)])
 def predict_occupancy(req: OccupancyRequest):
     if not model_occ:
         raise HTTPException(status_code=500, detail="Occupancy prediction model not loaded.")
@@ -451,7 +461,7 @@ def predict_occupancy(req: OccupancyRequest):
         }
 
 # 5. AI Route Recommendation NCF
-@app.post("/recommend-route")
+@app.post("/recommend-route", dependencies=[Depends(verify_service_key)])
 def recommend_route(req: RouteRecommendRequest):
     if not model_rec:
         raise HTTPException(status_code=500, detail="Route recommender model not loaded.")
@@ -479,7 +489,7 @@ def recommend_route(req: RouteRecommendRequest):
         }
 
 # 6. Food Recommendations
-@app.post("/recommend-food")
+@app.post("/recommend-food", dependencies=[Depends(verify_service_key)])
 def recommend_food(req: FoodRecommendRequest):
     logger.info(f"Generating food recommendations for {req.destination} (Budget: {req.budget})")
     reasoning = f"Based on your travel to {req.destination} "
@@ -905,7 +915,7 @@ def generate_grounded_routing_chat(message: str):
 
     return "\n".join(reply_lines).strip()
 
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(verify_service_key)])
 def chat(req: ChatRequest):
     # 0. Zero Generative Routing: Grounded Routing Engine for Transit/Route Inquiries
     grounded_reply = generate_grounded_routing_chat(req.message)
@@ -996,7 +1006,7 @@ def chat(req: ChatRequest):
         }
 
 # 8. User Behavior Analytics (Persona Classification)
-@app.post("/predict-behavior")
+@app.post("/predict-behavior", dependencies=[Depends(verify_service_key)])
 def predict_behavior(req: BehaviorRequest):
     if not model_behavior:
         raise HTTPException(status_code=500, detail="Behavior profiling model not loaded.")
@@ -1025,14 +1035,16 @@ def predict_behavior(req: BehaviorRequest):
         raise HTTPException(status_code=400, detail="Prediction failed due to insufficient model data.")
 
 # 9. Route Optimization Wrapper
-@app.post("/optimize-route")
-def optimize_route(req: BaseModel):
-    # Backward compatible helper
-    # Expects source, destination, preference
-    body = req.dict()
-    source = body.get('source', '')
-    destination = body.get('destination', '')
-    preference = body.get('preference', 'time')
+class OptimizeRouteRequest(BaseModel):
+    source: str = ""
+    destination: str = ""
+    preference: str = "time"
+
+@app.post("/optimize-route", dependencies=[Depends(verify_service_key)])
+def optimize_route(req: OptimizeRouteRequest):
+    source = req.source
+    destination = req.destination
+    preference = req.preference
     try:
         res = find_best_route(source, destination, preference)
         if 'error' in res:
@@ -1137,7 +1149,7 @@ def trigger_retrain_with_data(payload: CustomRetrainPayload, background_tasks: B
     }
 
 # 11. Data Quality & Model Metrics fetch
-@app.get("/data-quality-report")
+@app.get("/data-quality-report", dependencies=[Depends(verify_service_key)])
 def get_data_quality_report():
     report_path = os.path.join(MODELS_DIR, 'data_quality_report.json')
     if os.path.exists(report_path):
@@ -1148,7 +1160,7 @@ def get_data_quality_report():
         "message": "Run training at least once to generate data quality and sanitization audit reports."
     }
 
-@app.get("/model-metrics")
+@app.get("/model-metrics", dependencies=[Depends(verify_service_key)])
 def get_model_metrics():
     metrics_path = os.path.join(MODELS_DIR, 'model_metrics.json')
     if os.path.exists(metrics_path):
@@ -1167,6 +1179,18 @@ def get_model_metrics():
     }
 
 # 12. RAG upload indexing endpoint with strict path traversal & filetype validation
+RAG_UPLOAD_DIR = os.getenv("RAG_UPLOAD_DIR")
+if not RAG_UPLOAD_DIR:
+    base_proj = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    backend_rag = os.path.join(base_proj, "backend", "uploads", "rag")
+    if os.path.exists(backend_rag):
+        RAG_UPLOAD_DIR = backend_rag
+    else:
+        RAG_UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rag_uploads")
+
+RAG_UPLOAD_DIR = os.path.realpath(RAG_UPLOAD_DIR)
+os.makedirs(RAG_UPLOAD_DIR, exist_ok=True)
+
 @app.post("/rag/upload", dependencies=[Depends(verify_service_key)])
 def rag_upload(request: RAGUploadRequest):
     try:
@@ -1176,33 +1200,63 @@ def rag_upload(request: RAGUploadRequest):
         if not raw_path or not filename:
             raise HTTPException(status_code=400, detail="file_path and filename are required.")
 
-        # Reject path traversal patterns
-        if ".." in raw_path or "/../" in raw_path or "\\..\\" in raw_path:
+        # Reject direct directory traversal indicators
+        if ".." in raw_path or "/../" in raw_path or "\\..\\" in raw_path or ".." in filename:
             raise HTTPException(status_code=400, detail="Invalid file path: Directory traversal not permitted.")
 
-        # Validate file extension against allowed document types
-        ext = os.path.splitext(filename)[1].lower()
-        if ext not in {'.txt', '.csv', '.json', '.pdf'}:
+        # Determine target file path: resolve against RAG_UPLOAD_DIR
+        if os.path.isabs(raw_path):
+            candidate_path = os.path.realpath(raw_path)
+        else:
+            # Relative path: resolve relative to RAG_UPLOAD_DIR or MODELS_DIR
+            candidate_path = os.path.realpath(os.path.join(RAG_UPLOAD_DIR, os.path.basename(raw_path)))
+
+        # Path-aware containment check: must be strictly inside RAG_UPLOAD_DIR
+        try:
+            is_contained = (os.path.commonpath([candidate_path, RAG_UPLOAD_DIR]) == RAG_UPLOAD_DIR)
+        except ValueError:
+            # Different drives on Windows
+            is_contained = False
+
+        if not is_contained:
             raise HTTPException(
-                status_code=400,
-                detail=f"Prohibited file type '{ext}'. Only .txt, .csv, .json, and .pdf documents are supported."
+                status_code=403,
+                detail="Access denied: Document must reside inside the dedicated RAG upload directory."
             )
 
-        norm_path = os.path.normpath(os.path.abspath(raw_path))
+        # Disallow symlinks pointing outside
+        if os.path.islink(candidate_path):
+            raise HTTPException(status_code=400, detail="Symbolic links are not permitted.")
 
-        # Disallow indexing sensitive system files
-        base_name = os.path.basename(norm_path).lower()
-        if base_name in {'.env', 'package.json', 'server.js', 'docker-compose.yml', 'encoders.pkl'} or base_name.endswith('.py') or base_name.endswith('.key') or base_name.endswith('.pem'):
+        # Validate actual file extension of candidate path and request filename
+        actual_ext = os.path.splitext(candidate_path)[1].lower()
+        req_ext = os.path.splitext(filename)[1].lower()
+        ALLOWED_EXTENSIONS = {'.txt', '.csv', '.json', '.pdf'}
+        if actual_ext not in ALLOWED_EXTENSIONS or req_ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Prohibited file type '{actual_ext}'. Only .txt, .csv, .json, and .pdf documents are supported."
+            )
+
+        # Disallow indexing sensitive configuration or source code files
+        base_name = os.path.basename(candidate_path).lower()
+        if (base_name in {'.env', 'package.json', 'server.js', 'docker-compose.yml', 'encoders.pkl'} or
+                actual_ext in {'.py', '.js', '.ts', '.key', '.pem', '.env', '.sh', '.bat'} or
+                req_ext in {'.py', '.js', '.ts', '.key', '.pem', '.env', '.sh', '.bat'}):
             raise HTTPException(
                 status_code=403,
                 detail="Access denied: Cannot index configuration, source code, or private credential files."
             )
 
-        if not os.path.exists(norm_path):
+        if not os.path.exists(candidate_path) or not os.path.isfile(candidate_path):
             raise HTTPException(status_code=404, detail="Document file does not exist on server.")
 
+        # File size check (max 15MB)
+        if os.path.getsize(candidate_path) > 15 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Document exceeds maximum allowed size (15MB).")
+
         from rag_engine import ingest_document
-        res = ingest_document(norm_path, filename, request.category)
+        res = ingest_document(candidate_path, filename, request.category)
         return res
     except HTTPException:
         raise
@@ -1222,7 +1276,7 @@ def rag_query(request: RAGQueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # 14. Voice Speech commands classification endpoint
-@app.post("/voice/respond")
+@app.post("/voice/respond", dependencies=[Depends(verify_service_key)])
 def voice_respond(request: VoiceRespondRequest):
     try:
         text_query = request.text.lower().strip()
@@ -1308,7 +1362,7 @@ class MemoryRequest(BaseModel):
 # Global temporary memory store
 USER_MEMORIES = {}
 
-@app.post("/copilot/query")
+@app.post("/copilot/query", dependencies=[Depends(verify_service_key)])
 def copilot_query(request: CopilotRequest):
     try:
         q = request.query.lower().strip()
@@ -1429,7 +1483,7 @@ def memory_update(request: MemoryRequest):
     return {"success": True, "updated_profile": USER_MEMORIES[user_id]}
 
 # ─── Transport Verification & Provenance Validation Endpoint ───
-@app.post("/api/v1/transport/validate")
+@app.post("/api/v1/transport/validate", dependencies=[Depends(verify_service_key)])
 def validate_transport_option(option_data: dict):
     """
     Validates a raw transport option record against strict TravelIQ Pydantic schemas.

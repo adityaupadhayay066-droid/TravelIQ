@@ -149,7 +149,7 @@ async function sendBookingConfirmation({ user, booking }) {
     // 2. Simulated SMS Notification
     console.log('\n┌────────────────────────────────────────────────────────┐');
     console.log(`│ 📱 [TRAVELIQ SMS SIMULATOR] Booking SMS Dispatched    `);
-    console.log(`│ To: ${user.phone || '+91-9876543210'} (${user.name})`);
+    console.log(`│ To: ${user.phone || 'N/A'} (${user.name || 'Traveler'})`);
     console.log(`│ PNR: ${pnr} | Train: #${booking.train_number || '12301'}`);
     console.log(`│ Route: ${booking.source_station_code} ➔ ${booking.destination_station_code}`);
     console.log(`│ Class: ${booking.travel_class || 'SL'} | Fare: ₹${booking.ticket_fare}`);

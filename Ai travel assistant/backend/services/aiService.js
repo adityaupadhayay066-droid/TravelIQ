@@ -1,14 +1,18 @@
 const axios = require('axios');
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-const INTERNAL_SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY || 'traveliq_internal_svc_token_secure_2026';
+const INTERNAL_SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY;
+
+if (!INTERNAL_SERVICE_KEY && process.env.NODE_ENV === 'production') {
+    console.error('[CRITICAL] INTERNAL_SERVICE_KEY is required in production.');
+}
 
 const aiClient = axios.create({
     baseURL: AI_SERVICE_URL,
     timeout: 20000,
     headers: {
         'Content-Type': 'application/json',
-        'X-Internal-Service-Key': INTERNAL_SERVICE_KEY
+        ...(INTERNAL_SERVICE_KEY ? { 'X-Internal-Service-Key': INTERNAL_SERVICE_KEY } : {})
     }
 });
 

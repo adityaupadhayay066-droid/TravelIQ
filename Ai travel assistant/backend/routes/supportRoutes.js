@@ -12,7 +12,7 @@ const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'ap
 
 const storage = multer.diskStorage({
     destination(req, file, cb) {
-        const uploadDir = path.join(__dirname, '..', 'uploads');
+        const uploadDir = path.join(__dirname, '..', 'uploads', 'attachments');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -41,7 +41,7 @@ const upload = multer({
 // User routes
 router.post('/', protect, upload.array('attachments', 3), supportController.createTicket);
 router.get('/', protect, supportController.getUserTickets);
-router.get('/attachment/:filename', protect, supportController.getAttachment);
+router.get('/attachment/:identifier', protect, supportController.getAttachment);
 router.get('/:id', protect, supportController.getTicketDetails);
 router.post('/:id/reply', protect, supportController.replyToTicket);
 

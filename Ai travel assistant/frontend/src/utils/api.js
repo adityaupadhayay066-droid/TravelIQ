@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getBackendURL = () => {
-  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  const envUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL;
   if (envUrl) {
     const cleanUrl = envUrl.replace(/\/+$/, '');
     return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
@@ -10,7 +10,7 @@ export const getBackendURL = () => {
 };
 
 export const getBackendBaseURL = () => {
-  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  const envUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL;
   return envUrl ? envUrl.replace(/\/+$/, '') : '';
 };
 

@@ -51,9 +51,9 @@ export function numberToWordsINR(amount) {
 
 export function generateHotelInvoiceHTML(booking = {}) {
   // Extract user from localStorage if not directly in booking
-  let defaultUserName = 'Aditya Upadhyay';
-  let defaultUserEmail = 'aditya.traveler@traveliq.in';
-  let defaultUserPhone = '+91 98765 43210';
+  let defaultUserName = 'Guest Traveler';
+  let defaultUserEmail = 'guest@traveliq.local';
+  let defaultUserPhone = 'Not Provided';
 
   try {
     const storedUser = localStorage.getItem('user');

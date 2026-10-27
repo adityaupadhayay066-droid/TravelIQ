@@ -230,7 +230,7 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
               <div className="space-y-1">
                 {(bookingPayload.passengers || []).map((p, idx) => (
                   <div key={idx} className="flex justify-between items-center text-xs text-[var(--color-text)] dark:text-[var(--color-text)]">
-                    <span className="font-medium">{p.name || 'Aditya upadhaya'}</span>
+                    <span className="font-medium">{p.name || 'Demo Passenger'}</span>
                     <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">{p.age} Yrs | {p.gender}</span>
                   </div>
                 ))}
@@ -293,7 +293,7 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
                       <label className="text-[10px] uppercase font-bold text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)] block mb-1">Enter UPI ID</label>
                       <input
                         type="text"
-                        placeholder="aditya@okaxis"
+                        placeholder="traveler@okaxis"
                         value={upiId}
                         onChange={(e) => setUpiId(e.target.value)}
                         className="travel-input w-full bg-[var(--color-surface)] dark:bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-[var(--color-border)] rounded-lg px-4 py-3 text-sm text-[var(--color-text)] dark:text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)] dark:focus:border-[var(--color-primary)] font-mono"
@@ -334,7 +334,7 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
                       <label className="text-[10px] uppercase font-bold text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)] block mb-1">Cardholder Name</label>
                       <input
                         type="text"
-                        placeholder="Aditya upadhaya"
+                        placeholder="Demo Cardholder"
                         value={cardHolder}
                         onChange={(e) => setCardHolder(e.target.value)}
                         className="travel-input w-full bg-[var(--color-surface)] dark:bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-[var(--color-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--color-text)] dark:text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"

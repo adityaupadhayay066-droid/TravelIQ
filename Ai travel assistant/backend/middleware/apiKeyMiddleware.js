@@ -56,7 +56,7 @@ const requireApiKey = async (req, res, next) => {
     // Track usage upon completion
     res.on('finish', () => {
       const durationMs = Date.now() - startTime;
-      const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const ipAddress = req.ip || '127.0.0.1';
 
       recordUsage({
         orgId: organization.id,

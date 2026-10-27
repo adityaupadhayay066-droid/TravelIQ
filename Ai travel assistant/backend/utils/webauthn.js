@@ -43,7 +43,7 @@ function getRpId(req) {
     if (process.env.WEBAUTHN_RP_ID) {
         return process.env.WEBAUTHN_RP_ID;
     }
-    const host = req ? (req.hostname || req.headers['host']?.split(':')[0]) : 'localhost';
+    const host = req ? (req.hostname || req.headers?.['host']?.split(':')[0]) : 'localhost';
     return host || 'localhost';
 }
 

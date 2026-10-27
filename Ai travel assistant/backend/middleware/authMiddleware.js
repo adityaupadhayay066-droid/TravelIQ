@@ -1,3 +1,4 @@
+'use strict';
 const jwt = require('jsonwebtoken');
 const { User, Session } = require('../models');
 
@@ -5,10 +6,16 @@ const { User, Session } = require('../models');
  * Core authentication middleware — verifies JWT + active database session.
  */
 const protect = async (req, res, next) => {
+    // Explicitly reset request auth properties to prevent any cross-request state leakage
+    req.user = null;
+    req.sessionId = null;
+    req.sessionRecord = null;
+
+    let token = null;
     // Support HttpOnly cookie and Bearer header only (URL tokens prohibited for general authentication)
     if (req.cookies && req.cookies.accessToken) {
         token = req.cookies.accessToken;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    } else if (req.headers && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
     }
 
@@ -108,10 +115,12 @@ const adminProtect = async (req, res, next) => {
  * Optional protection — attaches user if token exists and is valid, but allows anonymous requests if not.
  */
 const optionalProtect = async (req, res, next) => {
-    let token;
+    req.user = null;
+    req.sessionId = null;
+    let token = null;
     if (req.cookies && req.cookies.accessToken) {
         token = req.cookies.accessToken;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    } else if (req.headers && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
     }
 

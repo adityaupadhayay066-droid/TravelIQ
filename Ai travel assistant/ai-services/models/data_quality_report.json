@@ -1,48 +1,5 @@
 {
   "status": "Success",
-  "timestamp": "2026-10-27T16:18:02.646899",
-  "summary": {
-    "delay": {
-      "initial_rows": 2000,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 2000
-    },
-    "fare": {
-      "initial_rows": 2000,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 2000
-    },
-    "crowd": {
-      "initial_rows": 2000,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 2000
-    },
-    "occ": {
-      "initial_rows": 2000,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 2000
-    },
-    "rec": {
-      "initial_rows": 5000,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 5000
-    },
-    "behavior": {
-      "initial_rows": 500,
-      "duplicate_rows_removed": 0,
-      "nulls_imputed": 0,
-      "outliers_clipped": 0,
-      "final_clean_rows": 500
-    }
-  }
+  "timestamp": "2026-10-27T23:50:16.940222",
+  "summary": {}
 }

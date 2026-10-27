@@ -101,7 +101,8 @@ def test_memory_user_isolation():
 # ─── 4. Honest Model Metrics & Provenance ───
 
 def test_model_metrics_returns_real_measured_values():
-    response = client.get("/model-metrics")
+    headers = {"X-Internal-Service-Key": INTERNAL_SERVICE_KEY}
+    response = client.get("/model-metrics", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"

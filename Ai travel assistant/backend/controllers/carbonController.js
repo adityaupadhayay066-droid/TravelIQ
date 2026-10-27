@@ -53,7 +53,7 @@ const getTripCarbonEmission = async (req, res) => {
 
     } catch (error) {
         console.error('[Get Trip Carbon Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -118,7 +118,7 @@ const getUserCarbonSummary = async (req, res) => {
 
     } catch (error) {
         console.error('[User Carbon Summary Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 

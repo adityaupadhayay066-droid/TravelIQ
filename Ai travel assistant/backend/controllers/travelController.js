@@ -51,7 +51,8 @@ const saveUserTrip = async (req, res) => {
 
         res.status(201).json({ message: 'Trip saved successfully', trip: newTrip });
     } catch (error) {
-        res.status(500).json({ message: 'Error saving trip', error: error.message });
+        console.error('Error saving trip:', error.message);
+        res.status(500).json({ message: 'Error saving trip. Please try again later.' });
     }
 };
 
@@ -275,8 +276,8 @@ const searchRoutes = async (req, res) => {
             });
         }
 
-        const originStnCode = sourceStation ? sourceStation.station_code : (sourceMatch?.primaryStationCode || originCodes[0]);
-        const destStnCode = destStation ? destStation.station_code : (destMatch?.primaryStationCode || destCodes[0]);
+        const originStnCode = sourceStation ? sourceStation.station_code : (sourceMatch?.primaryStationCode || originCodes[0] || (source && source.trim().toUpperCase()));
+        const destStnCode = destStation ? destStation.station_code : (destMatch?.primaryStationCode || destCodes[0] || (destination && destination.trim().toUpperCase()));
         const routingEngine = new MultiModalRoutingEngine({ sequelize });
 
         const finalTrains = [...processedDbTrains];
@@ -291,9 +292,8 @@ const searchRoutes = async (req, res) => {
                     const lastLeg = conn.legs ? conn.legs[conn.legs.length - 1] : null;
                     if (!firstLeg || !lastLeg) continue;
 
-                    const firstNo = firstLeg.service_number || firstLeg.train_number || firstLeg.number;
-                    const lastNo = lastLeg.service_number || lastLeg.train_number || lastLeg.number;
-                    if (!firstNo || !lastNo) continue;
+                    const firstNo = firstLeg.service_number || firstLeg.train_number || firstLeg.number || firstLeg.service_name || firstLeg.mode || 'TRANSIT-1';
+                    const lastNo = lastLeg.service_number || lastLeg.train_number || lastLeg.number || lastLeg.service_name || lastLeg.mode || 'TRANSIT-2';
                     if (String(firstNo).toUpperCase().includes('TR1') || String(lastNo).toUpperCase().includes('TR2')) {
                         continue;
                     }
@@ -356,7 +356,7 @@ const searchRoutes = async (req, res) => {
                 source,
                 destination,
                 status: allTransports.length > 0 ? 'SUCCESS' : 'NO_TRAINS',
-                ip_address: req.ip || req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1'
+                ip_address: req.ip || '127.0.0.1'
             });
         } catch (analyticsErr) {
             console.error('⚠️  Failed to log search analytics:', analyticsErr.message);
@@ -404,8 +404,8 @@ const searchTrains = async (req, res) => {
         });
         res.json(trains.map(t => ({ train_number: t.train_number, train_name: t.train_name })));
     } catch (error) {
-        console.error('[Search Trains Error]:', error);
-        res.status(500).json({ message: error.message });
+        console.error('[Search Trains Error]:', error.message);
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -419,8 +419,8 @@ const getLiveTrainStatus = async (req, res) => {
         }
         res.json(data);
     } catch (error) {
-        console.error('[Get Live Train Status Error]:', error);
-        res.status(500).json({ message: error.message });
+        console.error('[Get Live Train Status Error]:', error.message);
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 

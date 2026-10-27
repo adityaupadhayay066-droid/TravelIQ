@@ -165,7 +165,7 @@ export default function MyTripsPage() {
                         <div className="flex flex-wrap gap-3 text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-medium">
                           <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-[#E58A3A]" /> {hb.city || 'Mumbai'}</span>
                           <span>🗓️ {hb.checkInDate} to {hb.checkOutDate}</span>
-                          <span>👤 Guest: <strong>{hb.guestName || 'Aditya Upadhyay'}</strong></span>
+                          <span>👤 Guest: <strong>{hb.guestName || 'Registered Traveler'}</strong></span>
                           <span>🛏️ {hb.roomType || 'Deluxe Room'}</span>
                           <span className="text-[#14532D] dark:text-[#4ADE80] font-bold font-mono">₹{(hb.pricing?.grandTotal || hb.grandTotal || 25563).toLocaleString('en-IN')}</span>
                         </div>

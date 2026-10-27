@@ -17,11 +17,11 @@ const Booking = sequelize.define('Booking', {
   },
   payment_status: {
     type: DataTypes.STRING,
-    defaultValue: 'Paid'
+    defaultValue: 'Pending'
   },
   booking_status: {
     type: DataTypes.STRING,
-    defaultValue: 'Confirmed'
+    defaultValue: 'Pending'
   },
   booking_date: {
     type: DataTypes.DATE,

@@ -46,8 +46,8 @@ exports.createTicket = async (req, res) => {
 
         res.status(201).json({ success: true, message: 'Ticket created successfully', ticket });
     } catch (error) {
-        console.error('Create ticket error:', error);
-        res.status(500).json({ success: false, message: error.message, error: error.stack });
+        console.error('Create ticket error:', error.message);
+        res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -187,24 +187,47 @@ exports.updateTicket = async (req, res) => {
  */
 exports.getAttachment = async (req, res) => {
     try {
-        const { filename } = req.params;
-        const safeFilename = path.basename(filename);
-        const attachment = await SupportAttachment.findOne({
-            where: { file_url: { [Op.like]: `%${safeFilename}` } },
-            include: [{ model: SupportTicket }]
-        });
+        const identifier = req.params.identifier || req.params.filename;
+        if (!identifier) {
+            return res.status(400).json({ success: false, message: 'Attachment identifier is required.' });
+        }
+
+        let attachment;
+        if (/^\d+$/.test(identifier)) {
+            attachment = await SupportAttachment.findByPk(Number(identifier), {
+                include: [{ model: SupportTicket }]
+            });
+        } else {
+            const exactFilename = path.basename(identifier);
+            attachment = await SupportAttachment.findOne({
+                where: {
+                    [Op.or]: [
+                        { file_name: exactFilename },
+                        { file_url: exactFilename },
+                        { file_url: `/uploads/attachments/${exactFilename}` },
+                        { file_url: `/uploads/${exactFilename}` }
+                    ]
+                },
+                include: [{ model: SupportTicket }]
+            });
+        }
 
         if (!attachment) {
             return res.status(404).json({ success: false, message: 'Attachment not found.' });
         }
 
-        const isOwner = attachment.SupportTicket && attachment.SupportTicket.user_id === req.user.id;
+        const isOwner = attachment.SupportTicket && Number(attachment.SupportTicket.user_id) === Number(req.user.id);
         const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
         if (!isOwner && !isAdmin) {
             return res.status(403).json({ success: false, message: 'Access denied: You do not own this ticket attachment.' });
         }
 
-        const filePath = path.join(__dirname, '..', 'uploads', safeFilename);
+        const safeFilename = path.basename(attachment.file_url || attachment.file_name);
+        let filePath = path.join(__dirname, '..', 'uploads', 'attachments', safeFilename);
+        if (!fs.existsSync(filePath)) {
+            filePath = path.join(__dirname, '..', 'uploads', safeFilename);
+        }
+
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({ success: false, message: 'File not found on server.' });
         }

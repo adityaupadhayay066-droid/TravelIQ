@@ -51,6 +51,7 @@ const UserActivityLog = require('./UserActivityLog');
 const Destination = require('./Destination');
 const Report = require('./Report');
 const AdminNotification = require('./AdminNotification');
+const HotelReservation = require('./HotelReservation');
 
 
 // Relationships
@@ -58,6 +59,10 @@ const AdminNotification = require('./AdminNotification');
 // User has many Trips (1:N)
 User.hasMany(Trip, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 Trip.belongsTo(User, { foreignKey: 'user_id' });
+
+// User has many HotelReservations (1:N)
+User.hasMany(HotelReservation, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+HotelReservation.belongsTo(User, { foreignKey: 'user_id' });
 
 // User has many Bookings (1:N)
 User.hasMany(Booking, { foreignKey: 'user_id', onDelete: 'CASCADE' });
@@ -271,6 +276,7 @@ module.exports = {
   Destination,
   Report,
   AdminNotification,
+  HotelReservation,
   Organization,
   ApiKey,
   ApiUsageLog

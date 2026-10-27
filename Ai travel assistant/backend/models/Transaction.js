@@ -30,7 +30,7 @@ const Transaction = sequelize.define('Transaction', {
   },
   status: {
     type: DataTypes.STRING,
-    defaultValue: 'Success'
+    defaultValue: 'Pending'
   }
 }, {
   timestamps: true,

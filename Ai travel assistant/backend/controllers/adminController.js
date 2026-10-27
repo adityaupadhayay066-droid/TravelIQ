@@ -1,5 +1,7 @@
+'use strict';
+const crypto = require('crypto');
 const {
-    User, Trip, Route, Booking, Transport, Analytics, Station, Session,
+    User, Trip, Route, Booking, Transport, Analytics, Station, Session, RefreshToken,
     LoginHistory, AdminLog, SecurityAlert, Train, TrainSchedule, TrainFare,
     Coupon, SearchAnalytics, Announcement, Transaction, PaymentLog,
     SupportTicket, LiveTrainStatus, AiPrediction, FareForecast, DelayPrediction,
@@ -236,9 +238,69 @@ const getUserById = async (req, res) => {
             activityLogs
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
+
+// ─── Server-Side Role Hierarchy & Authorization Controls ───
+const ROLE_HIERARCHY = {
+    super_admin: 100,
+    admin: 50,
+    data_manager: 30,
+    support_agent: 20,
+    user: 10
+};
+
+function getRoleLevel(user) {
+    if (!user) return 0;
+    if (user.role === 'admin') {
+        const adminRole = user.admin_role || (user.email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') ? 'super_admin' : 'admin');
+        return ROLE_HIERARCHY[adminRole] || ROLE_HIERARCHY.admin;
+    }
+    if (user.role === 'user') return ROLE_HIERARCHY.user;
+    return 0; // Fail closed
+}
+
+function canManageUser(actor, target) {
+    if (!actor || !target) return false;
+    const actorLevel = getRoleLevel(actor);
+    const targetLevel = getRoleLevel(target);
+
+    // Non-admins cannot manage anyone
+    if (actorLevel <= ROLE_HIERARCHY.user) return false;
+    // Fail closed if roles or permissions cannot be determined
+    if (actorLevel === 0 || targetLevel === 0) return false;
+
+    // Self-deletion or self-status modification via admin management is prohibited
+    if (actor.id === target.id) return false;
+
+    // Lower-privileged or equal-privileged admin cannot manage target
+    if (actorLevel <= targetLevel) {
+        return false;
+    }
+    return true;
+}
+
+async function checkPwnedPassword(password) {
+    if (process.env.ENFORCE_PWNED_CHECK === 'true') {
+        const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
+        const prefix = hash.slice(0, 5);
+        const suffix = hash.slice(5);
+        try {
+            const response = await axios.get(`https://api.pwnedpasswords.com/range/${prefix}`, { timeout: 3000 });
+            const lines = response.data.split('\n');
+            for (const line of lines) {
+                if (line.startsWith(suffix)) {
+                    return true;
+                }
+            }
+        } catch (err) {
+            console.warn('HaveIBeenPwned API check warning:', err.message);
+        }
+    }
+    return false;
+}
 
 const updateUser = async (req, res) => {
     try {
@@ -246,17 +308,22 @@ const updateUser = async (req, res) => {
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
+        if (!canManageUser(req.user, user)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied: You cannot modify an account with equal or higher administrative privileges.'
+            });
+        }
+
         const { name, role, admin_role, account_status, email_verified, bio } = req.body;
+        const isSuperAdmin = getRoleLevel(req.user) >= ROLE_HIERARCHY.super_admin;
 
-        // Check if requester is trying to modify administrative privileges
-        const requesterAdminRole = req.user?.admin_role || (req.user?.email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') ? 'super_admin' : 'admin');
-        const isSuperAdmin = requesterAdminRole === 'super_admin';
-
+        // Prevent users from changing their own roles or promoting users without Super Admin
         if ((role !== undefined && role !== user.role) || (admin_role !== undefined && admin_role !== user.admin_role)) {
             if (!isSuperAdmin) {
                 return res.status(403).json({
                     success: false,
-                    message: 'Access denied. Only Super Admin has permission to change admin types or modify administrative privileges.'
+                    message: 'Access denied: Only Super Admin has permission to modify administrative privileges or roles.'
                 });
             }
         }
@@ -270,6 +337,12 @@ const updateUser = async (req, res) => {
             ...(bio !== undefined && { bio })
         });
 
+        // Revoke active sessions if account is deactivated or deleted
+        if (account_status === 'deactivated' || account_status === 'deleted') {
+            await Session.destroy({ where: { user_id: user.id } }).catch(() => {});
+            await RefreshToken.destroy({ where: { user_id: user.id } }).catch(() => {});
+        }
+
         if (req.user) {
             await AdminLog.create({
                 admin_id: req.user.id,
@@ -281,7 +354,8 @@ const updateUser = async (req, res) => {
 
         return res.json({ success: true, user: user.toSafeObject(), message: 'User updated successfully.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[Admin Update User Error]:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 
@@ -291,20 +365,32 @@ const deleteUser = async (req, res) => {
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
+        if (!canManageUser(req.user, user)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied: You cannot delete or deactivate an account with equal or higher administrative privileges.'
+            });
+        }
+
         await user.update({ account_status: 'deleted' });
+
+        // Revoke all sessions and tokens immediately
+        await Session.destroy({ where: { user_id: user.id } }).catch(() => {});
+        await RefreshToken.destroy({ where: { user_id: user.id } }).catch(() => {});
 
         if (req.user) {
             await AdminLog.create({
                 admin_id: req.user.id,
                 action: 'USER_DELETE',
                 target_user_id: user.id,
-                details: `Admin soft-deleted user ID #${user.id}`
+                details: `Admin soft-deleted user ID #${user.id} (${user.email})`
             }).catch(() => {});
         }
 
         return res.json({ success: true, message: 'User deactivated and marked as deleted.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[Admin Delete User Error]:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 
@@ -312,29 +398,57 @@ const resetUserPassword = async (req, res) => {
     try {
         const { id } = req.params;
         const { newPassword } = req.body;
-        if (!newPassword || newPassword.length < 6) {
-            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
-        }
 
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
+        // Role hierarchy check
+        if (!canManageUser(req.user, user)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied: You cannot reset the password for an account with equal or higher administrative privileges.'
+            });
+        }
+
+        // Apply strict password strength check
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+        if (!newPassword || !strongPasswordRegex.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 10 characters long, containing uppercase, lowercase, a digit, and a special character.'
+            });
+        }
+
+        // Compromised password check
+        const isPwned = await checkPwnedPassword(newPassword);
+        if (isPwned) {
+            return res.status(400).json({
+                success: false,
+                message: 'This password has appeared in known data breaches. Please choose a different, unique password.'
+            });
+        }
+
         const salt = await bcrypt.genSalt(12);
         user.password = await bcrypt.hash(newPassword, salt);
         await user.save();
+
+        // Revoke all sessions and tokens upon password reset
+        await Session.destroy({ where: { user_id: user.id } }).catch(() => {});
+        await RefreshToken.destroy({ where: { user_id: user.id } }).catch(() => {});
 
         if (req.user) {
             await AdminLog.create({
                 admin_id: req.user.id,
                 action: 'PASSWORD_RESET',
                 target_user_id: user.id,
-                details: `Admin reset password for user ID #${user.id}`
+                details: `Admin reset password for user ID #${user.id} (${user.email})`
             }).catch(() => {});
         }
 
-        return res.json({ success: true, message: 'User password reset successfully.' });
+        return res.json({ success: true, message: 'User password reset successfully. Active sessions revoked.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[Admin Password Reset Error]:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 
@@ -345,19 +459,44 @@ const bulkUpdateUsers = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No users specified.' });
         }
 
+        const targetUsers = await User.findAll({ where: { id: { [Op.in]: userIds } } });
+
+        // Enforce role hierarchy on all targets
+        for (const target of targetUsers) {
+            if (!canManageUser(req.user, target)) {
+                return res.status(403).json({
+                    success: false,
+                    message: `Access denied: Bulk operation includes account #${target.id} (${target.email}) with equal or higher administrative privileges.`
+                });
+            }
+        }
+
         if (action === 'disable') {
             await User.update({ account_status: 'deactivated' }, { where: { id: { [Op.in]: userIds } } });
+            await Session.destroy({ where: { user_id: { [Op.in]: userIds } } }).catch(() => {});
+            await RefreshToken.destroy({ where: { user_id: { [Op.in]: userIds } } }).catch(() => {});
         } else if (action === 'enable') {
             await User.update({ account_status: 'active' }, { where: { id: { [Op.in]: userIds } } });
         } else if (action === 'delete') {
             await User.update({ account_status: 'deleted' }, { where: { id: { [Op.in]: userIds } } });
+            await Session.destroy({ where: { user_id: { [Op.in]: userIds } } }).catch(() => {});
+            await RefreshToken.destroy({ where: { user_id: { [Op.in]: userIds } } }).catch(() => {});
         } else {
             return res.status(400).json({ success: false, message: 'Invalid bulk action.' });
         }
 
+        if (req.user) {
+            await AdminLog.create({
+                admin_id: req.user.id,
+                action: 'BULK_USER_UPDATE',
+                details: `Admin applied bulk ${action} to ${userIds.length} users`
+            }).catch(() => {});
+        }
+
         return res.json({ success: true, message: `Successfully applied ${action} to ${userIds.length} users.` });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[Admin Bulk Update Error]:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 
@@ -437,7 +576,8 @@ const createTrain = async (req, res) => {
 
         return res.status(201).json({ success: true, train, message: 'Train created successfully.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -453,7 +593,8 @@ const deleteTrain = async (req, res) => {
         await train.destroy();
         return res.json({ success: true, message: `Train #${trainNumber} removed successfully.` });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -483,7 +624,8 @@ const updateLiveTrainStatus = async (req, res) => {
         }
         return res.json({ success: true, record, message: 'Live train status updated.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -498,7 +640,8 @@ const getTrainDetails = async (req, res) => {
         return res.json({ success: true, train: details });
     } catch (error) {
         console.error('getTrainDetails error:', error);
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -533,7 +676,8 @@ const getStations = async (req, res) => {
             stations: rows
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -555,7 +699,8 @@ const createStation = async (req, res) => {
 
         return res.status(201).json({ success: true, station, message: 'Station added.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -565,10 +710,19 @@ const updateStation = async (req, res) => {
         const station = await Station.findOne({ where: { station_code: stationCode } });
         if (!station) return res.status(404).json({ success: false, message: 'Station not found.' });
 
-        await station.update(req.body);
+        const allowedFields = ['station_name', 'city', 'state', 'latitude', 'longitude'];
+        const safeData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                safeData[field] = req.body[field];
+            }
+        }
+
+        await station.update(safeData);
         return res.json({ success: true, station, message: 'Station updated.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController updateStation Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -581,7 +735,8 @@ const deleteStation = async (req, res) => {
         await station.destroy();
         return res.json({ success: true, message: 'Station deleted.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -702,7 +857,8 @@ const uploadDataset = async (req, res) => {
         });
     } catch (error) {
         console.error('uploadDataset error:', error);
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -790,7 +946,8 @@ const getAuditLogs = async (req, res) => {
             logs: rows
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -823,7 +980,8 @@ const getSearchAnalytics = async (req, res) => {
             searches: rows
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -852,7 +1010,8 @@ const getBookings = async (req, res) => {
             bookings: rows
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -862,19 +1021,65 @@ const updateBooking = async (req, res) => {
         const booking = await Booking.findByPk(id);
         if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
 
-        await booking.update(req.body);
+        const allowedFields = ['booking_status', 'seat_preference', 'berth_preference', 'passenger_details'];
+        const safeData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                safeData[field] = req.body[field];
+            }
+        }
+
+        await booking.update(safeData);
         return res.json({ success: true, booking, message: 'Booking updated.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController updateBooking Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
 const createBooking = async (req, res) => {
     try {
-        const booking = await Booking.create(req.body);
+        const {
+            user_id,
+            trip_id,
+            source_station_code,
+            destination_station_code,
+            train_number,
+            travel_class,
+            ticket_fare,
+            seat_preference,
+            berth_preference,
+            adult_count,
+            child_count,
+            senior_count,
+            passenger_details
+        } = req.body;
+
+        if (!user_id || !trip_id) {
+            return res.status(400).json({ success: false, message: 'user_id and trip_id are required.' });
+        }
+
+        const booking = await Booking.create({
+            user_id,
+            trip_id,
+            source_station_code: source_station_code || null,
+            destination_station_code: destination_station_code || null,
+            train_number: train_number || null,
+            travel_class: travel_class || null,
+            ticket_fare: ticket_fare !== undefined ? parseFloat(ticket_fare) : null,
+            payment_status: 'Pending',
+            booking_status: 'Pending',
+            seat_preference: seat_preference || null,
+            berth_preference: berth_preference || null,
+            adult_count: adult_count || 1,
+            child_count: child_count || 0,
+            senior_count: senior_count || 0,
+            passenger_details: passenger_details || null
+        });
         return res.status(201).json({ success: true, booking });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController createBooking Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -884,16 +1089,29 @@ const getCoupons = async (req, res) => {
         const coupons = await Coupon.findAll({ order: [['created_at', 'DESC']] });
         return res.json({ success: true, coupons });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController getCoupons Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
 const createCoupon = async (req, res) => {
     try {
-        const coupon = await Coupon.create(req.body);
+        const { code, discount_percentage, max_discount_amount, min_trip_amount, expires_at, is_active } = req.body;
+        if (!code || discount_percentage === undefined) {
+            return res.status(400).json({ success: false, message: 'code and discount_percentage are required.' });
+        }
+        const coupon = await Coupon.create({
+            code: String(code).trim().toUpperCase(),
+            discount_percentage: Number(discount_percentage),
+            max_discount_amount: max_discount_amount !== undefined ? Number(max_discount_amount) : 500,
+            min_trip_amount: min_trip_amount !== undefined ? Number(min_trip_amount) : 1000,
+            expires_at: expires_at || null,
+            is_active: is_active !== undefined ? Boolean(is_active) : true
+        });
         return res.status(201).json({ success: true, coupon, message: 'Coupon created.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController createCoupon Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -902,10 +1120,19 @@ const updateCoupon = async (req, res) => {
         const { id } = req.params;
         const coupon = await Coupon.findByPk(id);
         if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found.' });
-        await coupon.update(req.body);
+
+        const allowedFields = ['discount_percentage', 'max_discount_amount', 'min_trip_amount', 'expires_at', 'is_active'];
+        const safeData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                safeData[field] = req.body[field];
+            }
+        }
+        await coupon.update(safeData);
         return res.json({ success: true, coupon, message: 'Coupon updated.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController updateCoupon Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -917,7 +1144,8 @@ const deleteCoupon = async (req, res) => {
         await coupon.destroy();
         return res.json({ success: true, message: 'Coupon deleted.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController deleteCoupon Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -931,7 +1159,8 @@ const getSecurityAlerts = async (req, res) => {
         });
         return res.json({ success: true, alerts });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -943,7 +1172,8 @@ const resolveSecurityAlert = async (req, res) => {
         await alert.update({ is_resolved: true });
         return res.json({ success: true, message: 'Security alert resolved.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -956,7 +1186,8 @@ const getActiveSessions = async (req, res) => {
         });
         return res.json({ success: true, sessions });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -966,7 +1197,8 @@ const revokeSession = async (req, res) => {
         await Session.destroy({ where: { session_id: sessionId } });
         return res.json({ success: true, message: 'Session revoked.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -979,7 +1211,8 @@ const getLoginHistory = async (req, res) => {
         });
         return res.json({ success: true, history });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -993,7 +1226,8 @@ const getAdminAccounts = async (req, res) => {
         });
         return res.json({ success: true, admins });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -1044,7 +1278,8 @@ const updateAdminRole = async (req, res) => {
 
         return res.json({ success: true, message: `Admin role updated to ${admin_role}.` });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -1085,7 +1320,8 @@ const exportReport = async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         return res.status(200).send(csv);
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('[AdminController Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -1125,8 +1361,24 @@ const getAnnouncements = async (req, res) => {
     res.json({ success: true, announcements });
 };
 const createAnnouncement = async (req, res) => {
-    const item = await Announcement.create(req.body);
-    res.status(201).json({ success: true, announcement: item });
+    try {
+        const { title, message, type, active, expires_at } = req.body;
+        if (!title || !message) {
+            return res.status(400).json({ success: false, message: 'title and message are required.' });
+        }
+        const item = await Announcement.create({
+            title: String(title).trim(),
+            message: String(message).trim(),
+            type: ['info', 'warning', 'critical'].includes(type) ? type : 'info',
+            active: active !== undefined ? Boolean(active) : true,
+            created_by: req.user ? req.user.id : 1,
+            expires_at: expires_at || null
+        });
+        res.status(201).json({ success: true, announcement: item });
+    } catch (error) {
+        console.error('[AdminController createAnnouncement Error]:', error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
+    }
 };
 const toggleAnnouncement = async (req, res) => { res.json({ success: true, message: 'Toggled.' }); };
 const deleteAnnouncement = async (req, res) => { res.json({ success: true, message: 'Deleted.' }); };

@@ -30,7 +30,7 @@ const getLoginHistory = async (req, res) => {
         res.json(mappedHistory);
     } catch (error) {
         console.error('[Get History Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -55,7 +55,7 @@ const getActiveSessions = async (req, res) => {
         res.json(mapped);
     } catch (error) {
         console.error('[Get Active Sessions Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -86,7 +86,7 @@ const revokeSession = async (req, res) => {
         res.json({ message: 'Device revoked, active session invalidated.' });
     } catch (error) {
         console.error('[Revoke Session Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -111,7 +111,7 @@ const toggle2FA = async (req, res) => {
         });
     } catch (error) {
         console.error('[Toggle 2FA Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -150,7 +150,7 @@ const getTrustedDevices = async (req, res) => {
         res.json(devices);
     } catch (error) {
         console.error('[Get Trusted Devices Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -172,7 +172,7 @@ const removeTrustedDevice = async (req, res) => {
         res.json({ message: 'Device removed from trusted list.' });
     } catch (error) {
         console.error('[Remove Trusted Device Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -262,7 +262,7 @@ const getUserSecuritySettings = async (req, res) => {
         });
     } catch (error) {
         console.error('[Get Security Settings Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -291,7 +291,7 @@ const updateRecoveryOptions = async (req, res) => {
         res.json({ message: 'Recovery options updated successfully.', settings: sec });
     } catch (error) {
         console.error('[Update Recovery Options Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -305,12 +305,16 @@ const generateBackupCodes = async (req, res) => {
             sec = await UserSecurity.create({ user_id: req.user.id });
         }
         
-        const codes = [];
+        const rawCodes = [];
+        const hashedCodes = [];
         for (let i = 0; i < 10; i++) {
-            codes.push(crypto.randomBytes(4).toString('hex').toUpperCase());
+            const rawCode = crypto.randomBytes(8).toString('hex').toUpperCase();
+            rawCodes.push(rawCode);
+            const hashed = crypto.createHash('sha256').update(rawCode).digest('hex');
+            hashedCodes.push(hashed);
         }
         
-        sec.backup_codes = codes;
+        sec.backup_codes = hashedCodes;
         await sec.save();
 
         await SecurityAlert.create({
@@ -321,10 +325,10 @@ const generateBackupCodes = async (req, res) => {
             details: { message: 'Backup recovery codes generated.' }
         });
 
-        res.json({ message: 'Backup codes generated.', codes });
+        res.json({ message: 'Backup codes generated.', codes: rawCodes });
     } catch (error) {
         console.error('[Generate Backup Codes Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -371,7 +375,7 @@ const registerPasskeyChallenge = async (req, res) => {
         });
     } catch (error) {
         console.error('[Register Passkey Challenge Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -379,7 +383,7 @@ const registerPasskeyChallenge = async (req, res) => {
  * Verify WebAuthn Passkey Registration response
  */
 const verifyPasskeyRegister = async (req, res) => {
-    const { challengeToken, response, credentialId, publicKey } = req.body;
+    const { challengeToken, response } = req.body;
     try {
         const {
             verifyRegistrationResponse,
@@ -397,46 +401,37 @@ const verifyPasskeyRegister = async (req, res) => {
             return res.status(401).json({ message: 'Registration challenge is invalid or has expired.' });
         }
 
-        let newPasskeyId = credentialId;
-
-        if (response && response.response && response.response.clientDataJSON) {
-            const verification = await verifyRegistrationResponse({
-                response,
-                expectedChallenge: stored.challenge,
-                expectedOrigin: getExpectedOrigins(req),
-                expectedRPID: getRpId(req),
-                requireUserPresence: true
-            });
-
-            if (!verification.verified || !verification.registrationInfo) {
-                return res.status(400).json({ message: 'WebAuthn registration verification failed.' });
-            }
-
-            const { credential } = verification.registrationInfo;
-            newPasskeyId = credential.id;
-            const pubKeyBase64 = Buffer.from(credential.publicKey).toString('base64');
-            const counter = credential.counter || 0;
-            const transports = response.response.transports ? JSON.stringify(response.response.transports) : null;
-
-            await UserPasskey.create({
-                user_id: req.user.id,
-                credential_id: credential.id,
-                public_key: pubKeyBase64,
-                counter,
-                transports,
-                device_type: verification.registrationInfo.credentialDeviceType || 'unknown',
-                backed_up: verification.registrationInfo.credentialBackedUp || false
-            });
-        } else if (credentialId && publicKey) {
-            await UserPasskey.create({
-                user_id: req.user.id,
-                credential_id: credentialId,
-                public_key: publicKey,
-                counter: 0
-            });
-        } else {
+        if (!response || !response.response || !response.response.clientDataJSON) {
             return res.status(400).json({ message: 'Valid WebAuthn registration response is required.' });
         }
+
+        const verification = await verifyRegistrationResponse({
+            response,
+            expectedChallenge: stored.challenge,
+            expectedOrigin: getExpectedOrigins(req),
+            expectedRPID: getRpId(req),
+            requireUserPresence: true
+        });
+
+        if (!verification.verified || !verification.registrationInfo) {
+            return res.status(400).json({ message: 'WebAuthn registration verification failed.' });
+        }
+
+        const { credential } = verification.registrationInfo;
+        const newPasskeyId = credential.id;
+        const pubKeyBase64 = Buffer.from(credential.publicKey).toString('base64');
+        const counter = credential.counter || 0;
+        const transports = response.response.transports ? JSON.stringify(response.response.transports) : null;
+
+        await UserPasskey.create({
+            user_id: req.user.id,
+            credential_id: credential.id,
+            public_key: pubKeyBase64,
+            counter,
+            transports,
+            device_type: verification.registrationInfo.credentialDeviceType || 'unknown',
+            backed_up: verification.registrationInfo.credentialBackedUp || false
+        });
 
         let sec = await UserSecurity.findOne({ where: { user_id: req.user.id } });
         if (!sec) {
@@ -456,7 +451,7 @@ const verifyPasskeyRegister = async (req, res) => {
         res.json({ success: true, message: 'Passkey registered successfully!' });
     } catch (error) {
         console.error('[Verify Passkey Register Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -484,7 +479,7 @@ const removePasskeys = async (req, res) => {
         res.json({ message: 'All passkeys removed.' });
     } catch (error) {
         console.error('[Remove Passkeys Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -513,7 +508,7 @@ const markDeviceAsTrusted = async (req, res) => {
         res.json({ message: 'Device successfully marked as trusted.' });
     } catch (error) {
         console.error('[Mark Device Trusted Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -566,7 +561,7 @@ const triggerSOS = async (req, res) => {
         });
     } catch (error) {
         console.error('[Trigger SOS Controller Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -580,7 +575,7 @@ const getScrapingSecurityOverview = async (req, res) => {
         res.json({ success: true, ...stats });
     } catch (error) {
         console.error('[Anti-Scraping Stats Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -599,7 +594,7 @@ const unblockScrapingIP = async (req, res) => {
         res.json({ success, message: success ? `IP ${ip} unblocked successfully.` : `IP ${ip} was not in the active blacklist.` });
     } catch (error) {
         console.error('[Unblock IP Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 

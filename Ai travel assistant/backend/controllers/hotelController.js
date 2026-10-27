@@ -115,7 +115,7 @@ exports.reserveStay = async (req, res) => {
             guestPhone: guestPhone.trim(),
             govIdType: govIdType || 'Aadhaar Card',
             govIdNumber,
-            govIdVerified: govIdVerified !== undefined ? govIdVerified : true,
+            govIdVerified: false, // Never trust client-supplied govIdVerified
             checkInDate,
             checkOutDate,
             guestsCount: req.body.guestsCount,
@@ -131,17 +131,17 @@ exports.reserveStay = async (req, res) => {
             reservation
         });
     } catch (err) {
-        if (err.message && (err.message.includes('date') || err.message.includes('duration') || err.message.includes('Stay duration') || err.message.includes('past'))) {
+        if (err.message && (err.message.includes('date') || err.message.includes('duration') || err.message.includes('Stay duration') || err.message.includes('past') || err.message.includes('available'))) {
             return res.status(400).json({ success: false, message: err.message });
         }
-        console.error('Reservation error:', err);
+        console.error('Reservation error:', err.message);
         res.status(500).json({ success: false, message: 'Failed to process reservation.' });
     }
 };
 
 /**
  * GET /api/hotels/reservations
- * Get reservations belonging strictly to the authenticated user (or all if admin)
+ * Paginated query for reservations belonging to user (or all for admin)
  */
 exports.getReservations = async (req, res) => {
     try {
@@ -152,19 +152,29 @@ exports.getReservations = async (req, res) => {
             });
         }
 
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+        const offset = (page - 1) * limit;
+
         const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
-        const reservations = isAdmin 
-            ? hotelService.getAllReservations() 
-            : hotelService.getReservationsByUser(req.user.id);
+        const result = await hotelService.getReservationsPaged({
+            userId: isAdmin ? null : req.user.id,
+            page,
+            limit,
+            offset
+        });
 
         res.json({
             success: true,
-            reservations,
-            count: reservations.length
+            reservations: result.reservations,
+            total: result.total,
+            page,
+            limit,
+            totalPages: Math.ceil(result.total / limit)
         });
     } catch (err) {
-        console.error('Get reservations error:', err);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Get reservations error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 
@@ -190,7 +200,7 @@ exports.getReservationById = async (req, res) => {
         }
 
         const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
-        if (reservation.userId !== String(req.user.id) && !isAdmin) {
+        if (String(reservation.userId) !== String(req.user.id) && !isAdmin) {
             return res.status(403).json({
                 success: false,
                 message: 'Forbidden: You do not have permission to view this reservation.'
@@ -202,8 +212,65 @@ exports.getReservationById = async (req, res) => {
             reservation
         });
     } catch (err) {
-        console.error('Get reservation by ID error:', err);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Get reservation by ID error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
+/**
+ * POST /api/hotels/reservations/:id/cancel
+ * Idempotently cancel a reservation with IDOR and refund checks
+ */
+exports.cancelReservation = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.'
+            });
+        }
+
+        const { id } = req.params;
+        const { reason } = req.body || {};
+        const isAdmin = req.user.role === 'admin' || req.user.admin_role === 'super_admin';
+
+        const result = await hotelService.cancelReservation(id, req.user.id, reason, isAdmin);
+        res.json(result);
+    } catch (err) {
+        if (err.status === 403) {
+            return res.status(403).json({ success: false, message: err.message });
+        }
+        if (err.message && err.message.includes('not found')) {
+            return res.status(404).json({ success: false, message: err.message });
+        }
+        console.error('Cancel reservation error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
+/**
+ * POST /api/hotels/reservations/:id/verify-kyc
+ * Administrator verification of Government ID
+ */
+exports.verifyKyc = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ success: false, message: 'Authentication required.' });
+        }
+
+        const { id } = req.params;
+        const { status } = req.body || {};
+        const result = await hotelService.verifyGovernmentId(id, req.user, status || 'VERIFIED');
+        res.json(result);
+    } catch (err) {
+        if (err.status === 403) {
+            return res.status(403).json({ success: false, message: err.message });
+        }
+        if (err.message && err.message.includes('not found')) {
+            return res.status(404).json({ success: false, message: err.message });
+        }
+        console.error('Verify KYC error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
 

@@ -1,4 +1,5 @@
-const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare } = require('../models');
+const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken } = require('../models');
+const { Op } = require('sequelize');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
 const bcrypt = require('bcryptjs');
@@ -170,6 +171,20 @@ const changePassword = async (req, res) => {
     user.password = newPassword; // Will be hashed by beforeUpdate hook
     await user.save();
 
+    // Revoke all other active sessions and refresh tokens
+    const currentSessionId = req.sessionId;
+    if (currentSessionId) {
+      await Session.destroy({
+        where: {
+          user_id: user.id,
+          session_id: { [Op.ne]: currentSessionId }
+        }
+      });
+    } else {
+      await Session.destroy({ where: { user_id: user.id } });
+    }
+    await RefreshToken.destroy({ where: { user_id: user.id } });
+
     await UserActivityLog.create({
         user_id: user.id,
         event_type: 'PASSWORD_CHANGE',
@@ -178,7 +193,7 @@ const changePassword = async (req, res) => {
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
-    console.error('Change password error:', error);
+    console.error('Change password error:', error.message);
     res.status(500).json({ message: 'Error changing password' });
   }
 };
@@ -420,8 +435,8 @@ const createBooking = async (req, res) => {
 
     res.status(201).json({ message: 'Booking confirmed successfully.', booking });
   } catch (error) {
-    console.error('Create booking error:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Create booking error:', error.message);
+    res.status(500).json({ message: 'Error processing booking. Please try again later.' });
   }
 };
 

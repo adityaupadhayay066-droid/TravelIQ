@@ -6,6 +6,7 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=http://localhost:5000/api
+      - VITE_BACKEND_URL=http://localhost:5000/api
     depends_on:
       - backend
 
@@ -17,16 +18,16 @@ services:
     environment:
       - PORT=5000
       - DB_HOST=mysql
-      - DB_USER=${DB_USER:-traveliq_app}
-      - DB_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME:-traveliq}
       - DB_PORT=3306
-      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_min_32_chars_traveliq_2026}
+      - JWT_SECRET=${JWT_SECRET}
       - AI_SERVICE_URL=http://ai-service:8000
-      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev_internal_service_key_2026}
-      - CLIENT_SHIELD_SECRET=${CLIENT_SHIELD_SECRET:-dev_client_shield_salt_2026}
-      - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-dev_n8n_webhook_secret_2026}
-      - ADMIN_PROVISIONING_TOKEN=${ADMIN_PROVISIONING_TOKEN:-dev_admin_provisioning_token_2026}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - CLIENT_SHIELD_SECRET=${CLIENT_SHIELD_SECRET}
+      - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET}
+      - ADMIN_PROVISIONING_TOKEN=${ADMIN_PROVISIONING_TOKEN}
     depends_on:
       mysql:
         condition: service_healthy
@@ -41,11 +42,11 @@ services:
       - "8000"
     environment:
       - DB_HOST=mysql
-      - DB_USER=${DB_USER:-traveliq_app}
-      - DB_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME:-traveliq}
       - DB_PORT=3306
-      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY:-dev_internal_service_key_2026}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
       mysql:
@@ -59,10 +60,10 @@ services:
     expose:
       - "3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-root_traveliq_secure}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME:-traveliq}
-      - MYSQL_USER=${DB_USER:-traveliq_app}
-      - MYSQL_PASSWORD=${DB_PASSWORD:-traveliq_dev_password_2026}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:

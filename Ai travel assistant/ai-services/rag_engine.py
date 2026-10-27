@@ -7,10 +7,13 @@ from sqlalchemy import create_engine, text
 
 # Database configuration
 DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "batman")
+DB_USER = os.getenv("DB_USER", "traveliq_app")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_NAME = os.getenv("DB_NAME", "traveliq")
 DB_PORT = os.getenv("DB_PORT", "3306")
+
+if not DB_PASSWORD and os.getenv("ENVIRONMENT") == "production":
+    raise RuntimeError("CRITICAL: DB_PASSWORD must be configured in production.")
 
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=3600)

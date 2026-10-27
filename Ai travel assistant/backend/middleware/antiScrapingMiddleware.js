@@ -60,7 +60,7 @@ const generateClientShield = (timestamp = Date.now()) => {
         const hash = crypto.createHmac('sha256', SHIELD_SECRET).update(payload).digest('hex');
         return `${timestamp}.${hash}`;
     }
-    const entropy = crypto.randomBytes(6).toString('hex');
+    const entropy = crypto.randomBytes(16).toString('hex');
     return `${timestamp}.${entropy}`;
 };
 
@@ -89,10 +89,11 @@ const verifyClientShield = (token) => {
         if (providedHash.length === expectedHash.length && crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(expectedHash))) {
             return true;
         }
+        return false;
     }
 
-    // Accept timestamp-verified browser telemetry
-    return providedHash.length >= 4;
+    // Require valid cryptographic digest format (32 to 64 hex characters), never arbitrary 4-character strings
+    return /^[a-f0-9]{32,64}$/i.test(providedHash);
 };
 
 /**

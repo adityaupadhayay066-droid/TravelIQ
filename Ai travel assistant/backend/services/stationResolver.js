@@ -51,7 +51,7 @@ const CITY_CLUSTERS = [
     primaryCode: 'CSMT',
     stationCodes: ['CSMT', 'BDTS', 'LTT', 'BCT'],
     synonyms: [
-      'bombay', 'mumbai', 'csmt', 'cstm', 'bandra', 'bandra terminus', 'bdts',
+      'bombay', 'mumbai', 'bom', 'csmt', 'cstm', 'bandra', 'bandra terminus', 'bdts',
       'lokmanya tilak', 'lokmanya tilak terminus', 'ltt', 'mumbai central',
       'bct', 'bomby', 'mumbay', 'dadar'
     ]
@@ -203,6 +203,22 @@ const CITY_CLUSTERS = [
     synonyms: [
       'amritsar', 'amritsar jn', 'asr'
     ]
+  },
+  {
+    city: 'Udaipur',
+    primaryCode: 'UDZ',
+    stationCodes: ['UDZ'],
+    synonyms: [
+      'udaipur', 'udz', 'udaipur city'
+    ]
+  },
+  {
+    city: 'Goa',
+    primaryCode: 'MAO',
+    stationCodes: ['MAO', 'KRMI', 'THVM'],
+    synonyms: [
+      'goa', 'madgaon', 'margao', 'karmali', 'thivim', 'vasco', 'goi', 'dabolim', 'mopa'
+    ]
   }
 ];
 
@@ -304,52 +320,7 @@ async function resolveStation(input) {
     }
   }
 
-  // 3. Substring containment match in synonyms
-  for (const cluster of CITY_CLUSTERS) {
-    for (const syn of cluster.synonyms) {
-      if (syn.length >= 4 && (normalized.includes(syn) || (core && core.includes(syn)))) {
-        return {
-          cityName: cluster.city,
-          primaryStationCode: cluster.primaryCode,
-          stationCodes: cluster.stationCodes,
-          matchedVia: 'synonym_containment',
-          displayName: `${cluster.city} Area (${cluster.stationCodes.join(', ')})`
-        };
-      }
-    }
-  }
-
-  // 4. Fuzzy Levenshtein matching on cluster synonyms (edit distance <= 2)
-  let bestCluster = null;
-  let minDistance = Infinity;
-
-  const targetWord = core || normalized;
-  if (targetWord.length >= 3) {
-    for (const cluster of CITY_CLUSTERS) {
-      for (const syn of cluster.synonyms) {
-        // Skip comparing short abbreviations (e.g. 2-3 char codes) with long words
-        if (Math.abs(syn.length - targetWord.length) > 2) continue;
-
-        const dist = levenshteinDistance(targetWord, syn);
-        if (dist <= 2 && dist < minDistance) {
-          minDistance = dist;
-          bestCluster = cluster;
-        }
-      }
-    }
-  }
-
-  if (bestCluster && minDistance <= 2) {
-    return {
-      cityName: bestCluster.city,
-      primaryStationCode: bestCluster.primaryCode,
-      stationCodes: bestCluster.stationCodes,
-      matchedVia: 'fuzzy_cluster',
-      displayName: `${bestCluster.city} Area (${bestCluster.stationCodes.join(', ')})`
-    };
-  }
-
-  // 5. Database lookup in stations table (exact station_code or station_name)
+  // 3. Database lookup in stations table (exact station_code or station_name)
   try {
     let dbStation = await Station.findOne({
       where: { station_code: rawClean }
@@ -367,8 +338,67 @@ async function resolveStation(input) {
       });
     }
 
-    if (!dbStation && core.length >= 3) {
-      dbStation = await Station.findOne({
+    if (dbStation) {
+      return {
+        cityName: dbStation.city || dbStation.station_name,
+        primaryStationCode: dbStation.station_code,
+        stationCodes: [dbStation.station_code],
+        matchedVia: 'exact_db_station',
+        displayName: `${dbStation.station_name} (${dbStation.station_code})`
+      };
+    }
+  } catch (dbErr) {
+    console.warn('[StationResolver] DB lookup warning:', dbErr.message);
+  }
+
+  // 4. Substring containment match in synonyms
+  for (const cluster of CITY_CLUSTERS) {
+    for (const syn of cluster.synonyms) {
+      if (syn.length >= 4 && (normalized === syn || normalized.includes(syn) || (core && core.includes(syn)))) {
+        return {
+          cityName: cluster.city,
+          primaryStationCode: cluster.primaryCode,
+          stationCodes: cluster.stationCodes,
+          matchedVia: 'synonym_containment',
+          displayName: `${cluster.city} Area (${cluster.stationCodes.join(', ')})`
+        };
+      }
+    }
+  }
+
+  // 5. Fuzzy Levenshtein matching on cluster synonyms (edit distance <= 2 for >=5 chars, <=1 for 4 chars)
+  let bestCluster = null;
+  let minDistance = Infinity;
+
+  const targetWord = core || normalized;
+  if (targetWord.length >= 4) {
+    for (const cluster of CITY_CLUSTERS) {
+      for (const syn of cluster.synonyms) {
+        if (Math.abs(syn.length - targetWord.length) > 2) continue;
+        const maxAllowed = targetWord.length <= 4 ? 1 : 2;
+        const dist = levenshteinDistance(targetWord, syn);
+        if (dist <= maxAllowed && dist < minDistance) {
+          minDistance = dist;
+          bestCluster = cluster;
+        }
+      }
+    }
+  }
+
+  if (bestCluster && minDistance <= 2) {
+    return {
+      cityName: bestCluster.city,
+      primaryStationCode: bestCluster.primaryCode,
+      stationCodes: bestCluster.stationCodes,
+      matchedVia: 'fuzzy_cluster',
+      displayName: `${bestCluster.city} Area (${bestCluster.stationCodes.join(', ')})`
+    };
+  }
+
+  // 6. Fallback partial DB search
+  try {
+    if (core.length >= 4) {
+      const dbStation = await Station.findOne({
         where: {
           [Op.or]: [
             sequelize.where(
@@ -384,19 +414,18 @@ async function resolveStation(input) {
           ]
         }
       });
-    }
-
-    if (dbStation) {
-      return {
-        cityName: dbStation.city || dbStation.station_name,
-        primaryStationCode: dbStation.station_code,
-        stationCodes: [dbStation.station_code],
-        matchedVia: 'db_station',
-        displayName: `${dbStation.station_name} (${dbStation.station_code})`
-      };
+      if (dbStation) {
+        return {
+          cityName: dbStation.city || dbStation.station_name,
+          primaryStationCode: dbStation.station_code,
+          stationCodes: [dbStation.station_code],
+          matchedVia: 'partial_db_station',
+          displayName: `${dbStation.station_name} (${dbStation.station_code})`
+        };
+      }
     }
   } catch (dbErr) {
-    console.warn('[StationResolver] DB lookup warning:', dbErr.message);
+    console.warn('[StationResolver] Partial DB lookup warning:', dbErr.message);
   }
 
   // 6. Fallback: Treat as individual station code or raw string

@@ -1,9 +1,10 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-const path = require('path');
 const { sequelize } = require('./models');
 const { seedTransports } = require('./seeders/transportSeeder');
 const { seedStations } = require('./seeders/stationSeeder');
@@ -44,6 +45,19 @@ const v1PublicRoutes = require('./routes/v1PublicRoutes');
 const { loadHotelData } = require('./services/hotelService');
 
 
+
+// ─── Mandatory Secret Validation (Fails startup if required secrets missing in production) ───
+if (process.env.NODE_ENV === 'production') {
+  const missingSecrets = [];
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) missingSecrets.push('JWT_SECRET (min 32 chars)');
+  if (!process.env.DB_PASSWORD) missingSecrets.push('DB_PASSWORD');
+  if (!process.env.INTERNAL_SERVICE_KEY) missingSecrets.push('INTERNAL_SERVICE_KEY');
+
+  if (missingSecrets.length > 0) {
+    console.error(`[FATAL] Startup aborted. Missing mandatory production secrets: ${missingSecrets.join(', ')}`);
+    process.exit(1);
+  }
+}
 
 const app = express();
 
@@ -163,10 +177,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// ─── Serve uploaded files with strict attachment disposition & nosniff headers ───
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+// ─── Serve ONLY public user avatars statically ───
+// Private files (support attachments, RAG documents, etc.) are strictly served through authenticated endpoints
+app.use('/uploads/avatars', express.static(path.join(__dirname, 'uploads', 'avatars'), {
   setHeaders: (res) => {
-    res.setHeader('Content-Disposition', 'attachment');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', "default-src 'none'");
   }
@@ -279,7 +293,7 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
     console.error('   Connection config: host=%s port=%s user=%s db=%s',
       process.env.DB_HOST || 'localhost',
       process.env.DB_PORT || '3306',
-      process.env.DB_USER || 'root',
+      process.env.DB_USER || 'traveliq_app',
       process.env.DB_NAME || 'traveliq'
     );
     process.exit(1);
@@ -307,3 +321,5 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Promise Rejection:', reason);
 });
+
+module.exports = { app };

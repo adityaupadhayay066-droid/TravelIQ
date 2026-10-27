@@ -23,7 +23,7 @@ const getActiveSessions = async (req, res) => {
         res.json(mappedSessions);
     } catch (error) {
         console.error('[Get Sessions Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -45,7 +45,7 @@ const revokeSession = async (req, res) => {
         res.json({ message: 'Device session successfully revoked.' });
     } catch (error) {
         console.error('[Revoke Session Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 
@@ -68,7 +68,7 @@ const revokeOtherSessions = async (req, res) => {
         });
     } catch (error) {
         console.error('[Revoke Other Sessions Error]:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Internal server error. Please try again later.' });
     }
 };
 

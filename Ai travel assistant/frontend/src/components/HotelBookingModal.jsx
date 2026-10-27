@@ -406,7 +406,7 @@ export default function HotelBookingModal({
 
   const handleAutofillDemoCard = () => {
     setCardNumber('4532 8920 1192 3840');
-    setCardHolder(guestName || 'Aditya Sharma');
+    setCardHolder(guestName || 'Verified Traveler');
     setCardExpiry('12/28');
     setCardCvv('849');
     toast.success('Demo Visa Sandbox Card autofilled!', { icon: '💳' });
@@ -641,9 +641,9 @@ export default function HotelBookingModal({
       specialRequests: confirmedBooking.specialRequests || specialRequests,
       checkInDate: confirmedBooking.checkInDate || checkInDate,
       checkOutDate: confirmedBooking.checkOutDate || checkOutDate,
-      guestName: confirmedBooking.guestName || guestName || 'Aditya Upadhyay',
-      guestEmail: confirmedBooking.guestEmail || guestEmail || 'aditya.traveler@traveliq.in',
-      guestPhone: confirmedBooking.guestPhone || guestPhone || '+91 98765 43210',
+      guestName: confirmedBooking.guestName || guestName || 'Verified Guest',
+      guestEmail: confirmedBooking.guestEmail || guestEmail || 'guest@traveliq.local',
+      guestPhone: confirmedBooking.guestPhone || guestPhone || 'Not Provided',
       govIdType: confirmedBooking.govIdType || govIdType || 'Aadhaar Card',
       govIdNumber: confirmedBooking.govIdNumber || govIdNumber || '5829 1948 4829',
       govIdVerified: confirmedBooking.govIdVerified !== undefined ? confirmedBooking.govIdVerified : true,
@@ -1814,10 +1814,10 @@ export default function HotelBookingModal({
                         Billed To (Primary Customer)
                       </span>
                       <h4 className="text-base font-black text-[#0F172A] dark:text-white mt-0.5">
-                        {confirmedBooking.guestName || guestName || 'Aditya Upadhyay'}
+                        {confirmedBooking.guestName || guestName || 'Verified Guest'}
                       </h4>
                       <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 font-medium">
-                        📞 {confirmedBooking.guestPhone || guestPhone || '+91 98765 43210'} &nbsp;|&nbsp; ✉️ {confirmedBooking.guestEmail || guestEmail || 'aditya.traveler@traveliq.in'}
+                        📞 {confirmedBooking.guestPhone || guestPhone || 'Not Provided'} &nbsp;|&nbsp; ✉️ {confirmedBooking.guestEmail || guestEmail || 'guest@traveliq.local'}
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
                         <span className="text-[10px] text-[#14532D] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#1E332C] px-2 py-0.5 rounded font-semibold">
@@ -2384,7 +2384,7 @@ export default function HotelBookingModal({
                           <div className="col-span-2 space-y-1.5">
                             <div>
                               <span className="text-[9px] uppercase font-bold text-[#64748B] block">Cardholder Name</span>
-                              <p className="text-sm font-black text-[#0F172A] dark:text-white">{guestName || 'Aditya Upadhyay'}</p>
+                              <p className="text-sm font-black text-[#0F172A] dark:text-white">{guestName || 'Verified Citizen'}</p>
                             </div>
 
                             <div>

@@ -48,7 +48,11 @@ const sendMessage = async (req, res) => {
         if (!botReply) {
             try {
                 const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-                const aiRes = await axios.post(`${aiUrl}/chat`, { message }, { timeout: 6000 });
+                const internalKey = process.env.INTERNAL_SERVICE_KEY;
+                const aiRes = await axios.post(`${aiUrl}/chat`, { message }, {
+                    headers: internalKey ? { 'X-Internal-Service-Key': internalKey } : {},
+                    timeout: 6000
+                });
                 if (aiRes.data && aiRes.data.response) {
                     botReply = aiRes.data.response;
                 }
