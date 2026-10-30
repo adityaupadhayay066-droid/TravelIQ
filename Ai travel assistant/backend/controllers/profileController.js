@@ -1,7 +1,8 @@
-const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken } = require('../models');
+const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken, Station } = require('../models');
 const { Op } = require('sequelize');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
+const { calculateRailwayFare, estimateRailDistance } = require('../utils/railwayFareCalculator');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
@@ -366,8 +367,25 @@ const createBooking = async (req, res) => {
       if (fareRow && fareRow.fare > 0) {
         farePerPassenger = fareRow.fare;
       } else {
-        const classFares = { '1A': 2850, '2A': 1750, '3A': 1250, 'CC': 850, 'SL': 480, '2S': 195 };
-        farePerPassenger = classFares[String(travel_class).trim().toUpperCase()] || 600;
+        // Dynamic distance-based IRCTC telescopic fare calculation
+        let distanceKm = 650;
+        try {
+          const [stnSrc, stnDst] = await Promise.all([
+            Station.findOne({ where: { station_code: source_station_code } }),
+            Station.findOne({ where: { station_code: destination_station_code } })
+          ]);
+          if (stnSrc && stnDst && stnSrc.latitude && stnDst.latitude) {
+            distanceKm = estimateRailDistance(stnSrc.latitude, stnSrc.longitude, stnDst.latitude, stnDst.longitude);
+          }
+        } catch (_) {}
+
+        const dynamicFare = calculateRailwayFare({
+          distanceKm,
+          travelClass,
+          isSuperfast: true,
+          passengers: 1
+        });
+        farePerPassenger = dynamicFare.farePerPassenger;
       }
     }
     const authoritativeFare = farePerPassenger * passengerCount;

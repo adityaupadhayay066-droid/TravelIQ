@@ -14,6 +14,13 @@ const getTripCarbonEmission = async (req, res) => {
             return res.status(404).json({ message: 'Trip not found.' });
         }
 
+        // Strict ownership check (IDOR protection)
+        const isOwner = req.user && Number(trip.user_id) === Number(req.user.id);
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.admin_role === 'super_admin');
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Forbidden: You do not have permission to view or modify this trip.' });
+        }
+
         // Calculate distance
         const distance = getDistanceBetweenCities(trip.source, trip.destination);
         const mode = trip.travel_mode || 'Train';
