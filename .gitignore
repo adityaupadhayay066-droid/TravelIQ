@@ -11,8 +11,10 @@
 # Dependencies
 node_modules/
 **/node_modules/
-package-lock.json
 jspm_packages/
+*.bak
+rag_storage/
+**/rag_storage/
 
 # Python virtual environment and bytecode
 .venv/
