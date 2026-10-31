@@ -5,9 +5,10 @@ import toast from 'react-hot-toast';
 export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onPaymentComplete }) {
   const [activeTab, setActiveTab] = useState('upi'); // upi, card, netbanking, wallet
   const [isSuccessMode, setIsSuccessMode] = useState(true); // Developer control
-  const [paymentState, setPaymentState] = useState('idle'); // idle, processing, success, failed
+  const [paymentState, setPaymentState] = useState('idle'); // idle, processing, pending, success, failed
   const [progress, setProgress] = useState(0);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [pendingTxn, setPendingTxn] = useState(null);
 
   // UPI fields
   const [upiId, setUpiId] = useState('');
@@ -145,23 +146,39 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
       clearInterval(interval);
       if (isSuccessMode) {
         try {
-          console.log('[Demo Payment]: Committing final ticket reservation to backend...');
+          console.log('[Demo Payment]: Committing reservation and verifying payment with backend...');
           
           // 1. Book the ticket
           const bookingRes = await api.post('/profile/bookings', bookingPayload);
           const booking = bookingRes.data.booking;
 
-          // 2. Record the successful transaction
-          await api.post('/payment/transaction', {
+          // 2. Create authoritative payment order bound to booking
+          const orderRes = await api.post('/payment/order', { booking_id: booking.id });
+          const orderData = orderRes.data;
+
+          // 3. Submit payment attempt to backend
+          const txnRes = await api.post('/payment/transaction', {
             booking_id: booking.id,
+            gateway_order_id: orderData.order_id,
             amount: bookingPayload.ticket_fare,
-            payment_method: activeTab.toUpperCase(),
-            status: 'Success'
+            payment_method: activeTab.toUpperCase()
           });
 
+          const txn = txnRes.data.transaction;
           setConfirmedBooking(booking);
-          setPaymentState('success');
-          toast.success('🎉 Payment Successful! Ticket has been booked.');
+          setPendingTxn(txn);
+
+          // Treat backend as authoritative source of truth: NEVER display success if status is Pending!
+          if (txn && txn.status === 'Success') {
+            setPaymentState('success');
+            toast.success('🎉 Payment Successful! Ticket has been booked.');
+          } else if (txn && txn.status === 'Pending') {
+            setPaymentState('pending');
+            toast('⏳ Payment is pending provider confirmation. Booking remains unpaid.', { icon: 'ℹ️' });
+          } else {
+            setPaymentState('failed');
+            toast.error('Payment processing failed or was rejected.');
+          }
         } catch (err) {
           console.error('[Demo Payment Error]:', err);
           toast.error(err.response?.data?.message || 'Transaction processing failed.');
@@ -172,6 +189,24 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
         toast.error('❌ Demo Payment Failed (Developer Failure Mode Active).');
       }
     }, 2600);
+  };
+
+  const handleRefreshStatus = async () => {
+    if (!confirmedBooking) return;
+    try {
+      const res = await api.get(`/payment/status/${confirmedBooking.id}`);
+      if (res.data.payment_status === 'Paid') {
+        setPaymentState('success');
+        toast.success('🎉 Payment confirmed by backend!');
+      } else if (res.data.payment_status === 'Failed') {
+        setPaymentState('failed');
+        toast.error('Payment failed.');
+      } else {
+        toast('⏳ Still awaiting payment confirmation...', { icon: '⏳' });
+      }
+    } catch (err) {
+      toast.error('Failed to check payment status.');
+    }
   };
 
   const handleDownloadTicket = () => {
@@ -423,6 +458,50 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
                 />
               </div>
               <span className="text-[10px] font-mono font-bold text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)] mt-2">{progress}%</span>
+            </div>
+          )}
+
+          {paymentState === 'pending' && (
+            <div className="flex flex-col items-center justify-center flex-1 py-4 text-center animate-fade-in z-50">
+              <div className="w-14 h-14 bg-[#E5B85C]/10 border border-[#E5B85C]/30 text-[#E5B85C] rounded-full flex items-center justify-center text-2xl font-bold mb-4">
+                ⏳
+              </div>
+              <h3 className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold text-base mb-1">Payment Pending Verification</h3>
+              <p className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)] text-xs mb-5 max-w-sm">
+                Your payment order has been initiated, but has NOT yet been confirmed by the payment provider. The booking remains UNPAID until verification succeeds.
+              </p>
+
+              {confirmedBooking && (
+                <div className="bg-[var(--color-surface)] dark:bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-[var(--color-border)] p-4 rounded-xl w-full max-w-md text-left mb-6 space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Booking ID:</span>
+                    <span className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold font-mono">#{confirmedBooking.id}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Payment status:</span>
+                    <span className="travel-badge bg-[#E5B85C]/10 text-[#E5B85C] border border-[#E5B85C]/30 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">Pending</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Booking status:</span>
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)] font-mono text-[11px]">Unconfirmed</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+                <button
+                  onClick={handleRefreshStatus}
+                  className="btn-primary bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white dark:text-[var(--color-bg)] font-bold py-3 rounded-lg text-xs cursor-pointer active:scale-95 transition-all"
+                >
+                  🔄 Check Payment Status
+                </button>
+                <button
+                  onClick={onClose}
+                  className="btn-secondary bg-[var(--color-surface)] dark:bg-[var(--color-surface)] hover:bg-[var(--color-soft)] dark:hover:bg-[var(--color-soft)] text-[var(--color-text)] dark:text-[var(--color-text)] border border-[var(--color-border)] dark:border-[var(--color-border)] font-bold py-3 rounded-lg text-xs cursor-pointer active:scale-95 transition-all"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           )}
 

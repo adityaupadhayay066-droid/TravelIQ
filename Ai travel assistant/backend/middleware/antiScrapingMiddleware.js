@@ -6,49 +6,61 @@ const SHIELD_SECRET = process.env.CLIENT_SHIELD_SECRET || null;
 
 // Blacklist store in-memory: Map<IP, { reason, blockedAt, expiresAt }>
 const blacklistedIPs = new Map();
+const MAX_BLACKLIST_SIZE = 10000;
 
 // High-speed scraping velocity tracking: Map<IP, Array<timestamp>>
 const requestVelocityMap = new Map();
 
-// Scraper & Bot User-Agent Blacklist Patterns (similar to Cloudflare Bot Management)
+// Scraper & Bot User-Agent Blacklist Patterns (malicious scanners, exploit crawlers, automated scrapers)
+// Note: Legitimate developer HTTP clients (curl, python-requests, node-fetch, axios, Go, Java) are NOT blanket-blocked.
 const BOT_UA_PATTERNS = [
     /scrapy/i,
-    /python-requests/i,
-    /python-urllib/i,
-    /aiohttp/i,
     /beautifulsoup/i,
-    /httpclient/i,
-    /apache-httpclient/i,
-    /curl\//i,
-    /wget\//i,
-    /postmanruntime/i,
+    /selenium/i,
     /puppeteer/i,
     /playwright/i,
-    /headlesschrome/i,
     /phantomjs/i,
-    /selenium/i,
-    /webdriver/i,
-    /insomnia/i,
-    /go-http-client/i,
-    /java\//i,
-    /libwww-perl/i,
-    /mechanize/i,
-    /casperjs/i,
+    /headlesschrome/i,
     /sqlmap/i,
     /nikto/i,
     /zgrab/i,
-    /node-fetch/i,
-    /axios\//i // Blocks raw scripts using standalone node axios without browser User-Agent
+    /masscan/i,
+    /dirbuster/i,
+    /gobuster/i,
+    /wpscan/i
 ];
 
-// Routes excluded from anti-scraping checks (e.g., public developer B2B APIs, webhooks, health checks)
+// Routes excluded from anti-scraping checks (e.g., health check, webhooks, public B2B developer APIs)
 const EXCLUDED_PREFIXES = [
     '/api/health',
+    '/api/payment/webhook',
+    '/api/n8n/webhook',
     '/api/v1/public',
     '/api/developer',
-    '/api/n8n/webhook',
     '/uploads'
 ];
+
+/**
+ * Determine trustworthy client IP without blindly trusting spoofed X-Forwarded-For headers
+ */
+const getClientIP = (req) => {
+    // If running in test mode with explicit simulated IP header, honor it
+    if (process.env.NODE_ENV === 'test' && req.headers['x-test-client-ip']) {
+        return String(req.headers['x-test-client-ip']).trim();
+    }
+
+    const directRemote = req.socket?.remoteAddress || req.connection?.remoteAddress || '';
+    const isLoopback = directRemote === '127.0.0.1' || directRemote === '::1' || directRemote === '::ffff:127.0.0.1';
+    const trustedProxies = (process.env.TRUSTED_PROXY_IPS || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    // If socket connection is from loopback or configured trusted proxy reverse proxy, Express req.ip is trustworthy
+    if (isLoopback || trustedProxies.includes(directRemote)) {
+        return req.ip || directRemote || '127.0.0.1';
+    }
+
+    // Direct socket connection is untrusted: do not trust spoofed X-Forwarded-For header
+    return directRemote || '127.0.0.1';
+};
 
 /**
  * Generate a client shield token (used for supplementary telemetry)
@@ -100,7 +112,7 @@ const verifyClientShield = (token) => {
  * Check if an IP is currently blacklisted
  */
 const isIPBlacklisted = (ip) => {
-    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || process.env.NODE_ENV === 'test') return false;
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return false;
     if (!blacklistedIPs.has(ip)) return false;
     const entry = blacklistedIPs.get(ip);
     if (Date.now() > entry.expiresAt) {
@@ -114,7 +126,20 @@ const isIPBlacklisted = (ip) => {
  * Blacklist an offending IP address and log security alert
  */
 const blacklistIP = async (ip, reason, durationMs = 24 * 60 * 60 * 1000, details = {}) => {
-    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || process.env.NODE_ENV === 'test') return;
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return;
+    
+    // Prune if map exceeds max size to prevent memory exhaustion
+    if (blacklistedIPs.size >= MAX_BLACKLIST_SIZE) {
+        const now = Date.now();
+        for (const [key, val] of blacklistedIPs.entries()) {
+            if (now > val.expiresAt) blacklistedIPs.delete(key);
+        }
+        if (blacklistedIPs.size >= MAX_BLACKLIST_SIZE) {
+            const firstKey = blacklistedIPs.keys().next().value;
+            blacklistedIPs.delete(firstKey);
+        }
+    }
+
     const expiresAt = Date.now() + durationMs;
     blacklistedIPs.set(ip, {
         reason,
@@ -154,14 +179,24 @@ const antiScrapingShield = async (req, res, next) => {
         return next();
     }
 
-    const path = req.path || req.originalUrl || '';
+    const originalUrl = req.originalUrl ? req.originalUrl.split('?')[0] : '';
+    const baseUrl = req.baseUrl ? req.baseUrl.split('?')[0] : '';
+    const reqPath = req.path ? req.path.split('?')[0] : '';
+    const fullPath = originalUrl || (baseUrl + reqPath) || (req.url ? req.url.split('?')[0] : '');
 
-    // Allow excluded routes (health checks, public B2B developer API with key)
-    if (EXCLUDED_PREFIXES.some(prefix => path.startsWith(prefix))) {
+    // Allow excluded routes (health checks, payment webhooks, n8n webhooks, public B2B developer API)
+    const isExempt = EXCLUDED_PREFIXES.some(prefix => {
+        if (fullPath.startsWith(prefix)) return true;
+        if (reqPath.startsWith(prefix)) return true;
+        if (prefix.startsWith('/api') && reqPath.startsWith(prefix.slice(4))) return true;
+        return false;
+    });
+
+    if (isExempt) {
         return next();
     }
 
-    const ip = req.ip || req.connection?.remoteAddress || '127.0.0.1';
+    const ip = getClientIP(req);
     const userAgent = req.headers['user-agent'] || '';
 
     // 1. Check IP Blacklist
@@ -175,27 +210,23 @@ const antiScrapingShield = async (req, res, next) => {
         });
     }
 
-    // 2. Detect Scraper / Bot User-Agents
-    if (!userAgent || userAgent.trim() === '') {
-        await blacklistIP(ip, 'Missing User-Agent Header (Headless Bot)', 30 * 60 * 1000, { userAgent, path });
-        return res.status(403).json({
-            success: false,
-            error: 'Access Denied: Missing valid browser User-Agent header.'
-        });
-    }
-
-    const isKnownBot = BOT_UA_PATTERNS.some(pattern => pattern.test(userAgent));
-    if (isKnownBot) {
-        await blacklistIP(ip, `Known Scraper Bot Detected (${userAgent.substring(0, 40)})`, 60 * 60 * 1000, { userAgent, path });
-        return res.status(403).json({
-            success: false,
-            error: 'Access Denied: Automated data extraction & scraping tools are strictly prohibited by TravelIQ Bot Protection Policy.'
-        });
+    // 2. Detect Malicious Scraper / Bot User-Agents
+    if (userAgent && userAgent.trim() !== '') {
+        const isKnownBot = BOT_UA_PATTERNS.some(pattern => pattern.test(userAgent));
+        if (isKnownBot) {
+            await blacklistIP(ip, `Known Scraper Bot Detected (${userAgent.substring(0, 40)})`, 60 * 60 * 1000, { userAgent, path: fullPath });
+            return res.status(403).json({
+                success: false,
+                error: 'Access Denied: Automated data extraction & scraping tools are strictly prohibited by TravelIQ Bot Protection Policy.'
+            });
+        }
     }
 
     // 3. Behavioral Velocity Scraping Detection for Catalog Endpoints
-    // (e.g. Travel, Hotels, Trains, Destinations, Food)
-    const isCatalogEndpoint = /^\/api\/(travel|hotels|food|station|trains|destinations)/i.test(path);
+    // Evaluates both fullPath (/api/travel, /api/hotels, etc.) and relative path (/travel, /hotels, etc.)
+    const isCatalogEndpoint = /^\/api\/(travel|hotels|food|station|trains|destinations)/i.test(fullPath) ||
+                              /^\/(travel|hotels|food|station|trains|destinations)/i.test(reqPath);
+
     if (isCatalogEndpoint && req.method === 'GET') {
         const now = Date.now();
         const timestamps = requestVelocityMap.get(ip) || [];
@@ -204,9 +235,9 @@ const antiScrapingShield = async (req, res, next) => {
         recent.push(now);
         requestVelocityMap.set(ip, recent);
 
-        // If an IP triggers > 18 catalog requests within 4 seconds (impossible for human browsing)
+        // If an IP triggers > 18 catalog requests within 4 seconds (scraper burst)
         if (recent.length > 18) {
-            await blacklistIP(ip, 'Excessive Catalog Crawling Velocity (Scraper Burst)', 15 * 60 * 1000, { userAgent, path });
+            await blacklistIP(ip, 'Excessive Catalog Crawling Velocity (Scraper Burst)', 15 * 60 * 1000, { userAgent, path: fullPath });
             return res.status(429).json({
                 success: false,
                 error: 'Too Many Requests: Abnormal scraping activity detected. Catalog queries temporarily throttled.'
@@ -214,7 +245,7 @@ const antiScrapingShield = async (req, res, next) => {
         }
     }
 
-    // 4. Client Shield Token Validation for protected stateful routes
+    // 4. Client Shield Token Validation for supplementary telemetry
     const clientShield = req.headers['x-client-shield'];
     if (clientShield) {
         if (!verifyClientShield(clientShield)) {
@@ -230,7 +261,7 @@ const antiScrapingShield = async (req, res, next) => {
  * Endpoints that legitimate users never access, but automated crawlers / spiders discover and hit.
  */
 const honeypotTrapHandler = async (req, res) => {
-    const ip = req.ip || req.connection?.remoteAddress || '127.0.0.1';
+    const ip = getClientIP(req);
     const userAgent = req.headers['user-agent'] || 'Unknown';
     const path = req.originalUrl || req.url;
 
@@ -280,6 +311,14 @@ const unblockIP = (ip) => {
     return false;
 };
 
+/**
+ * Test helper: clear in-memory blacklist
+ */
+const clearBlacklistForTest = () => {
+    blacklistedIPs.clear();
+    requestVelocityMap.clear();
+};
+
 module.exports = {
     antiScrapingShield,
     honeypotTrapHandler,
@@ -288,5 +327,8 @@ module.exports = {
     getAntiScrapingStats,
     unblockIP,
     blacklistIP,
+    isIPBlacklisted,
+    getClientIP,
+    clearBlacklistForTest,
     SHIELD_SECRET
 };

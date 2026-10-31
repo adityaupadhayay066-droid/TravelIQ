@@ -138,8 +138,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield', 'x-traveliq-secret']
 }));
 
-// ─── Parsers (Restricted payload size to prevent memory exhaustion) ───
-app.use(express.json({ limit: '1mb' }));
+// ─── Parsers (Restricted payload size to prevent memory exhaustion; preserve raw body for webhook HMAC) ───
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(cookieParser());
 
 // ─── Dynamic robots.txt to disallow scrapers and lay honeypot traps ───
@@ -253,6 +258,17 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
   })
   .then(async () => {
     console.log('✅ MySQL Database synchronized with alter schema successfully.');
+    
+    // Ensure train_stops view is created for deterministic routing
+    try {
+      await sequelize.query(`
+        CREATE OR REPLACE VIEW train_stops AS
+        SELECT id, train_number AS train_no, train_number, station_code, arrival_time, departure_time, day_count, stop_sequence
+        FROM train_schedules
+      `);
+    } catch (vErr) {
+      console.warn('[DB Init] train_stops view notice:', vErr.message);
+    }
     
     // Run seeders after sync
     try {

@@ -1198,7 +1198,7 @@ const refreshSession = async (req, res) => {
         if (rtRecord.revoked) {
             console.warn(`🚨 [SECURITY ALERT] Refresh token reuse detected for User ID ${rtRecord.user_id}! Revoking all sessions.`);
             await RefreshToken.update({ revoked: true }, { where: { user_id: rtRecord.user_id } });
-            await Session.update({ is_active: false }, { where: { user_id: rtRecord.user_id } });
+            await Session.destroy({ where: { user_id: rtRecord.user_id } });
 
             try {
                 await SecurityAlert.create({

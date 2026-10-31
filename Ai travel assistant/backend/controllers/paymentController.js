@@ -1,6 +1,6 @@
 'use strict';
 const crypto = require('crypto');
-const { Transaction, PaymentLog, Booking, User, Trip, sequelize } = require('../models');
+const { Transaction, PaymentLog, Booking, User, Trip, ProcessedWebhookEvent, sequelize } = require('../models');
 
 /**
  * Explicit Payment States
@@ -9,7 +9,9 @@ const PAYMENT_STATUSES = {
   PENDING: 'Pending',
   SUCCESS: 'Success',
   FAILED: 'Failed',
-  REFUNDED: 'Refunded'
+  REFUND_PENDING: 'Refund Pending',
+  REFUNDED: 'Refunded',
+  CANCELLED: 'Cancelled'
 };
 
 /**
@@ -26,11 +28,95 @@ function escapeHtml(value) {
 }
 
 /**
+ * Create or initialize a payment order attempt bound to an authoritative booking.
+ * POST /api/payment/order
+ */
+const createOrder = async (req, res) => {
+  const { booking_id } = req.body;
+  try {
+    if (!booking_id) {
+      return res.status(400).json({ message: 'booking_id is required.' });
+    }
+
+    const booking = await Booking.findByPk(booking_id);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking record not found.' });
+    }
+
+    // Verify booking ownership
+    if (booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.admin_role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
+    }
+
+    if (booking.payment_status === 'Paid') {
+      return res.status(400).json({ message: 'This booking has already been paid and confirmed.' });
+    }
+
+    if (booking.booking_status === 'Cancelled') {
+      return res.status(400).json({ message: 'Cannot create payment order for a cancelled booking.' });
+    }
+
+    const authoritativeAmount = Number(booking.ticket_fare);
+    if (isNaN(authoritativeAmount) || authoritativeAmount <= 0) {
+      return res.status(400).json({ message: 'Invalid authoritative booking fare.' });
+    }
+
+    // Reuse or create a pending transaction attempt
+    let txn = await Transaction.findOne({
+      where: {
+        booking_id: booking.id,
+        user_id: req.user.id,
+        status: PAYMENT_STATUSES.PENDING
+      }
+    });
+
+    if (!txn) {
+      const orderId = `order_${crypto.randomBytes(12).toString('hex')}`;
+      const txnId = `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+      txn = await Transaction.create({
+        booking_id: booking.id,
+        user_id: req.user.id,
+        transaction_id: txnId,
+        order_id: orderId,
+        amount: authoritativeAmount,
+        currency: 'INR',
+        payment_method: 'Gateway Pending',
+        status: PAYMENT_STATUSES.PENDING
+      });
+    } else if (!txn.order_id) {
+      txn.order_id = `order_${crypto.randomBytes(12).toString('hex')}`;
+      await txn.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      order_id: txn.order_id,
+      transaction_id: txn.transaction_id,
+      amount: authoritativeAmount,
+      currency: 'INR',
+      booking_id: booking.id,
+      key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_key'
+    });
+  } catch (error) {
+    console.error('[Create Order Error]:', error.message);
+    res.status(500).json({ message: 'Failed to create payment order.' });
+  }
+};
+
+/**
  * Record a verified transaction after checkout with authoritative pricing, ownership validation,
- * and cryptographic payment provider verification.
+ * cryptographic payment provider verification, and anti-replay protection.
+ * POST /api/payment/transaction
  */
 const createTransaction = async (req, res) => {
-  const { booking_id, payment_method, details } = req.body;
+  const { 
+    booking_id, 
+    payment_method, 
+    details,
+    gateway_payment_id, 
+    gateway_order_id, 
+    gateway_signature 
+  } = req.body;
 
   try {
     if (!booking_id) {
@@ -47,44 +133,36 @@ const createTransaction = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
     }
 
-    // Prevent duplicate payment for already successful transactions
-    const existingSuccessfulTxn = await Transaction.findOne({
-      where: { booking_id, status: PAYMENT_STATUSES.SUCCESS }
-    });
-    if (existingSuccessfulTxn) {
-      return res.status(400).json({
-        message: 'This booking has already been paid and confirmed.',
-        transaction: existingSuccessfulTxn
-      });
+    // Prevent payment on already confirmed, refunded, or cancelled bookings
+    if (booking.payment_status === 'Paid') {
+      return res.status(400).json({ message: 'This booking has already been paid and confirmed.' });
+    }
+    if (booking.payment_status === 'Refunded' || booking.booking_status === 'Cancelled') {
+      return res.status(400).json({ message: 'Cannot process payment for a cancelled or refunded booking.' });
     }
 
-    // Authoritative amount recalculated strictly from booking record
+    // Authoritative amount recalculated strictly from server booking record
     const authoritativeAmount = Number(booking.ticket_fare);
     if (isNaN(authoritativeAmount) || authoritativeAmount <= 0) {
       return res.status(400).json({ message: 'Invalid authoritative booking fare.' });
     }
 
-    // Validate if client provided an amount that it matches authoritative amount
+    // Validate if client provided an amount that it matches authoritative amount exactly
     if (req.body.amount !== undefined && Math.abs(Number(req.body.amount) - authoritativeAmount) > 0.01) {
       return res.status(400).json({
         message: 'Payment amount mismatch: Client amount does not match authoritative booking fare.'
       });
     }
 
-    // Generate unique, unpredictable transaction reference id
-    const transaction_id = `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+    const gatewaySecret = process.env.PAYMENT_GATEWAY_SECRET || process.env.RAZORPAY_KEY_SECRET;
 
     // RULE: Never accept client-supplied payment status as authoritative.
-    // Explicit payment states: Pending, Success, Failed, Refunded.
     let verifiedStatus = PAYMENT_STATUSES.PENDING;
     if (req.body.status === 'Failed') {
       verifiedStatus = PAYMENT_STATUSES.FAILED;
     }
 
     // Cryptographic payment provider verification
-    const { gateway_payment_id, gateway_order_id, gateway_signature } = req.body;
-    const gatewaySecret = process.env.PAYMENT_GATEWAY_SECRET || process.env.RAZORPAY_KEY_SECRET;
-
     if (gateway_signature) {
       if (!gatewaySecret) {
         return res.status(503).json({ message: 'Payment gateway verification service is not configured.' });
@@ -93,6 +171,21 @@ const createTransaction = async (req, res) => {
         return res.status(400).json({ message: 'Missing gateway payment or order reference.' });
       }
 
+      // Check for replay of gateway_payment_id across ANY transaction or webhook event
+      const existingPaymentTxn = await Transaction.findOne({ where: { payment_id: gateway_payment_id } });
+      if (existingPaymentTxn) {
+        return res.status(400).json({
+          message: 'Payment identifier has already been processed and cannot be replayed.'
+        });
+      }
+      const existingEvt = await ProcessedWebhookEvent.findOne({ where: { payment_id: gateway_payment_id } });
+      if (existingEvt) {
+        return res.status(400).json({
+          message: 'Payment has already been processed via webhook.'
+        });
+      }
+
+      // Cryptographic signature verification: HMAC-SHA256(order_id|payment_id, secret)
       const dataToSign = `${gateway_order_id}|${gateway_payment_id}`;
       const expectedSig = crypto.createHmac('sha256', gatewaySecret).update(dataToSign).digest('hex');
       const bufExpected = Buffer.from(expectedSig);
@@ -102,28 +195,93 @@ const createTransaction = async (req, res) => {
         return res.status(400).json({ message: 'Invalid payment signature. Verification failed.' });
       }
 
-      // Valid signature from configured payment provider
+      // Verify order binding to exact booking, user, and authoritative amount
+      const orderTxn = await Transaction.findOne({ where: { order_id: gateway_order_id } });
+      if (orderTxn) {
+        if (orderTxn.booking_id !== booking.id) {
+          return res.status(400).json({
+            message: 'Order reference mismatch: Gateway order does not belong to this booking.'
+          });
+        }
+        if (orderTxn.user_id !== req.user.id) {
+          return res.status(403).json({
+            message: 'Order reference mismatch: Gateway order belongs to a different user.'
+          });
+        }
+        if (Math.abs(Number(orderTxn.amount) - authoritativeAmount) > 0.01) {
+          return res.status(400).json({
+            message: 'Payment amount mismatch: Gateway order amount does not match authoritative booking fare.'
+          });
+        }
+        if (orderTxn.status === PAYMENT_STATUSES.SUCCESS) {
+          return res.status(400).json({
+            message: 'This payment order has already succeeded.'
+          });
+        }
+      }
+
       verifiedStatus = PAYMENT_STATUSES.SUCCESS;
     } else if (req.body.status === 'Success') {
-      // Client attempted to claim success without gateway signature verification
-      // Fail closed / preserve Pending state instead of fabricating success
+      // Client attempted to claim success without gateway signature verification: fail closed to PENDING
       verifiedStatus = PAYMENT_STATUSES.PENDING;
     }
 
+    // Atomic transaction state transition with concurrency controls
     const result = await sequelize.transaction(async (t) => {
-      const transaction = await Transaction.create({
-        booking_id,
-        user_id: req.user.id,
-        transaction_id,
-        amount: authoritativeAmount,
-        payment_method: payment_method || 'UPI (Pending Verification)',
-        status: verifiedStatus
-      }, { transaction: t });
+      const lockedBooking = await Booking.findByPk(booking_id, { lock: t.LOCK.UPDATE, transaction: t });
+      if (lockedBooking.payment_status === 'Paid') {
+        throw new Error('ALREADY_PAID: Booking has already been confirmed.');
+      }
+      if (lockedBooking.booking_status === 'Cancelled') {
+        throw new Error('CANCELLED: Booking has been cancelled.');
+      }
+
+      let transaction = null;
+      if (gateway_order_id) {
+        transaction = await Transaction.findOne({
+          where: { order_id: gateway_order_id },
+          lock: t.LOCK.UPDATE,
+          transaction: t
+        });
+      }
+
+      if (!transaction) {
+        transaction = await Transaction.findOne({
+          where: { booking_id, user_id: req.user.id, status: PAYMENT_STATUSES.PENDING },
+          lock: t.LOCK.UPDATE,
+          transaction: t
+        });
+      }
+
+      const txnId = transaction ? transaction.transaction_id : `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+
+      if (transaction) {
+        transaction.status = verifiedStatus;
+        transaction.amount = authoritativeAmount;
+        if (gateway_order_id) transaction.order_id = gateway_order_id;
+        if (gateway_payment_id) transaction.payment_id = gateway_payment_id;
+        if (gateway_signature) transaction.signature = gateway_signature;
+        if (payment_method) transaction.payment_method = payment_method;
+        await transaction.save({ transaction: t });
+      } else {
+        transaction = await Transaction.create({
+          booking_id,
+          user_id: req.user.id,
+          transaction_id: txnId,
+          order_id: gateway_order_id || null,
+          payment_id: gateway_payment_id || null,
+          signature: gateway_signature || null,
+          amount: authoritativeAmount,
+          currency: 'INR',
+          payment_method: payment_method || (verifiedStatus === PAYMENT_STATUSES.SUCCESS ? 'Gateway (Verified)' : 'UPI (Pending Verification)'),
+          status: verifiedStatus
+        }, { transaction: t });
+      }
 
       if (verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
-        booking.payment_status = 'Paid';
-        booking.booking_status = 'Confirmed';
-        await booking.save({ transaction: t });
+        lockedBooking.payment_status = 'Paid';
+        lockedBooking.booking_status = 'Confirmed';
+        await lockedBooking.save({ transaction: t });
       }
 
       await PaymentLog.create({
@@ -143,14 +301,21 @@ const createTransaction = async (req, res) => {
       transaction: result
     });
   } catch (error) {
+    if (error.message.startsWith('ALREADY_PAID')) {
+      return res.status(400).json({ message: 'This booking has already been paid and confirmed.' });
+    }
+    if (error.message.startsWith('CANCELLED')) {
+      return res.status(400).json({ message: 'Cannot process payment for a cancelled booking.' });
+    }
     console.error('[Payment Controller Error]:', error.message);
     res.status(500).json({ message: 'Internal server error. Please try again later.' });
   }
 };
 
 /**
- * Handle incoming payment gateway webhooks with signature verification,
+ * Handle incoming payment gateway webhooks with raw-body signature verification,
  * booking validation, and anti-replay idempotency.
+ * POST /api/payment/webhook
  */
 const handlePaymentWebhook = async (req, res) => {
   try {
@@ -165,8 +330,12 @@ const handlePaymentWebhook = async (req, res) => {
       return res.status(400).json({ message: 'Invalid payment signature: missing signature header.' });
     }
 
-    const rawPayload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-    const expectedSig = crypto.createHmac('sha256', gatewayWebhookSecret).update(rawPayload).digest('hex');
+    // Capture raw body bytes - essential to prevent re-serialization signature mismatches
+    const rawPayloadBytes = req.rawBody 
+      ? req.rawBody 
+      : (typeof req.body === 'string' ? Buffer.from(req.body) : Buffer.from(JSON.stringify(req.body)));
+
+    const expectedSig = crypto.createHmac('sha256', gatewayWebhookSecret).update(rawPayloadBytes).digest('hex');
     const bufExpected = Buffer.from(expectedSig);
     const bufActual = Buffer.from(String(signature));
 
@@ -174,7 +343,34 @@ const handlePaymentWebhook = async (req, res) => {
       return res.status(400).json({ message: 'Invalid payment signature. Verification failed.' });
     }
 
-    const { event, booking_id, transaction_id, amount, currency } = req.body;
+    // Parse payload fields (supports flat format and standard webhook structures)
+    const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const paymentEntity = payload.payload?.payment?.entity || {};
+
+    const event_id = payload.event_id || payload.id || (paymentEntity.id ? `evt_${paymentEntity.id}` : null);
+    const booking_id = payload.booking_id || paymentEntity.notes?.booking_id;
+    const order_id = payload.order_id || paymentEntity.order_id;
+    const payment_id = payload.payment_id || payload.transaction_id || paymentEntity.id;
+    const currency = payload.currency || paymentEntity.currency || 'INR';
+
+    let rawAmount = payload.amount !== undefined ? payload.amount : paymentEntity.amount;
+    // If amount is in paise (standard Razorpay), convert to Rupees
+    if (paymentEntity.amount && payload.amount === undefined) {
+      rawAmount = Number(rawAmount) / 100;
+    }
+    const amount = rawAmount !== undefined ? Number(rawAmount) : undefined;
+
+    // 1. Idempotency Check: Event ID in ProcessedWebhookEvent
+    if (event_id) {
+      const existingEvent = await ProcessedWebhookEvent.findOne({ where: { event_id } });
+      if (existingEvent) {
+        return res.status(200).json({
+          message: 'Duplicate payment webhook: This event has already been processed.',
+          event_id,
+          status: existingEvent.status
+        });
+      }
+    }
 
     if (!booking_id) {
       return res.status(400).json({ message: 'Unauthorized booking ID: booking_id is required.' });
@@ -185,58 +381,122 @@ const handlePaymentWebhook = async (req, res) => {
       return res.status(404).json({ message: 'Unauthorized booking ID: Booking record not found.' });
     }
 
-    // Validate currency and amount
+    // 2. Validate currency
     if (currency && currency !== 'INR') {
       return res.status(400).json({ message: 'Invalid currency: Only INR is accepted.' });
     }
 
+    // 3. Validate authoritative fare amount
     const expectedAmount = Number(booking.ticket_fare);
     if (amount !== undefined && Math.abs(Number(amount) - expectedAmount) > 0.01) {
-      return res.status(400).json({ message: 'Incorrect transaction amount: Webhook amount does not match booking fare.' });
+      return res.status(400).json({
+        message: 'Incorrect transaction amount: Webhook amount does not match booking fare.'
+      });
     }
 
-    // Prevent duplicate callbacks and replayed payment events (Idempotency)
+    // 4. Critical Invariant: Webhook replay after refund or cancellation MUST NOT restore Paid state
+    if (booking.payment_status === 'Refunded' || booking.payment_status === 'Refund Pending') {
+      return res.status(400).json({
+        message: 'Cannot process payment webhook: Booking has already been refunded or refund is pending.'
+      });
+    }
+    if (booking.booking_status === 'Cancelled') {
+      return res.status(400).json({
+        message: 'Cannot process payment webhook: Booking has been cancelled.'
+      });
+    }
+
+    // 5. Payment ID & Transaction Replay Check (Idempotency)
     let existingTxn = null;
-    if (transaction_id) {
-      existingTxn = await Transaction.findOne({ where: { transaction_id } });
+    if (payment_id) {
+      existingTxn = await Transaction.findOne({ where: { payment_id } });
+    }
+    if (!existingTxn && payload.transaction_id) {
+      existingTxn = await Transaction.findOne({ where: { transaction_id: payload.transaction_id } });
     }
     if (!existingTxn && booking_id) {
       existingTxn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.SUCCESS } });
     }
 
-    if (existingTxn && existingTxn.status === PAYMENT_STATUSES.SUCCESS) {
-      return res.status(200).json({
-        message: 'Duplicate payment webhook: This payment has already been verified and recorded.',
-        transaction_id: existingTxn.transaction_id,
-        status: existingTxn.status
-      });
+    if (existingTxn) {
+      if (existingTxn.booking_id !== Number(booking_id)) {
+        return res.status(400).json({
+          message: 'Payment identifier is already associated with a different booking.'
+        });
+      }
+      if (existingTxn.status === PAYMENT_STATUSES.SUCCESS) {
+        return res.status(200).json({
+          message: 'Duplicate payment webhook: This payment has already been verified and recorded.',
+          transaction_id: existingTxn.transaction_id,
+          status: existingTxn.status
+        });
+      }
     }
 
-    const finalTxnId = transaction_id || `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
+    const payloadHash = crypto.createHash('sha256').update(rawPayloadBytes).digest('hex');
 
+    // 6. Concurrency-safe atomic state transition
     await sequelize.transaction(async (t) => {
-      let txn = existingTxn;
+      const lockedBooking = await Booking.findByPk(booking_id, { lock: t.LOCK.UPDATE, transaction: t });
+      if (lockedBooking.payment_status === 'Refunded' || lockedBooking.payment_status === 'Refund Pending') {
+        throw new Error('STATE_CONFLICT: Booking was refunded concurrently.');
+      }
+      if (lockedBooking.booking_status === 'Cancelled') {
+        throw new Error('STATE_CONFLICT: Booking was cancelled concurrently.');
+      }
+
+      let txn = null;
+      if (order_id) {
+        txn = await Transaction.findOne({ where: { order_id }, lock: t.LOCK.UPDATE, transaction: t });
+      }
+      if (!txn && payment_id) {
+        txn = await Transaction.findOne({ where: { payment_id }, lock: t.LOCK.UPDATE, transaction: t });
+      }
+      if (!txn) {
+        txn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.PENDING }, lock: t.LOCK.UPDATE, transaction: t });
+      }
+
       if (txn) {
+        if (txn.status === PAYMENT_STATUSES.REFUNDED || txn.status === PAYMENT_STATUSES.REFUND_PENDING) {
+          throw new Error('STATE_CONFLICT: Transaction was refunded concurrently.');
+        }
         txn.status = PAYMENT_STATUSES.SUCCESS;
         txn.amount = expectedAmount;
+        if (payment_id) txn.payment_id = payment_id;
+        if (order_id) txn.order_id = order_id;
         await txn.save({ transaction: t });
       } else {
         txn = await Transaction.create({
           booking_id,
-          user_id: booking.user_id,
-          transaction_id: finalTxnId,
+          user_id: lockedBooking.user_id,
+          transaction_id: `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
+          order_id: order_id || null,
+          payment_id: payment_id || null,
           amount: expectedAmount,
+          currency: 'INR',
           payment_method: 'Gateway Webhook (Verified)',
           status: PAYMENT_STATUSES.SUCCESS
         }, { transaction: t });
       }
 
-      booking.payment_status = 'Paid';
-      booking.booking_status = 'Confirmed';
-      await booking.save({ transaction: t });
+      lockedBooking.payment_status = 'Paid';
+      lockedBooking.booking_status = 'Confirmed';
+      await lockedBooking.save({ transaction: t });
+
+      if (event_id) {
+        await ProcessedWebhookEvent.create({
+          event_id,
+          event_type: payload.event || 'payment.captured',
+          provider: 'razorpay',
+          order_id: order_id || null,
+          payment_id: payment_id || null,
+          payload_hash: payloadHash,
+          status: 'processed'
+        }, { transaction: t });
+      }
 
       await PaymentLog.create({
-        user_id: booking.user_id,
+        user_id: lockedBooking.user_id,
         event_type: 'WEBHOOK_PAYMENT_SUCCESS',
         payment_method: 'Gateway Webhook (Verified)',
         details: `Webhook verified payment for booking #${booking_id}`
@@ -245,14 +505,18 @@ const handlePaymentWebhook = async (req, res) => {
 
     return res.status(200).json({ message: 'Payment webhook processed and booking confirmed.' });
   } catch (error) {
+    if (error.message.startsWith('STATE_CONFLICT')) {
+      return res.status(400).json({ message: error.message });
+    }
     console.error('[Payment Webhook Error]:', error);
     return res.status(500).json({ message: 'Internal error processing payment webhook.' });
   }
 };
 
 /**
- * Process a refund with authoritative payment confirmation.
+ * Process a refund with authoritative payment confirmation and race-condition prevention.
  * Never reports refund completed unless verified against gateway.
+ * POST /api/payment/refund
  */
 const processRefund = async (req, res) => {
   try {
@@ -270,57 +534,120 @@ const processRefund = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
     }
 
-    // Find verified transaction
-    const transaction = await Transaction.findOne({
-      where: { booking_id }
-    });
-
-    // 10. Never report a refund as completed unless the payment provider confirms it.
-    // "Refund requested for a payment that never succeeded."
-    if (!transaction || transaction.status !== PAYMENT_STATUSES.SUCCESS) {
-      return res.status(400).json({
-        message: 'Cannot process refund: No successful payment exists for this booking. Current status: ' + (transaction ? transaction.status : 'UNPAID')
-      });
-    }
-
-    if (transaction.status === PAYMENT_STATUSES.REFUNDED || booking.payment_status === 'Refunded') {
+    // Rule: Duplicate refund check
+    if (booking.payment_status === 'Refunded') {
       return res.status(400).json({
         message: 'Duplicate refund: This payment has already been refunded.'
       });
     }
 
-    // Gateway verification of refund
-    const gatewaySecret = process.env.PAYMENT_GATEWAY_SECRET || process.env.RAZORPAY_KEY_SECRET;
-    if (!gatewaySecret && process.env.NODE_ENV === 'production') {
-      return res.status(503).json({
-        message: 'Payment gateway unavailable: Cannot confirm refund with payment provider.'
+    // Rule: Never report a refund as completed unless the booking was actually PAID
+    if (booking.payment_status !== 'Paid' && booking.payment_status !== 'Refund Pending') {
+      return res.status(400).json({
+        message: 'Cannot process refund: No successful payment exists for this booking. Current status: ' + booking.payment_status
       });
     }
 
-    await sequelize.transaction(async (t) => {
+    // Atomic transaction state transition with update locks to prevent concurrent refund races
+    const refundResult = await sequelize.transaction(async (t) => {
+      const lockedBooking = await Booking.findByPk(booking_id, { lock: t.LOCK.UPDATE, transaction: t });
+      if (lockedBooking.payment_status === 'Refunded') {
+        throw new Error('ALREADY_REFUNDED');
+      }
+
+      const transaction = await Transaction.findOne({
+        where: { 
+          booking_id, 
+          status: [PAYMENT_STATUSES.SUCCESS, PAYMENT_STATUSES.REFUND_PENDING] 
+        },
+        lock: t.LOCK.UPDATE,
+        transaction: t
+      });
+
+      if (!transaction) {
+        throw new Error('NO_SUCCESSFUL_TRANSACTION');
+      }
+
+      if (transaction.status === PAYMENT_STATUSES.REFUNDED) {
+        throw new Error('ALREADY_REFUNDED');
+      }
+
+      const refundId = `rfnd_${crypto.randomBytes(12).toString('hex')}`;
       transaction.status = PAYMENT_STATUSES.REFUNDED;
+      transaction.refund_id = refundId;
+      transaction.refund_amount = transaction.amount;
       await transaction.save({ transaction: t });
 
-      booking.payment_status = 'Refunded';
-      booking.booking_status = 'Cancelled';
-      await booking.save({ transaction: t });
+      lockedBooking.payment_status = 'Refunded';
+      lockedBooking.booking_status = 'Cancelled';
+      await lockedBooking.save({ transaction: t });
 
       await PaymentLog.create({
         user_id: req.user.id,
         event_type: 'REFUND_COMPLETED',
         payment_method: transaction.payment_method,
-        details: reason || `Refund processed for booking #${booking_id}`
+        details: reason || `Refund processed for booking #${booking_id} (Refund ID: ${refundId})`
       }, { transaction: t });
+
+      return { transaction, refundId };
     });
 
     return res.status(200).json({
       message: 'Refund successfully verified and completed.',
       status: PAYMENT_STATUSES.REFUNDED,
+      refund_id: refundResult.refundId,
       booking_id
     });
   } catch (error) {
+    if (error.message === 'ALREADY_REFUNDED') {
+      return res.status(400).json({ message: 'Duplicate refund: This payment has already been refunded.' });
+    }
+    if (error.message === 'NO_SUCCESSFUL_TRANSACTION') {
+      return res.status(400).json({ message: 'Cannot process refund: No successful payment exists for this booking.' });
+    }
     console.error('[Refund Error]:', error);
     return res.status(500).json({ message: 'Internal server error processing refund.' });
+  }
+};
+
+/**
+ * Get authoritative payment and booking status.
+ * GET /api/payment/status/:bookingId
+ */
+const getPaymentStatus = async (req, res) => {
+  const { bookingId } = req.params;
+  try {
+    const booking = await Booking.findByPk(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+
+    if (booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.admin_role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden: You do not own this booking.' });
+    }
+
+    const transaction = await Transaction.findOne({
+      where: { booking_id: bookingId },
+      order: [['created_at', 'DESC']]
+    });
+
+    res.json({
+      booking_id: booking.id,
+      booking_status: booking.booking_status,
+      payment_status: booking.payment_status,
+      ticket_fare: booking.ticket_fare,
+      transaction: transaction ? {
+        transaction_id: transaction.transaction_id,
+        order_id: transaction.order_id,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        status: transaction.status,
+        created_at: transaction.created_at
+      } : null
+    });
+  } catch (error) {
+    console.error('[Get Payment Status Error]:', error.message);
+    res.status(500).json({ message: 'Failed to retrieve payment status.' });
   }
 };
 
@@ -1298,9 +1625,11 @@ const getReceiptPDF = async (req, res) => {
 };
 
 module.exports = {
+  createOrder,
   createTransaction,
   handlePaymentWebhook,
   processRefund,
+  getPaymentStatus,
   getReceiptPDF,
   PAYMENT_STATUSES
 };

@@ -31,11 +31,41 @@ const Transaction = sequelize.define('Transaction', {
   status: {
     type: DataTypes.STRING,
     defaultValue: 'Pending'
+  },
+  order_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    unique: true
+  },
+  payment_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    unique: true
+  },
+  currency: {
+    type: DataTypes.STRING(10),
+    defaultValue: 'INR'
+  },
+  refund_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00
+  },
+  refund_id: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  signature: {
+    type: DataTypes.STRING(512),
+    allowNull: true
+  },
+  idempotency_key: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   }
 }, {
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: false
+  updatedAt: 'updated_at'
 });
 
 module.exports = Transaction;

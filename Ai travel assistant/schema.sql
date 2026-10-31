@@ -1,6 +1,3 @@
--- =========================================================================
--- TravelIQ Database Schema Blueprint (Advanced MySQL DDL Script)
--- =========================================================================
 
 CREATE DATABASE IF NOT EXISTS `traveliq`;
 USE `traveliq`;
@@ -99,8 +96,16 @@ CREATE TABLE `transactions` (
   `transaction_id` VARCHAR(100) NOT NULL UNIQUE,
   `amount` DECIMAL(10, 2) NOT NULL,
   `payment_method` VARCHAR(100) NOT NULL,
-  `status` VARCHAR(50) DEFAULT 'Success',
+  `status` VARCHAR(50) DEFAULT 'Pending',
+  `order_id` VARCHAR(255) DEFAULT NULL UNIQUE,
+  `payment_id` VARCHAR(255) DEFAULT NULL UNIQUE,
+  `currency` VARCHAR(10) DEFAULT 'INR',
+  `refund_amount` DECIMAL(10, 2) DEFAULT '0.00',
+  `refund_id` VARCHAR(255) DEFAULT NULL,
+  `signature` VARCHAR(512) DEFAULT NULL,
+  `idempotency_key` VARCHAR(255) DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `fk_transactions_booking_id` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_transactions_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -154,6 +159,50 @@ CREATE TABLE `train_fares` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `fk_train_fares_train` FOREIGN KEY (`train_number`) REFERENCES `trains` (`train_number`) ON DELETE CASCADE,
   UNIQUE KEY `uk_train_class` (`train_number`, `class_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7.2 Train Schedules Table
+CREATE TABLE IF NOT EXISTS `train_schedules` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `train_number` VARCHAR(50) NOT NULL,
+  `station_code` VARCHAR(50) NOT NULL,
+  `arrival_time` VARCHAR(20) DEFAULT NULL,
+  `departure_time` VARCHAR(20) DEFAULT NULL,
+  `day_count` INT DEFAULT 1,
+  `stop_sequence` INT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_train_sched_station` (`station_code`),
+  INDEX `idx_train_sched_train` (`train_number`),
+  INDEX `idx_train_sched_stn_trn` (`station_code`, `train_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7.3 Train Stops View
+CREATE OR REPLACE VIEW `train_stops` AS 
+SELECT 
+  `id`,
+  `train_number` AS `train_no`,
+  `train_number`,
+  `station_code`,
+  `arrival_time`,
+  `departure_time`,
+  `day_count`,
+  `stop_sequence`
+FROM `train_schedules`;
+
+-- 7.4 Processed Webhook Events Table
+CREATE TABLE IF NOT EXISTS `processed_webhook_events` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `event_id` VARCHAR(255) NOT NULL UNIQUE,
+  `event_type` VARCHAR(100) NOT NULL,
+  `provider` VARCHAR(50) DEFAULT 'razorpay',
+  `payload_hash` VARCHAR(64) DEFAULT NULL,
+  `status` VARCHAR(50) DEFAULT 'processed',
+  `order_id` VARCHAR(100) DEFAULT NULL,
+  `payment_id` VARCHAR(100) DEFAULT NULL,
+  `processed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. Restaurants Table

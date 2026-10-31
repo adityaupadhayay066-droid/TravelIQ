@@ -1,4 +1,4 @@
-const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken, Station } = require('../models');
+const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken, Station, Transaction, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
@@ -328,6 +328,8 @@ const getBookings = async (req, res) => {
   }
 };
 
+const SUPPORTED_CLASSES = ['1A', '2A', '3A', '3E', 'SL', 'CC', 'EC', '2S'];
+
 // POST /api/profile/bookings — Create a new user booking with authoritative fare calculation
 const createBooking = async (req, res) => {
   const { 
@@ -355,72 +357,131 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Invalid passenger count: between 1 and 10 travelers permitted per booking.' });
     }
 
-    // Authoritatively calculate ticket fare from database
-    let farePerPassenger = 480;
-    if (train_number && travel_class) {
-      const fareRow = await TrainFare.findOne({
-        where: {
-          train_number: String(train_number).trim(),
-          class_code: String(travel_class).trim().toUpperCase()
-        }
-      });
-      if (fareRow && fareRow.fare > 0) {
-        farePerPassenger = fareRow.fare;
-      } else {
-        // Dynamic distance-based IRCTC telescopic fare calculation
-        let distanceKm = 650;
-        try {
-          const [stnSrc, stnDst] = await Promise.all([
-            Station.findOne({ where: { station_code: source_station_code } }),
-            Station.findOne({ where: { station_code: destination_station_code } })
-          ]);
-          if (stnSrc && stnDst && stnSrc.latitude && stnDst.latitude) {
-            distanceKm = estimateRailDistance(stnSrc.latitude, stnSrc.longitude, stnDst.latitude, stnDst.longitude);
-          }
-        } catch (_) {}
+    // 1. Station code validation & normalization
+    const sourceCode = String(source_station_code || '').trim().toUpperCase();
+    const destCode = String(destination_station_code || '').trim().toUpperCase();
 
-        const dynamicFare = calculateRailwayFare({
-          distanceKm,
-          travelClass,
-          isSuperfast: true,
-          passengers: 1
-        });
-        farePerPassenger = dynamicFare.farePerPassenger;
-      }
+    if (!sourceCode || !destCode) {
+      return res.status(400).json({ message: 'Both source and destination station codes are required.' });
     }
+
+    if (sourceCode === destCode) {
+      return res.status(400).json({ message: 'Origin and destination stations cannot be identical.' });
+    }
+
+    // 2. Authoritative station lookup - reject unknown stations immediately
+    const [stnSrc, stnDst] = await Promise.all([
+      Station.findOne({ where: { station_code: sourceCode } }),
+      Station.findOne({ where: { station_code: destCode } })
+    ]);
+
+    if (!stnSrc) {
+      return res.status(400).json({ message: `Unknown origin station: ${sourceCode}` });
+    }
+    if (!stnDst) {
+      return res.status(400).json({ message: `Unknown destination station: ${destCode}` });
+    }
+
+    // 3. Travel class validation - reject unsupported classes without fallback
+    const normalizedClass = String(travel_class || '').trim().toUpperCase();
+    if (!SUPPORTED_CLASSES.includes(normalizedClass)) {
+      return res.status(400).json({ 
+        message: `Unsupported travel class: ${travel_class}. Supported classes are ${SUPPORTED_CLASSES.join(', ')}.` 
+      });
+    }
+
+    // 4. Train number validation
+    const normalizedTrain = String(train_number || '').trim();
+    if (!normalizedTrain) {
+      return res.status(400).json({ message: 'Train number is required.' });
+    }
+
+    // 5. Authoritatively calculate ticket fare from database
+    let farePerPassenger = null;
+    const fareRow = await TrainFare.findOne({
+      where: {
+        train_number: normalizedTrain,
+        class_code: normalizedClass
+      }
+    });
+
+    if (fareRow && fareRow.fare > 0) {
+      farePerPassenger = fareRow.fare;
+    } else {
+      // Dynamic distance-based IRCTC telescopic fare calculation
+      // Must NEVER substitute a fabricated 650 km default if stations lack coordinates
+      if (!stnSrc.latitude || !stnSrc.longitude || !stnDst.latitude || !stnDst.longitude) {
+        return res.status(400).json({ 
+          message: 'Authoritative fare record not found and station coordinates are unavailable to calculate route distance.' 
+        });
+      }
+
+      const distanceKm = estimateRailDistance(
+        parseFloat(stnSrc.latitude),
+        parseFloat(stnSrc.longitude),
+        parseFloat(stnDst.latitude),
+        parseFloat(stnDst.longitude)
+      );
+
+      if (!distanceKm || isNaN(distanceKm) || distanceKm <= 0) {
+        return res.status(400).json({ message: 'Unable to calculate authoritative distance for the specified route.' });
+      }
+
+      const dynamicFare = calculateRailwayFare({
+        distanceKm,
+        travelClass: normalizedClass,
+        isSuperfast: true,
+        passengers: 1
+      });
+
+      if (!dynamicFare || !dynamicFare.farePerPassenger || dynamicFare.farePerPassenger <= 0) {
+        return res.status(400).json({ message: 'Fare calculation failed for requested train and travel class.' });
+      }
+      farePerPassenger = dynamicFare.farePerPassenger;
+    }
+
     const authoritativeFare = farePerPassenger * passengerCount;
+    if (isNaN(authoritativeFare) || authoritativeFare <= 0) {
+      return res.status(400).json({ message: 'Invalid calculated ticket fare.' });
+    }
 
-    const newTrip = await Trip.create({
-      user_id: req.user.id,
-      source: source_station_code,
-      destination: destination_station_code,
-      departure_date: booking_date || new Date(),
-      travel_mode: 'Train',
-      predicted_price: authoritativeFare,
-      predicted_time: 12
+    // 6. Atomic database creation within transaction boundaries
+    const { newTrip, booking } = await sequelize.transaction(async (t) => {
+      const trip = await Trip.create({
+        user_id: req.user.id,
+        source: sourceCode,
+        destination: destCode,
+        departure_date: booking_date || new Date(),
+        travel_mode: 'Train',
+        predicted_price: authoritativeFare,
+        predicted_time: 12
+      }, { transaction: t });
+
+      const newBooking = await Booking.create({
+        user_id: req.user.id,
+        trip_id: trip.id,
+        source_station_code: sourceCode,
+        destination_station_code: destCode,
+        train_number: normalizedTrain,
+        travel_class: normalizedClass,
+        ticket_fare: authoritativeFare,
+        booking_date: booking_date || new Date(),
+        passengers,
+        seat_preference,
+        berth_preference,
+        adult_count: parseInt(adult_count) || passengerCount,
+        child_count: parseInt(child_count) || 0,
+        infant_count: parseInt(infant_count) || 0,
+        senior_count: parseInt(senior_count) || 0,
+        total_passengers: passengerCount,
+        booking_status: 'Pending',
+        payment_status: 'Unpaid'
+      }, { transaction: t });
+
+      return { newTrip: trip, booking: newBooking };
     });
-    const finalTripId = newTrip.id;
 
-    const booking = await Booking.create({
-      user_id: req.user.id,
-      trip_id: finalTripId,
-      source_station_code,
-      destination_station_code,
-      train_number,
-      travel_class,
-      ticket_fare: authoritativeFare,
-      booking_date: booking_date || new Date(),
-      passengers,
-      seat_preference,
-      berth_preference,
-      adult_count: parseInt(adult_count) || passengerCount,
-      child_count: parseInt(child_count) || 0,
-      infant_count: parseInt(infant_count) || 0,
-      senior_count: parseInt(senior_count) || 0,
-      total_passengers: passengerCount
-    });
-
-    // Update user analytics with honest records (no fabricated accuracies)
+    // Update user analytics safely
     if (Analytics) {
       try {
         let userAnalytics = await Analytics.findOne({ where: { user_id: req.user.id } });
@@ -441,17 +502,16 @@ const createBooking = async (req, res) => {
       }
     }
 
-    // 1. Dispatch Email & Simulated SMS Booking Confirmation
+    // Dispatch notifications asynchronously
     sendBookingConfirmation({ user: req.user, booking }).catch(err => {
       console.error('[ProfileController] Booking confirmation notification error:', err.message);
     });
 
-    // 2. Trigger n8n Automation asynchronously for AI journey briefing & notifications
     n8nService.triggerBookingWebhook(booking, req.user).catch(err => {
       console.error('[ProfileController] n8n booking webhook error:', err.message);
     });
 
-    res.status(201).json({ message: 'Booking confirmed successfully.', booking });
+    res.status(201).json({ message: 'Booking created successfully.', booking });
   } catch (error) {
     console.error('Create booking error:', error.message);
     res.status(500).json({ message: 'Error processing booking. Please try again later.' });
@@ -470,12 +530,49 @@ const cancelBooking = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found or not authorized.' });
     }
 
-    booking.booking_status = 'Cancelled';
-    booking.payment_status = 'Refunded';
-    await booking.save();
+    if (booking.booking_status === 'Cancelled') {
+      return res.status(400).json({ message: 'Booking is already cancelled.' });
+    }
+
+    if (booking.payment_status === 'Refunded') {
+      return res.status(400).json({ message: 'Booking has already been cancelled and refunded.' });
+    }
+
+    const wasPaid = booking.payment_status === 'Paid';
+
+    await sequelize.transaction(async (t) => {
+      booking.booking_status = 'Cancelled';
+
+      if (wasPaid) {
+        // Centralized state transition for paid bookings: Initiate refund
+        booking.payment_status = 'Refund Pending';
+
+        const txn = await Transaction.findOne({
+          where: { booking_id: booking.id, status: 'Success' },
+          lock: t.LOCK.UPDATE,
+          transaction: t
+        });
+
+        if (txn) {
+          txn.status = 'Refund Pending';
+          await txn.save({ transaction: t });
+        }
+      } else {
+        // Unpaid booking: never label as Refunded!
+        booking.payment_status = 'Unpaid';
+
+        // Cancel any pending transactions
+        await Transaction.update(
+          { status: 'Cancelled' },
+          { where: { booking_id: booking.id, status: 'Pending' }, transaction: t }
+        );
+      }
+
+      await booking.save({ transaction: t });
+    });
 
     // Trigger dynamic analytics sync for negative revenue / subtraction
-    if (Analytics) {
+    if (Analytics && wasPaid) {
       try {
         let userAnalytics = await Analytics.findOne({ where: { user_id: req.user.id } });
         if (userAnalytics) {
@@ -488,9 +585,14 @@ const cancelBooking = async (req, res) => {
       }
     }
 
-    res.json({ message: 'Reservation cancelled & refund initiated.', booking });
+    res.json({
+      message: wasPaid 
+        ? 'Reservation cancelled and refund initiated.' 
+        : 'Reservation cancelled successfully. No refund required for unpaid booking.',
+      booking
+    });
   } catch (error) {
-    console.error('Cancel booking error:', error);
+    console.error('Cancel booking error:', error.message);
     res.status(500).json({ message: 'Error cancelling booking' });
   }
 };
