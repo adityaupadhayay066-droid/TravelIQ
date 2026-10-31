@@ -112,8 +112,6 @@ function minutesToTime(mins) {
   return `${h}:${m}`;
 }
 
-const { MultiModalRoutingEngine } = require('./multiModalRoutingEngine');
-
 /**
  * Discovers valid 2-leg connecting train routes in database and nationwide hub architecture
  * @param {string} originCode - Origin station code
@@ -125,6 +123,7 @@ const { MultiModalRoutingEngine } = require('./multiModalRoutingEngine');
 async function findConnectingTrains(originCode, destCode, travelDate, sequelize) {
   if (!originCode || !destCode) return [];
 
+  const { MultiModalRoutingEngine } = require('./multiModalRoutingEngine');
   const engine = new MultiModalRoutingEngine({ sequelize });
   try {
     const discovery = await engine.findConnectingRoutes(originCode, destCode, travelDate);

@@ -906,7 +906,8 @@ def generate_grounded_routing_chat(message: str):
     if connecting_routes:
         reply_lines.append("🔄 **Verified Connecting Options (via Transit Hubs)**:\n")
         for i, cr in enumerate(connecting_routes, 1):
-            reply_lines.append(f"**Option {i}: Via {cr.get('hub_name')}**")
+            hub_name = cr.get('hub_name') or cr.get('hub_code') or 'Transit Hub'
+            reply_lines.append(f"**Option {i}: Via {hub_name}**")
             reply_lines.append(f"• **Layover Transfer**: {cr.get('layover_wait_time')}")
             reply_lines.append(f"• **Total Duration**: {cr.get('total_duration')}")
             for leg in cr.get("legs", []):

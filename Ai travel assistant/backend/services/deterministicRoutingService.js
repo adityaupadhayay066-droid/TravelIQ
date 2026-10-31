@@ -166,22 +166,42 @@ async function getVerifiedConnectingRoutes(originCode, destCode, travelDate = nu
     const routingEngine = new MultiModalRoutingEngine({ sequelize });
     const connectingDiscovery = await routingEngine.findConnectingRoutes(originCode, destCode, travelDate);
 
-    const routes = (connectingDiscovery.routes || []).map(conn => {
+    // If a direct route exists on this date, there are no connecting routes
+    if (connectingDiscovery.hasDirectRoute) {
+      return [];
+    }
+
+    const rawRoutes = (connectingDiscovery.routes || []).filter(conn => !conn.direct);
+
+    // Sort connecting routes: prioritize non-cluster-transfers and shortest duration
+    rawRoutes.sort((a, b) => {
+      if (a.is_cluster_transfer !== b.is_cluster_transfer) {
+        return a.is_cluster_transfer ? 1 : -1;
+      }
+      return (a.duration_minutes || 9999) - (b.duration_minutes || 9999);
+    });
+
+    const routes = rawRoutes.map(conn => {
       const legs = (conn.legs || []).map(l => ({
         leg_number: l.leg_number,
-        train_number: l.service_number,
-        train_name: l.service_name,
+        mode: l.mode || 'Train',
+        train_number: l.service_number || l.train_number || l.number || '',
+        train_name: l.service_name || l.train_name || l.name || '',
         from_station: l.from_station,
         to_station: l.to_station,
-        departure_time: l.departure_time_clock || 'N/A',
-        arrival_time: l.arrival_time_clock || 'N/A'
+        departure_time: l.departure_time_clock || (l.departure_time_utc ? l.departure_time_utc.substring(11, 16) : 'N/A'),
+        arrival_time: l.arrival_time_clock || (l.arrival_time_utc ? l.arrival_time_utc.substring(11, 16) : 'N/A')
       }));
 
+      const hubCode = conn.hub || conn.hub_code || 'Transit Hub';
+      const hubName = conn.hub_name || conn.hub || 'Transit Hub';
+
       return {
-        hub_code: conn.hub,
-        hub_name: conn.hub_name || conn.hub,
+        hub_code: hubCode,
+        hub_name: hubName,
         layover_wait_time: conn.layover_display || `${conn.layover_minutes || 60}m`,
         total_duration: conn.duration || 'N/A',
+        duration_minutes: conn.duration_minutes,
         legs: legs
       };
     });
@@ -287,12 +307,22 @@ function formatDeterministicGroundedResponse(transitData) {
   if (hasConnecting) {
     text += `🔄 **Verified Connecting Options (via Transit Hubs)**:\n\n`;
     connecting_routes.slice(0, 3).forEach((conn, i) => {
-      text += `**Option ${i + 1}: Via ${conn.hub_name} (${conn.hub_code})**\n`;
-      text += `• **Layover Transfer**: ${conn.layover_wait_time}\n`;
-      text += `• **Total Duration**: ${conn.total_duration}\n`;
-      conn.legs.forEach(leg => {
-        text += `  - Leg ${leg.leg_number}: #${leg.train_number} ${leg.train_name} from ${leg.from_station} (${leg.departure_time}) to ${leg.to_station} (${leg.arrival_time})\n`;
-      });
+      const hubDisplay = conn.hub_name && conn.hub_code && conn.hub_name !== conn.hub_code
+        ? `${conn.hub_name} (${conn.hub_code})`
+        : (conn.hub_name || conn.hub_code || 'Transit Hub');
+      text += `**Option ${i + 1}: Via ${hubDisplay}**\n`;
+      text += `• **Layover Transfer**: ${conn.layover_wait_time || 'Standard Buffer'}\n`;
+      text += `• **Total Duration**: ${conn.total_duration || 'N/A'}\n`;
+      if (conn.legs && conn.legs.length > 0) {
+        conn.legs.forEach(leg => {
+          const servicePrefix = (leg.train_number && leg.train_number !== 'INTER-TERMINAL') ? `#${leg.train_number} ` : '';
+          const modePrefix = leg.mode && leg.mode !== 'Train' ? `[${leg.mode}] ` : '';
+          const timingStr = (leg.departure_time && leg.departure_time !== 'N/A' && leg.arrival_time && leg.arrival_time !== 'N/A')
+            ? ` (${leg.departure_time.substring(0, 5)} ➔ ${leg.arrival_time.substring(0, 5)})`
+            : '';
+          text += `  - Leg ${leg.leg_number}: ${modePrefix}${servicePrefix}${leg.train_name} from ${leg.from_station} to ${leg.to_station}${timingStr}\n`;
+        });
+      }
       text += `\n`;
     });
   }

@@ -1,4 +1,5 @@
 const { resolveAirport, hasCommercialAirport, getNearestAirport } = require('../utils/airportRegistry');
+const { trainRunsOnDate } = require('./routeValidationEngine');
 
 // ─── 1. UNIVERSAL HUB INDEX (NATIONWIDE COVERAGE) ───────────────────────────
 // Ranked junction stations by degree centrality and connectivity tier.
@@ -565,6 +566,62 @@ const VERIFIED_TRAIN_SCHEDULES = [
       { station_code: 'BUI', dep: '09:05:00', arr: '09:00:00', day: 2, stop_sequence: 4 },
       { station_code: 'CPR', dep: null, arr: '11:20:00', day: 2, stop_sequence: 5 }
     ]
+  },
+  // 11. Vande Bharat Express (NDLS -> CNB -> PRYJ/ALD -> BSB)
+  {
+    train_number: '22436',
+    train_name: 'Vande Bharat Express (New Delhi - Varanasi)',
+    runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+    stops: [
+      { station_code: 'NDLS', dep: '06:00:00', arr: null, day: 1, stop_sequence: 1 },
+      { station_code: 'CNB',  dep: '10:10:00', arr: '10:08:00', day: 1, stop_sequence: 2 },
+      { station_code: 'PRYJ', dep: '12:10:00', arr: '12:08:00', day: 1, stop_sequence: 3 },
+      { station_code: 'ALD',  dep: '12:10:00', arr: '12:08:00', day: 1, stop_sequence: 3 },
+      { station_code: 'BSB',  dep: null, arr: '14:00:00', day: 1, stop_sequence: 4 }
+    ]
+  },
+  // 12. Sampoorna Kranti Express (NDLS -> CNB -> DDU/MGS -> DNR -> PNBE -> RJPB)
+  {
+    train_number: '12394',
+    train_name: 'Sampoorna Kranti Express',
+    runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+    stops: [
+      { station_code: 'NDLS', dep: '17:30:00', arr: null, day: 1, stop_sequence: 1 },
+      { station_code: 'CNB',  dep: '22:30:00', arr: '22:22:00', day: 1, stop_sequence: 2 },
+      { station_code: 'DDU',  dep: '02:35:00', arr: '02:25:00', day: 2, stop_sequence: 3 },
+      { station_code: 'MGS',  dep: '02:35:00', arr: '02:25:00', day: 2, stop_sequence: 3 },
+      { station_code: 'DNR',  dep: '05:47:00', arr: '05:45:00', day: 2, stop_sequence: 4 },
+      { station_code: 'PNBE', dep: '07:00:00', arr: '06:50:00', day: 2, stop_sequence: 5 },
+      { station_code: 'RJPB', dep: null, arr: '07:20:00', day: 2, stop_sequence: 6 }
+    ]
+  },
+  // 13. Lucknow Shatabdi Express (NDLS -> CNB -> LKO)
+  {
+    train_number: '12004',
+    train_name: 'Lucknow Shatabdi Express',
+    runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+    stops: [
+      { station_code: 'NDLS', dep: '06:10:00', arr: null, day: 1, stop_sequence: 1 },
+      { station_code: 'CNB',  dep: '11:25:00', arr: '11:20:00', day: 1, stop_sequence: 2 },
+      { station_code: 'LKO',  dep: null, arr: '12:55:00', day: 1, stop_sequence: 3 }
+    ]
+  },
+  // 14. Purushottam Express Return (NDLS -> CNB -> PRYJ -> DDU/MGS -> GAYA -> TATA -> PURI)
+  {
+    train_number: '12802',
+    train_name: 'Purushottam Express (Return)',
+    runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+    stops: [
+      { station_code: 'NDLS', dep: '22:40:00', arr: null, day: 1, stop_sequence: 1 },
+      { station_code: 'CNB',  dep: '04:05:00', arr: '04:00:00', day: 2, stop_sequence: 2 },
+      { station_code: 'PRYJ', dep: '07:00:00', arr: '06:55:00', day: 2, stop_sequence: 3 },
+      { station_code: 'MGS',  dep: '10:00:00', arr: '09:50:00', day: 2, stop_sequence: 4 },
+      { station_code: 'DDU',  dep: '10:00:00', arr: '09:50:00', day: 2, stop_sequence: 4 },
+      { station_code: 'GAYA', dep: '12:40:00', arr: '12:35:00', day: 2, stop_sequence: 5 },
+      { station_code: 'TATA', dep: '20:02:00', arr: '19:52:00', day: 2, stop_sequence: 8 },
+      { station_code: 'BBS',  dep: '03:35:00', arr: '03:30:00', day: 3, stop_sequence: 13 },
+      { station_code: 'PURI', dep: null, arr: '05:25:00', day: 3, stop_sequence: 15 }
+    ]
   }
 ];
 
@@ -822,7 +879,7 @@ class MultiModalRoutingEngine {
           type: this.sequelize.QueryTypes.SELECT
         });
         if (dbDirect && dbDirect.length > 0) {
-          return dbDirect.map(d => ({
+          const mapped = dbDirect.map(d => ({
             id: d.train_number,
             type: 'Train',
             mode: 'Train',
@@ -836,6 +893,10 @@ class MultiModalRoutingEngine {
             arrival_time: d.dest_arrival,
             runs_on: d.runs_on
           }));
+          if (travelDate) {
+            return mapped.filter(t => trainRunsOnDate(t, travelDate));
+          }
+          return mapped;
         }
       } catch (err) {
         // Fallback to in-memory verified schedule
@@ -865,6 +926,9 @@ class MultiModalRoutingEngine {
       }
     }
 
+    if (travelDate) {
+      return directResults.filter(t => trainRunsOnDate(t, travelDate));
+    }
     return directResults;
   }
 
@@ -981,6 +1045,8 @@ class MultiModalRoutingEngine {
                 transfer_duration_minutes: transferInfo.transferLeg.duration_minutes,
                 distance_km: transferInfo.transferLeg.distance_km,
                 cost_inr: transferInfo.transferLeg.cost_inr,
+                departure_time_clock: leg1.arr_time,
+                arrival_time_clock: leg2.dep_time,
                 is_cluster_transfer: true
               });
             }
@@ -1255,6 +1321,7 @@ class MultiModalRoutingEngine {
       validated: true,
       source_verified: true,
       hub: `${srcAirport.iata} → ${dstAirport.iata}`,
+      hub_name: `${srcAirport.city} (${srcAirport.iata}) → ${dstAirport.city} (${dstAirport.iata})`,
       layover_minutes: 120,
       layover_display: `Airport Transit at ${dstAirport.city} (${dstAirport.iata})`,
       departure_time_utc: depIso,
