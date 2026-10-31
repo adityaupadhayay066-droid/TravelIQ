@@ -9,6 +9,78 @@ const { isTransitRoutingQuery, extractTransitEntities } = require('../services/t
 // ══════════════════════════════════════════════════════
 
 /**
+ * Calls Google Gemini Generative AI with active models and optional web search grounding.
+ */
+async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) {
+    const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const apiKey = rawApiKey ? rawApiKey.trim().replace(/^["']|["']$/g, '') : null;
+    if (!apiKey || apiKey.length < 8 || apiKey.startsWith('your_')) {
+        return null;
+    }
+
+    const models = [
+        'gemini-3.5-flash-lite',
+        'gemini-3.5-flash',
+        'gemini-3.8-flash',
+        'gemini-flash-latest',
+        'gemini-pro-latest'
+    ];
+
+    const fullText = systemInstruction ? `${systemInstruction}\n\n${prompt}` : prompt;
+
+    for (const model of models) {
+        // Option 1: Try with Web Search Grounding if requested
+        if (tryWebSearch) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const body = {
+                    contents: [{ parts: [{ text: fullText }] }],
+                    tools: [{ googleSearch: {} }],
+                    generationConfig: {
+                        temperature: 0.3,
+                        maxOutputTokens: 1000
+                    }
+                };
+                const res = await axios.post(url, body, {
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 10000
+                });
+                const parts = res.data?.candidates?.[0]?.content?.parts || [];
+                if (parts.length > 0 && parts[0].text) {
+                    return parts[0].text.trim();
+                }
+            } catch (searchErr) {
+                // If 429 quota or unsupported tool on free tier, smoothly fallback to standard generateContent below
+            }
+        }
+
+        // Option 2: Standard generateContent
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const body = {
+                contents: [{ parts: [{ text: fullText }] }],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 1000
+                }
+            };
+            const res = await axios.post(url, body, {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000
+            });
+            const parts = res.data?.candidates?.[0]?.content?.parts || [];
+            if (parts.length > 0 && parts[0].text) {
+                return parts[0].text.trim();
+            }
+        } catch (err) {
+            continue; // Try next model on failure / 503
+        }
+    }
+
+    return null;
+}
+
+/**
  * Handle incoming user messages, find the best match, and return the response.
  */
 const sendMessage = async (req, res) => {
@@ -35,7 +107,11 @@ const sendMessage = async (req, res) => {
                         transitEntities.destination,
                         transitEntities.isDefaultDate ? null : transitEntities.travelDate
                     );
-                    if (grounded && grounded.response) {
+                    const hasVerifiedRoutes = grounded && grounded.transitData && (
+                        (grounded.transitData.direct_routes && grounded.transitData.direct_routes.length > 0) ||
+                        (grounded.transitData.connecting_routes && grounded.transitData.connecting_routes.length > 0)
+                    );
+                    if (hasVerifiedRoutes && grounded.response) {
                         botReply = grounded.response;
                     }
                 } catch (groundErr) {
@@ -44,7 +120,59 @@ const sendMessage = async (req, res) => {
             }
         }
 
-        // 1. Try Python AI Service (/chat endpoint) if transit query was not handled
+        // 1. Check Fed Knowledge Base in Database
+        let matchedKnowledge = null;
+        if (!botReply) {
+            const knowledgeBase = await ChatbotKnowledge.findAll();
+            let maxScore = 0;
+
+            knowledgeBase.forEach(entry => {
+                const keywords = entry.keywords.toLowerCase().split(',').map(k => k.trim());
+                let score = 0;
+                keywords.forEach(keyword => {
+                    if (!keyword) return;
+                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+                    if (regex.test(cleanMessage)) {
+                        score += keyword.length; 
+                    }
+                });
+                if (score > maxScore) {
+                    maxScore = score;
+                    matchedKnowledge = entry;
+                }
+            });
+
+            // If matched in fed knowledge, synthesize answer using Gemini grounded on fed data!
+            if (matchedKnowledge && maxScore > 0) {
+                const fedPrompt = `You are TravelIQ AI, India's Smart Travel Concierge.
+Use the following verified internal platform knowledge to answer the user's question clearly, helpfully, and professionally:
+
+<verified_platform_knowledge>
+Topic: ${matchedKnowledge.question}
+Verified Answer: ${matchedKnowledge.answer}
+</verified_platform_knowledge>
+
+User Question: ${message}`;
+                botReply = await callGemini(fedPrompt, '', false);
+                if (!botReply) {
+                    botReply = matchedKnowledge.answer; // Fallback if Gemini offline
+                }
+            }
+        }
+
+        // 2. Data Not in Fed Knowledge Base: Search on Web via Gemini!
+        if (!botReply) {
+            const webSearchPrompt = `You are TravelIQ AI, India's Smart Travel Concierge.
+The user is asking a travel question that is not in our internal database.
+Please answer their question informatively, accurately, and helpfully with practical travel insights, tips, or itinerary guidance.
+If the inquiry is about booking train tickets or checking live status, also remind them they can search and book directly on TravelIQ!
+
+User Question: ${message}`;
+            botReply = await callGemini(webSearchPrompt, '', true);
+        }
+
+        // 3. Try Python AI Service (/chat endpoint) if transit query or Gemini was not handled
         if (!botReply) {
             try {
                 const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
@@ -61,92 +189,25 @@ const sendMessage = async (req, res) => {
             }
         }
 
-        // 2. Try Google Gemini API with STRICT ZERO TEMPERATURE (0.0) for non-transit general inquiries
+        // 4. Fallback to Local Pattern Answers if all external services are offline
         if (!botReply) {
-            const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-            if (rawApiKey && rawApiKey.startsWith('AIzaSy')) {
-                const geminiApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
-                const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-                for (const model of models) {
-                    try {
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-                        const gRes = await axios.post(url, {
-                            contents: [{
-                                parts: [{ text: `You are TravelIQ AI, a strictly grounded travel assistant.
-CRITICAL INTEGRITY INSTRUCTIONS:
-- You must NEVER invent or guess train numbers, train names, flight numbers, bus services, departure/arrival times, station/airport codes, seat availability, or fares.
-- If the user asks for specific travel schedules, platform numbers, or ticket prices, politely instruct them to search on the TravelIQ "Route Comparison" or "Live Train Status" dashboard for authentic verified results.
-Answer concisely in 2-3 friendly sentences: ${message}` }]
-                            }],
-                            generationConfig: {
-                                temperature: 0.0
-                            }
-                        }, {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'x-goog-api-key': geminiApiKey
-                            },
-                            timeout: 8000
-                        });
-
-                        if (gRes.data && gRes.data.candidates && gRes.data.candidates.length > 0) {
-                            const parts = gRes.data.candidates[0].content?.parts || [];
-                            if (parts.length > 0) {
-                                botReply = parts[0].text.trim();
-                                break;
-                            }
-                        }
-                    } catch (gErr) {
-                        break; // Stop on auth or rate failure
-                    }
-                }
-            }
-        }
-
-        // 3. Fallback to Database Knowledge Base & Context Matcher
-        if (!botReply) {
-            const knowledgeBase = await ChatbotKnowledge.findAll();
-            let bestMatch = null;
-            let maxScore = 0;
-
-            knowledgeBase.forEach(entry => {
-                const keywords = entry.keywords.toLowerCase().split(',').map(k => k.trim());
-                let score = 0;
-                keywords.forEach(keyword => {
-                    if (!keyword) return;
-                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`\\b${escaped}\\b`, 'i');
-                    if (regex.test(cleanMessage)) {
-                        score += keyword.length; 
-                    }
-                });
-                if (score > maxScore) {
-                    maxScore = score;
-                    bestMatch = entry;
-                }
-            });
-
-            if (bestMatch && maxScore > 0) {
-                botReply = bestMatch.answer;
+            const lowerMsg = cleanMessage.toLowerCase();
+            if (/\b(api key|developer|b2b|x-api-key|telemetry|token|endpoint|sdk)\b/i.test(lowerMsg)) {
+                botReply = "🔑 To get a Developer API Key: 1) Go to 'B2B Developer Hub' from the Explore menu. 2) Click 'Generate API Key' and name your app. 3) Pass the generated key in the 'X-API-Key' header when calling TravelIQ AI endpoints (/api/v1/predict/delay, /api/v1/predict/fare, /api/v1/optimize-route).";
+            } else if (/\b(book in train|book train|book ticket|how to book|rail booking|seat reservation)\b/i.test(lowerMsg)) {
+                botReply = "🚆 To book a train: 1) Click 'Plan Trip' on top. 2) Enter Origin & Destination (e.g. NDLS to CSTM). 3) Choose your class (1A, 2A, 3A, SL, CC). 4) Enter passenger details & berth preference. 5) Pay via UPI QR sandbox to instantly get your official IRCTC Co-Branded Electronic Reservation Slip (ERS)!";
+            } else if (/\b(hotel|hostel|dorm|homestay|stay in|room)\b/i.test(lowerMsg)) {
+                botReply = "🏨 TravelIQ Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
+            } else if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
+                botReply = "To check verified ticket fares and price trends for flights or trains, search your origin and destination on the TravelIQ Route Search tab for verified provider schedules and fares.";
+            } else if (/\b(delay|late|time|status|cancel|reschedule)\b/i.test(lowerMsg)) {
+                botReply = "Train delays are monitored using historical weather and route statistics. Enter your train number in our 'Delay Predictor' tab for real-time risk predictions!";
+            } else if (/\b(food|eat|meal|thali|restaurant|snacks)\b/i.test(lowerMsg)) {
+                botReply = "Looking for delicious meals on your trip? Explore regional specialties on the 'Food Recommendations' tab for top station treats!";
+            } else if (/\b(safety|sos|emergency|help|rpf|security)\b/i.test(lowerMsg)) {
+                botReply = "Your safety is our top priority! Use our 'SOS Alerts' feature to share your live PNR itinerary or call Railway Helpline 139.";
             } else {
-                const lowerMsg = cleanMessage.toLowerCase();
-                if (/\b(api key|developer|b2b|x-api-key|telemetry|token|endpoint|sdk)\b/i.test(lowerMsg)) {
-                    botReply = "🔑 To get a Developer API Key: 1) Go to 'B2B Developer Hub' from the Explore menu. 2) Click 'Generate API Key' and name your app. 3) Pass the generated key in the 'X-API-Key' header when calling TravelIQ AI endpoints (/api/v1/predict/delay, /api/v1/predict/fare, /api/v1/optimize-route).";
-                } else if (/\b(book in train|book train|book ticket|how to book|rail booking|seat reservation)\b/i.test(lowerMsg)) {
-                    botReply = "🚆 To book a train: 1) Click 'Plan Trip' on top. 2) Enter Origin & Destination (e.g. NDLS to CSTM). 3) Choose your class (1A, 2A, 3A, SL, CC). 4) Enter passenger details & berth preference. 5) Pay via UPI QR sandbox to instantly get your official IRCTC Co-Branded Electronic Reservation Slip (ERS)!";
-                } else if (/\b(hotel|hostel|dorm|homestay|stay in|room)\b/i.test(lowerMsg)) {
-                    botReply = "🏨 TravelIQ Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
-                } else if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
-                    botReply = "To check verified ticket fares and price trends for flights or trains, search your origin and destination on the TravelIQ Route Search tab for verified provider schedules and fares.";
-                } else if (/\b(delay|late|time|status|cancel|reschedule)\b/i.test(lowerMsg)) {
-                    botReply = "Train delays are monitored using historical weather and route statistics. Enter your train number in our 'Delay Predictor' tab for real-time risk predictions!";
-                } else if (/\b(food|eat|meal|thali|restaurant|snacks)\b/i.test(lowerMsg)) {
-                    botReply = "Looking for delicious meals on your trip? Explore regional specialties on the 'Food Recommendations' tab for top station treats!";
-                } else if (/\b(safety|sos|emergency|help|rpf|security)\b/i.test(lowerMsg)) {
-                    botReply = "Your safety is our top priority! Use our 'SOS Alerts' feature to share your live PNR itinerary or call Railway Helpline 139.";
-                } else {
-                    botReply = "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train booking steps, verified hotel stays, delay forecasts, local food, or custom trip itineraries!";
-                }
+                botReply = "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train booking steps, verified hotel stays, delay forecasts, local food, or custom trip itineraries!";
             }
         }
 

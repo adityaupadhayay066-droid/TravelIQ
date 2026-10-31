@@ -188,10 +188,6 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
     if not api_key or api_key.startswith("your_") or api_key == "None":
         return None
 
-    # Google AI Studio API keys start with AIzaSy; OAuth bearer tokens start with ya29.
-    if api_key.startswith("AQ."):
-        return None
-
     # System instruction cleanly separated from untrusted document chunks
     system_instruction_text = (
         "You are TravelIQ AI, a secure, knowledgeable travel assistant. "
@@ -212,10 +208,10 @@ def generate_gemini_rag_answer(query_text, retrieved_chunks=[]):
         user_prompt = f"USER QUESTION: {query_text}"
 
     models = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-flash-latest"
     ]
     
     # Send API key securely through HTTP headers, never in URL query parameters

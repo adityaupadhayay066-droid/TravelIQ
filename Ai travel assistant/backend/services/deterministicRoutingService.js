@@ -343,50 +343,72 @@ You must answer the user's inquiry using ONLY the data explicitly provided insid
 
 RULES:
 1. NEVER cite or invent any train number, operator name, timing, or fare not present in <verified_transit_data>.
-2. If query.isDefaultDate is true, include the exact note: "Showing schedules for tomorrow (${transitData.query.date}). You can change the date anytime."
-3. If <verified_transit_data> contains empty direct routes, explicitly state: "No direct trains are available on this route." Then present connecting hub options if provided.
-4. If connecting options are displayed, explicitly mention the layover hub name and transfer wait time from the payload.
-5. If the data is absent or empty, state: "No verified routes found for this date." Never guess or approximate.`;
+2. If query.isDefaultDate is true, start your response with: "Showing schedules for tomorrow (${transitData.query.date}). You can change the date anytime."
+3. When direct trains are available in <verified_transit_data>, you MUST include the exact section header:
+   🚆 **Verified Direct Trains (${transitData.query.origin} ➔ ${transitData.query.destination})**:
+   and list each verified direct train.
+4. If <verified_transit_data> contains empty direct routes, explicitly state: "No direct trains are available on this route." Then present connecting hub options if provided with:
+   🔄 **Verified Connecting Options (via Transit Hubs)**:
+5. If connecting options are displayed, explicitly mention the layover hub name and transfer wait time from the payload.
+6. If the data is absent or empty, state: "No verified routes found for this date." Never guess or approximate.`;
 
   const fullPrompt = `${systemInstruction}\n\n${dataXml}\n\nUser Question: ${userMessage}`;
 
-  // Try calling Gemini API with strict ZERO TEMPERATURE (0.0)
+  // Try calling Gemini API with grounded transit data
   const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (rawApiKey && rawApiKey.startsWith('AIzaSy')) {
-    const geminiApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  const geminiApiKey = rawApiKey ? rawApiKey.trim().replace(/^["']|["']$/g, '') : null;
+  if (geminiApiKey && geminiApiKey.length > 8 && !geminiApiKey.startsWith('your_')) {
+    const models = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
     for (const model of models) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
         const response = await axios.post(url, {
           contents: [{
             parts: [{ text: fullPrompt }]
           }],
           generationConfig: {
-            temperature: 0.0,
-            maxOutputTokens: 800
+            temperature: 0.1,
+            maxOutputTokens: 900
           }
         }, {
           headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': geminiApiKey
+            'Content-Type': 'application/json'
           },
-          timeout: 8000
+          timeout: 10000
         });
 
         if (response.data && response.data.candidates && response.data.candidates.length > 0) {
           const parts = response.data.candidates[0].content?.parts || [];
           if (parts.length > 0 && parts[0].text) {
+            let text = parts[0].text.trim();
+            // Ensure UI consistency with exact section headers
+            if (transitData.direct_routes && transitData.direct_routes.length > 0 && !text.includes('Verified Direct Trains')) {
+              const directHeader = `🚆 **Verified Direct Trains (${transitData.query.origin} ➔ ${transitData.query.destination})**:`;
+              if (/Here are (?:the available )?direct trains[^\n]*:?/i.test(text)) {
+                text = text.replace(/Here are (?:the available )?direct trains[^\n]*:?/i, directHeader);
+              } else {
+                text = `${directHeader}\n\n${text}`;
+              }
+            }
+            if (transitData.connecting_routes && transitData.connecting_routes.length > 0 && !text.includes('Verified Connecting Options')) {
+              const connHeader = `🔄 **Verified Connecting Options (via Transit Hubs)**:`;
+              if (/Here are (?:the available )?connecting (?:hub )?options[^\n]*:?/i.test(text)) {
+                text = text.replace(/Here are (?:the available )?connecting (?:hub )?options[^\n]*:?/i, connHeader);
+              }
+            }
+            if (transitData.query && transitData.query.isDefaultDate && !text.includes('Showing schedules for tomorrow')) {
+              text = `ℹ️ *${transitData.query.dateNotice}*\n\n${text}`;
+            }
             return {
-              response: parts[0].text.trim(),
+              response: text,
               transitData,
               grounded: true,
-              source: 'gemini_zero_temp'
+              source: `gemini_${model}`
             };
           }
         }
       } catch (err) {
-        break;
+        continue; // Try next model on quota / rate limit / 503
       }
     }
   }

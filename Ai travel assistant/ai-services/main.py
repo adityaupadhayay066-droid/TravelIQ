@@ -555,16 +555,13 @@ def generate_gemini_response(user_message: str) -> str:
 
     # Google AI Studio API keys start with AIzaSy; OAuth bearer tokens start with ya29.
     # If the key is an invalid format like AQ.*, skip immediately to prevent 401 loop
-    if api_key.startswith("AQ."):
-        logger.debug("⚠️ Skipping Gemini API: Provided key is an invalid OAuth token format (starts with AQ.). Using local neural engine.")
-        return None
-        
+    
     # Standard official Google Gemini models
     models = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-flash-latest"
     ]
     
     headers = {"Content-Type": "application/json"}
@@ -864,9 +861,9 @@ def generate_grounded_routing_chat(message: str):
 
     # Try Gemini with ZERO TEMPERATURE (0.0)
     raw_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if raw_key and raw_key.strip().startswith("AIzaSy"):
+    if raw_key and len(raw_key.strip()) > 8:
         api_key = raw_key.strip().strip('"').strip("'")
-        models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash"]
         for model in models:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
             payload = {
