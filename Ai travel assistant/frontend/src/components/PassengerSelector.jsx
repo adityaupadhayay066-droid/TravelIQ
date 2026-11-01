@@ -83,11 +83,11 @@ export default function PassengerSelector({ value, config, onChange }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 15, scale: 0.95 }}
-            animate={{ opacity: 1, y: 5, scale: 1 }}
-            exit={{ opacity: 0, y: 15, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-[calc(100vw-2.5rem)] sm:w-80 max-w-sm bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E2E8F0] dark:border-[#283545] rounded-xl p-4 sm:p-5 shadow-lg z-[999] space-y-4"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-full sm:w-80 max-w-sm bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E2E8F0] dark:border-[#283545] rounded-xl p-4 sm:p-5 shadow-2xl z-[999] space-y-4"
           >
             <div className="flex justify-between items-center border-b border-[#E2E8F0] dark:border-[#283545] pb-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#0F2942] dark:text-[#F8FAFC]">Select Passengers</span>

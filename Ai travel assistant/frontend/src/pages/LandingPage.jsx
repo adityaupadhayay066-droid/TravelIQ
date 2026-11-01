@@ -352,10 +352,10 @@ export default function LandingPage() {
           {/* ================================================================
               STRUCTURED TRAVEL SEARCH BOOKING PANEL
               ================================================================ */}
-          <div id="search-booking-panel" className="bg-white dark:bg-[#1B242E] rounded-xl shadow-xs border border-[#E3E7EA] dark:border-[#293644] overflow-hidden text-[#202A32] dark:text-[#F0F4F7]">
+          <div id="search-booking-panel" className="relative z-20 bg-white dark:bg-[#1B242E] rounded-xl shadow-xs border border-[#E3E7EA] dark:border-[#293644] text-[#202A32] dark:text-[#F0F4F7]">
             
             {/* Category Tabs: Flights, Trains, Buses, Hotels */}
-            <div className="flex items-center border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] overflow-x-auto scrollbar-none px-2 pt-1.5">
+            <div className="flex items-center border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] overflow-x-auto scrollbar-none px-2 pt-1.5 rounded-t-xl">
               {[
                 { id: 'flights', label: 'Flights', icon: Plane, badge: 'Direct Air' },
                 { id: 'trains', label: 'Trains', icon: Train, badge: 'IRCTC Live' },
@@ -548,10 +548,10 @@ export default function LandingPage() {
                   )}
 
                   {/* Travelers */}
-                  <div className={tripType === 'roundTrip' 
+                  <div className={`relative z-30 ${tripType === 'roundTrip' 
                     ? 'col-span-1 md:col-span-3 xl:col-span-2' 
                     : 'col-span-1 md:col-span-4 xl:col-span-2'
-                  }>
+                  }`}>
                     <PassengerSelector 
                       value={passengerConfig}
                       onChange={setPassengerConfig}
