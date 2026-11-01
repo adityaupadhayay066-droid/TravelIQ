@@ -20,9 +20,13 @@ const getReports = async (req, res) => {
         if (priority && priority !== 'all') whereClause.priority = priority;
         if (category && category !== 'all') whereClause.category = category;
 
+        const allowedSortFields = ['id', 'user_name', 'user_email', 'status', 'priority', 'category', 'created_at'];
+        const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
+        const safeOrder = String(order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
         const { count, rows } = await Report.findAndCountAll({
             where: whereClause,
-            order: [[sortBy, order.toUpperCase()]],
+            order: [[safeSortBy, safeOrder]],
             limit: parseInt(limit),
             offset
         });

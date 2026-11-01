@@ -26,7 +26,7 @@ const protect = async (req, res, next) => {
                 console.error('[authMiddleware Error]: JWT_SECRET is not configured.');
                 return res.status(500).json({ message: 'Server authentication configuration error.' });
             }
-            const decoded = jwt.verify(token, jwtSecret);
+            const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] });
 
             // Stateful session verification
             const activeSession = await Session.findOne({
@@ -127,7 +127,7 @@ const optionalProtect = async (req, res, next) => {
     if (token) {
         try {
             if (!process.env.JWT_SECRET) return next();
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
             const activeSession = await Session.findOne({
                 where: { session_id: decoded.sessionId, user_id: decoded.id }
             });

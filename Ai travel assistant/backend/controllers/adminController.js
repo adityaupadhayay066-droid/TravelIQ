@@ -172,10 +172,14 @@ const getUsers = async (req, res) => {
         if (role && role !== 'all') whereClause.role = role;
         if (status && status !== 'all') whereClause.account_status = status;
 
+        const allowedSortFields = ['id', 'name', 'email', 'role', 'admin_role', 'account_status', 'created_at', 'last_login'];
+        const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
+        const safeOrder = String(order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
         const { count, rows } = await User.findAndCountAll({
             where: whereClause,
             attributes: { exclude: ['password'] },
-            order: [[sortBy, order.toUpperCase()]],
+            order: [[safeSortBy, safeOrder]],
             limit: parseInt(limit),
             offset
         });
@@ -1286,8 +1290,14 @@ const updateAdminRole = async (req, res) => {
 const exportReport = async (req, res) => {
     try {
         const { type } = req.params;
+        const allowedTypes = ['users', 'trains', 'destinations', 'reports', 'bookings'];
+        if (!allowedTypes.includes(type)) {
+            return res.status(400).json({ success: false, message: 'Invalid export report type.' });
+        }
+
         let data = [];
-        let filename = `${type}_export_${Date.now()}.csv`;
+        const safeType = type.replace(/[^a-zA-Z0-9_-]/g, '');
+        const filename = `${safeType}_export_${Date.now()}.csv`;
 
         if (type === 'users') {
             data = await User.findAll({ attributes: ['id', 'name', 'email', 'role', 'admin_role', 'account_status', 'created_at'] });
@@ -1312,12 +1322,18 @@ const exportReport = async (req, res) => {
             csv += keys.map(k => {
                 let val = row[k];
                 if (typeof val === 'object' && val !== null) val = JSON.stringify(val);
-                return `"${String(val || '').replace(/"/g, '""')}"`;
+                let str = String(val || '');
+                // Neutralize CSV Formula / Macro Injection (OWASP CWE-1236)
+                if (/^[=+\-@\t\r]/.test(str)) {
+                    str = `'${str}`;
+                }
+                return `"${str.replace(/"/g, '""')}"`;
             }).join(',') + '\n';
         });
 
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('X-Content-Type-Options', 'nosniff');
         return res.status(200).send(csv);
     } catch (error) {
         console.error('[AdminController Error]:', error.message);

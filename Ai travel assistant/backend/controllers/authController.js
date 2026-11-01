@@ -438,7 +438,7 @@ const loginUser = async (req, res) => {
         const trustedDeviceCookie = req.cookies?.trusted_device_token;
         if (trustedDeviceCookie && process.env.JWT_SECRET) {
             try {
-                const decoded = jwt.verify(trustedDeviceCookie, process.env.JWT_SECRET);
+                const decoded = jwt.verify(trustedDeviceCookie, process.env.JWT_SECRET, { algorithms: ['HS256'] });
                 if (decoded.purpose === 'trusted_device' && Number(decoded.userId) === Number(user.id)) {
                     const trustedDevices = user.trusted_devices || [];
                     if (trustedDevices.includes(decoded.deviceId)) {
@@ -701,7 +701,7 @@ const adminVerifyOtp = async (req, res) => {
     try {
         let challengePayload;
         try {
-            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET);
+            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
         } catch (err) {
             return res.status(401).json({ message: 'Administrator challenge token is invalid or has expired.' });
         }
@@ -846,7 +846,7 @@ const verify2FA = async (req, res) => {
     try {
         let challengePayload;
         try {
-            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET);
+            challengePayload = jwt.verify(challengeToken, process.env.JWT_SECRET, { algorithms: ['HS256'] });
         } catch (err) {
             return res.status(401).json({ message: 'Login challenge token is invalid or has expired.' });
         }
@@ -1182,7 +1182,7 @@ const refreshSession = async (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(rawToken, refreshSecret);
+        const decoded = jwt.verify(rawToken, refreshSecret, { algorithms: ['HS256'] });
 
         const rtRecord = await RefreshToken.findOne({
             where: { token: rawToken }

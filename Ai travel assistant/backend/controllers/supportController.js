@@ -232,7 +232,9 @@ exports.getAttachment = async (req, res) => {
             return res.status(404).json({ success: false, message: 'File not found on server.' });
         }
 
-        res.setHeader('Content-Disposition', `attachment; filename="${attachment.file_name || safeFilename}"`);
+        const rawDownloadName = attachment.file_name || safeFilename;
+        const sanitizedDownloadName = String(rawDownloadName).replace(/[\r\n"\\\/]/g, '_');
+        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedDownloadName}"`);
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader('Content-Security-Policy', "default-src 'none'");
         return res.sendFile(path.resolve(filePath));

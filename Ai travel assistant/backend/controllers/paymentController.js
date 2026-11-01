@@ -800,7 +800,7 @@ const getReceiptPDF = async (req, res) => {
     }
 
     // Authorization check: User can view their own booking, or admins can view all
-    if (req.user && req.user.role !== 'admin' && booking.user_id !== req.user.id) {
+    if (!req.user || (req.user.role !== 'admin' && req.user.admin_role !== 'super_admin' && Number(booking.user_id) !== Number(req.user.id))) {
       return res.status(403).send('<h3>Access Denied: You are not authorized to view this ticket.</h3>');
     }
 

@@ -19,9 +19,13 @@ const getDestinations = async (req, res) => {
             whereClause.status = status;
         }
 
+        const allowedSortFields = ['id', 'name', 'state', 'country', 'popularity', 'status', 'created_at'];
+        const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
+        const safeOrder = String(order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
         const { count, rows } = await Destination.findAndCountAll({
             where: whereClause,
-            order: [[sortBy, order.toUpperCase()]],
+            order: [[safeSortBy, safeOrder]],
             limit: parseInt(limit),
             offset
         });

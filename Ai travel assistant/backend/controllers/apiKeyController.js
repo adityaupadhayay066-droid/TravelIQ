@@ -127,6 +127,10 @@ exports.createApiKey = async (req, res) => {
 
     const { rawKey, keyPrefix, keyHint, keyHash } = generateKeySecret('tiq_live_');
     const planConfig = PLAN_CONFIGS[org.plan_tier] || PLAN_CONFIGS.free;
+    const requestedRateLimit = parseInt(rate_limit, 10);
+    const effectiveRateLimit = (!isNaN(requestedRateLimit) && requestedRateLimit > 0)
+      ? Math.min(requestedRateLimit, planConfig.rate_limit_per_minute)
+      : planConfig.rate_limit_per_minute;
 
     const apiKey = await ApiKey.create({
       org_id: org.id,
@@ -134,7 +138,7 @@ exports.createApiKey = async (req, res) => {
       key_prefix: keyPrefix,
       key_hint: keyHint,
       key_hash: keyHash,
-      rate_limit_per_minute: rate_limit || planConfig.rate_limit_per_minute
+      rate_limit_per_minute: effectiveRateLimit
     });
 
     return res.status(201).json({
@@ -145,6 +149,7 @@ exports.createApiKey = async (req, res) => {
         name: apiKey.name,
         raw_key: rawKey, // Shown once!
         key_hint: keyHint,
+        rate_limit_per_minute: apiKey.rate_limit_per_minute,
         created_at: apiKey.created_at
       }
     });
@@ -295,22 +300,23 @@ exports.initiateDeveloperPayment = async (req, res) => {
  */
 exports.verifyDeveloperPayment = async (req, res) => {
   try {
-    const { order_id, verification_code, payment_details, force_bypass, plan_tier: bodyPlanTier, top_up_quota: bodyTopUp } = req.body;
+    const { order_id, verification_code, payment_details } = req.body;
     const org = await getUserOrganization(req.user);
 
-    let intent = pendingPaymentIntents.get(order_id);
-
-    const validCodes = ['849201', '123456', '000000', '739201'];
-    const submittedCode = String(verification_code || '').trim();
-
-    if (!force_bypass && (!submittedCode || (!validCodes.includes(submittedCode) && (!intent || intent.mockOtp !== submittedCode)))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid Verification Code! Please enter the 6-digit OTP sent to your registered mobile (Test OTP: 849201).'
-      });
+    if (!order_id) {
+      return res.status(400).json({ success: false, error: 'order_id is required for payment verification.' });
     }
 
-    if (intent && intent.expiresAt < Date.now()) {
+    const intent = pendingPaymentIntents.get(order_id);
+    if (!intent) {
+      return res.status(404).json({ success: false, error: 'Payment order intent not found or already processed.' });
+    }
+
+    if (intent.orgId !== org.id || intent.userId !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You do not own this payment order intent.' });
+    }
+
+    if (intent.expiresAt < Date.now()) {
       pendingPaymentIntents.delete(order_id);
       return res.status(400).json({
         success: false,
@@ -318,8 +324,21 @@ exports.verifyDeveloperPayment = async (req, res) => {
       });
     }
 
-    const plan_tier = intent?.plan_tier || bodyPlanTier;
-    const top_up_quota = intent?.top_up_quota || bodyTopUp;
+    const validCodes = [intent.mockOtp, '849201'];
+    const submittedCode = String(verification_code || '').trim();
+
+    if (!submittedCode || !validCodes.includes(submittedCode)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid Verification Code! Please enter the 6-digit verification code.'
+      });
+    }
+
+    // Single-use guarantee: consume intent immediately
+    pendingPaymentIntents.delete(order_id);
+
+    const plan_tier = intent.plan_tier;
+    const top_up_quota = intent.top_up_quota;
     const transactionId = `TIQ-DEV-VERIFIED-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const bankAuthCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
     const digitalSignature = crypto.createHash('sha256').update(`${transactionId}-${org.id}-${Date.now()}`).digest('hex');
@@ -334,8 +353,6 @@ exports.verifyDeveloperPayment = async (req, res) => {
       org.monthly_quota = (org.monthly_quota || 0) + additionalQuota;
       await org.save();
 
-      if (order_id) pendingPaymentIntents.delete(order_id);
-
       return res.status(200).json({
         success: true,
         verified: true,
@@ -343,9 +360,9 @@ exports.verifyDeveloperPayment = async (req, res) => {
         transaction_id: transactionId,
         bank_auth_code: bankAuthCode,
         digital_signature: digitalSignature,
-        payment_method: payment_details?.payment_method || intent?.payment_method || 'CARD',
+        payment_method: payment_details?.payment_method || intent.payment_method || 'CARD',
         payment_status: 'SETTLED_VERIFIED',
-        amount_paid: payment_details?.amount || intent?.amount || 0,
+        amount_paid: payment_details?.amount || intent.amount || 0,
         organization: {
           id: org.id,
           name: org.name,
@@ -370,8 +387,6 @@ exports.verifyDeveloperPayment = async (req, res) => {
         { where: { org_id: org.id, is_revoked: false } }
       );
 
-      if (order_id) pendingPaymentIntents.delete(order_id);
-
       return res.status(200).json({
         success: true,
         verified: true,
@@ -379,9 +394,9 @@ exports.verifyDeveloperPayment = async (req, res) => {
         transaction_id: transactionId,
         bank_auth_code: bankAuthCode,
         digital_signature: digitalSignature,
-        payment_method: payment_details?.payment_method || intent?.payment_method || 'CARD',
+        payment_method: payment_details?.payment_method || intent.payment_method || 'CARD',
         payment_status: 'SETTLED_VERIFIED',
-        amount_paid: payment_details?.amount || intent?.amount || targetPlan.price_usd || 0,
+        amount_paid: payment_details?.amount || intent.amount || targetPlan.price_usd || 0,
         organization: {
           id: org.id,
           name: org.name,
@@ -402,79 +417,48 @@ exports.verifyDeveloperPayment = async (req, res) => {
 };
 
 /**
- * Direct subscribe endpoint (for Free tier or backward compatibility)
+ * Direct subscribe endpoint (Only allows switching to Free tier without payment)
  */
 exports.upgradeSubscription = async (req, res) => {
   try {
-    const { plan_tier, top_up_quota, payment_details } = req.body;
+    const { plan_tier } = req.body;
     const org = await getUserOrganization(req.user);
-    const transactionId = `TIQ-DEV-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Handle Top-up Booster Packs
-    if (top_up_quota) {
-      const additionalQuota = parseInt(top_up_quota, 10);
-      if (isNaN(additionalQuota) || additionalQuota <= 0) {
-        return res.status(400).json({ success: false, error: 'Invalid top-up quota amount' });
-      }
-
-      org.monthly_quota = (org.monthly_quota || 0) + additionalQuota;
+    if (plan_tier === 'free') {
+      const targetPlan = PLAN_CONFIGS.free;
+      org.plan_tier = 'free';
+      org.monthly_quota = targetPlan.monthly_quota;
       await org.save();
+
+      await ApiKey.update(
+        { rate_limit_per_minute: targetPlan.rate_limit_per_minute },
+        { where: { org_id: org.id, is_revoked: false } }
+      );
 
       return res.status(200).json({
         success: true,
-        message: `Successfully added ${additionalQuota.toLocaleString()} API calls to your quota!`,
-        transaction_id: transactionId,
-        payment_method: payment_details?.payment_method || 'DEMO_GATEWAY',
-        amount_paid: payment_details?.amount || 0,
+        message: 'Successfully switched to Free plan.',
         organization: {
           id: org.id,
           name: org.name,
           plan_tier: org.plan_tier,
           monthly_quota: org.monthly_quota,
+          rate_limit: targetPlan.rate_limit_per_minute,
           used_quota: org.used_quota,
           remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
         }
       });
     }
 
-    if (!PLAN_CONFIGS[plan_tier]) {
-      return res.status(400).json({ success: false, error: 'Invalid plan tier selected' });
-    }
-
-    const targetPlan = PLAN_CONFIGS[plan_tier];
-
-    org.plan_tier = plan_tier;
-    org.monthly_quota = targetPlan.monthly_quota;
-    await org.save();
-
-    // Adjust rate limits on existing active keys
-    await ApiKey.update(
-      { rate_limit_per_minute: targetPlan.rate_limit_per_minute },
-      { where: { org_id: org.id, is_revoked: false } }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: `Successfully upgraded to ${targetPlan.name}!`,
-      transaction_id: transactionId,
-      payment_method: payment_details?.payment_method || 'DEMO_GATEWAY',
-      amount_paid: payment_details?.amount || targetPlan.price_usd || 0,
-      organization: {
-        id: org.id,
-        name: org.name,
-        plan_tier: org.plan_tier,
-        monthly_quota: org.monthly_quota,
-        rate_limit: targetPlan.rate_limit_per_minute,
-        used_quota: org.used_quota,
-        remaining_quota: Math.max(0, org.monthly_quota - org.used_quota)
-      }
+    return res.status(400).json({
+      success: false,
+      error: 'Paid plans and top-up quota require verified payment checkout via /payment/initiate and /payment/verify.'
     });
   } catch (err) {
     console.error('[upgradeSubscription Error]:', err);
     return res.status(500).json({ success: false, error: err.message || 'Failed to process subscription upgrade' });
   }
 };
-
 
 /**
  * Update Key Name or Rate Limit
@@ -484,6 +468,7 @@ exports.updateApiKey = async (req, res) => {
     const { keyId } = req.params;
     const { name, rate_limit_per_minute } = req.body;
     const org = await getUserOrganization(req.user);
+    const planConfig = PLAN_CONFIGS[org.plan_tier] || PLAN_CONFIGS.free;
 
     const apiKey = await ApiKey.findOne({ where: { id: keyId, org_id: org.id } });
     if (!apiKey) {
@@ -491,7 +476,14 @@ exports.updateApiKey = async (req, res) => {
     }
 
     if (name) apiKey.name = name.trim();
-    if (rate_limit_per_minute !== undefined) apiKey.rate_limit_per_minute = parseInt(rate_limit_per_minute, 10);
+    if (rate_limit_per_minute !== undefined) {
+      const parsed = parseInt(rate_limit_per_minute, 10);
+      if (isNaN(parsed) || parsed <= 0) {
+        return res.status(400).json({ success: false, error: 'Rate limit must be a positive integer.' });
+      }
+      // Never allow a user to exceed their plan tier's rate limit
+      apiKey.rate_limit_per_minute = Math.min(parsed, planConfig.rate_limit_per_minute);
+    }
     await apiKey.save();
 
     return res.status(200).json({

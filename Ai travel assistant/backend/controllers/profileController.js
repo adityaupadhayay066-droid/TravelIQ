@@ -57,6 +57,22 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// Safe avatar file deletion helper — prevents directory traversal and arbitrary file deletion
+function safelyDeleteAvatarFile(avatarPath) {
+  if (!avatarPath || typeof avatarPath !== 'string') return;
+  const avatarDir = path.resolve(__dirname, '..', 'uploads', 'avatars');
+  const safeFilename = path.basename(avatarPath);
+  const targetPath = path.resolve(avatarDir, safeFilename);
+  // Ensure the target path is strictly within the avatar directory
+  if (targetPath.startsWith(avatarDir) && fs.existsSync(targetPath)) {
+    try {
+      fs.unlinkSync(targetPath);
+    } catch (err) {
+      console.warn('[Avatar Cleanup Warning]:', err.message);
+    }
+  }
+}
+
 // POST /api/profile/avatar — Upload profile image
 const uploadAvatar = async (req, res) => {
   try {
@@ -65,12 +81,9 @@ const uploadAvatar = async (req, res) => {
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Delete old avatar if exists
+    // Safely delete old avatar if exists
     if (user.profile_image) {
-      const oldPath = path.join(__dirname, '..', user.profile_image);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
+      safelyDeleteAvatarFile(user.profile_image);
     }
 
     // Store relative path
@@ -92,10 +105,7 @@ const removeAvatar = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     if (user.profile_image) {
-      const filePath = path.join(__dirname, '..', user.profile_image);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      safelyDeleteAvatarFile(user.profile_image);
       user.profile_image = null;
       await user.save();
     }
@@ -270,11 +280,12 @@ const deleteAccount = async (req, res) => {
 // GET /api/profile/trips — Get user's trip history
 const getTrips = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const offset = (page - 1) * limit;
-    const sort = req.query.sort || 'created_at';
-    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
+    const allowedSortFields = ['id', 'trip_name', 'source', 'destination', 'travel_date', 'status', 'created_at'];
+    const sort = allowedSortFields.includes(req.query.sort) ? req.query.sort : 'created_at';
+    const order = String(req.query.order || '').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
     const { count, rows } = await Trip.findAndCountAll({
       where: { user_id: req.user.id },

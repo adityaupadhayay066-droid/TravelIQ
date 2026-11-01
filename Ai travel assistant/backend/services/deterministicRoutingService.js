@@ -193,8 +193,15 @@ async function getVerifiedConnectingRoutes(originCode, destCode, travelDate = nu
         arrival_time: l.arrival_time_clock || (l.arrival_time_utc ? l.arrival_time_utc.substring(11, 16) : 'N/A')
       }));
 
-      const hubCode = conn.hub || conn.hub_code || 'Transit Hub';
-      const hubName = conn.hub_name || conn.hub || 'Transit Hub';
+      let hubCode = conn.hub || conn.hub_code || conn.transfer_station || 'Transit Hub';
+      let hubName = conn.hub_name || conn.hub || conn.transfer_station || 'Transit Hub';
+
+      if (typeof hubCode === 'string') {
+        hubCode = hubCode.replace(/undefined/g, 'Hub').trim();
+      }
+      if (typeof hubName === 'string') {
+        hubName = hubName.replace(/undefined/g, '').replace(/\(\s*\)/g, '').trim() || hubCode || 'Transit Hub';
+      }
 
       return {
         hub_code: hubCode,
@@ -307,9 +314,10 @@ function formatDeterministicGroundedResponse(transitData) {
   if (hasConnecting) {
     text += `🔄 **Verified Connecting Options (via Transit Hubs)**:\n\n`;
     connecting_routes.slice(0, 3).forEach((conn, i) => {
-      const hubDisplay = conn.hub_name && conn.hub_code && conn.hub_name !== conn.hub_code
+      let hubDisplay = conn.hub_name && conn.hub_code && conn.hub_name !== conn.hub_code
         ? `${conn.hub_name} (${conn.hub_code})`
         : (conn.hub_name || conn.hub_code || 'Transit Hub');
+      hubDisplay = hubDisplay.replace(/undefined/g, '').replace(/\(\s*\)/g, '').trim() || 'Transit Hub';
       text += `**Option ${i + 1}: Via ${hubDisplay}**\n`;
       text += `• **Layover Transfer**: ${conn.layover_wait_time || 'Standard Buffer'}\n`;
       text += `• **Total Duration**: ${conn.total_duration || 'N/A'}\n`;

@@ -1313,17 +1313,22 @@ class MultiModalRoutingEngine {
       });
     }
 
+    const srcIata = srcAirport.iata || 'Airport';
+    const dstIata = dstAirport.iata || 'Airport';
+    const srcCity = srcAirport.city || srcAirport.name || srcIata;
+    const dstCity = dstAirport.city || dstAirport.name || dstIata;
+
     return {
-      id: `FALLBACK_FLIGHT_TRANSIT_${srcAirport.iata}_${dstAirport.iata}`,
+      id: `FALLBACK_FLIGHT_TRANSIT_${srcIata}_${dstIata}`,
       type: 'MultiModal_Flight_Transit',
       route_type: 'Multimodal',
       direct: false,
       validated: true,
       source_verified: true,
-      hub: `${srcAirport.iata} → ${dstAirport.iata}`,
-      hub_name: `${srcAirport.city} (${srcAirport.iata}) → ${dstAirport.city} (${dstAirport.iata})`,
+      hub: `${srcIata} → ${dstIata}`,
+      hub_name: `${srcCity} (${srcIata}) → ${dstCity} (${dstIata})`,
       layover_minutes: 120,
-      layover_display: `Airport Transit at ${dstAirport.city} (${dstAirport.iata})`,
+      layover_display: `Airport Transit at ${dstCity} (${dstIata})`,
       departure_time_utc: depIso,
       arrival_time_utc: arrIso,
       duration: '6h 15m',
