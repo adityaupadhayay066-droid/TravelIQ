@@ -142,7 +142,7 @@ const createTransaction = async (req, res) => {
     }
 
     // Authoritative amount recalculated strictly from server booking record
-    const authoritativeAmount = Number(booking.ticket_fare);
+    const authoritativeAmount = Number(booking.ticket_fare != null ? booking.ticket_fare : booking.total_fare);
     if (isNaN(authoritativeAmount) || authoritativeAmount <= 0) {
       return res.status(400).json({ message: 'Invalid authoritative booking fare.' });
     }
@@ -195,29 +195,44 @@ const createTransaction = async (req, res) => {
         return res.status(400).json({ message: 'Invalid payment signature. Verification failed.' });
       }
 
-      // Verify order binding to exact booking, user, and authoritative amount
+      // STRICT ORDER BINDING: A matching server-created payment order transaction MUST exist.
+      // Verification MUST NEVER be skipped or allow implicit creation when orderTxn is missing.
       const orderTxn = await Transaction.findOne({ where: { order_id: gateway_order_id } });
-      if (orderTxn) {
-        if (orderTxn.booking_id !== booking.id) {
-          return res.status(400).json({
-            message: 'Order reference mismatch: Gateway order does not belong to this booking.'
-          });
-        }
-        if (orderTxn.user_id !== req.user.id) {
-          return res.status(403).json({
-            message: 'Order reference mismatch: Gateway order belongs to a different user.'
-          });
-        }
-        if (Math.abs(Number(orderTxn.amount) - authoritativeAmount) > 0.01) {
-          return res.status(400).json({
-            message: 'Payment amount mismatch: Gateway order amount does not match authoritative booking fare.'
-          });
-        }
-        if (orderTxn.status === PAYMENT_STATUSES.SUCCESS) {
-          return res.status(400).json({
-            message: 'This payment order has already succeeded.'
-          });
-        }
+      if (!orderTxn) {
+        return res.status(400).json({
+          message: 'Unknown payment order: No matching server-created order was found.'
+        });
+      }
+
+      if (orderTxn.booking_id !== booking.id) {
+        return res.status(400).json({
+          message: 'Order reference mismatch: Gateway order does not belong to this booking.'
+        });
+      }
+      if (orderTxn.user_id !== req.user.id) {
+        return res.status(403).json({
+          message: 'Order reference mismatch: Gateway order belongs to a different user.'
+        });
+      }
+      if (orderTxn.currency && orderTxn.currency !== 'INR') {
+        return res.status(400).json({
+          message: 'Currency mismatch: Order currency must be INR.'
+        });
+      }
+      if (Math.abs(Number(orderTxn.amount) - authoritativeAmount) > 0.01) {
+        return res.status(400).json({
+          message: 'Payment amount mismatch: Gateway order amount does not match authoritative booking fare.'
+        });
+      }
+      if (orderTxn.status === PAYMENT_STATUSES.SUCCESS) {
+        return res.status(400).json({
+          message: 'This payment order has already succeeded.'
+        });
+      }
+      if (orderTxn.status !== PAYMENT_STATUSES.PENDING) {
+        return res.status(400).json({
+          message: `Invalid order state: Expected PENDING payment order but found ${orderTxn.status}.`
+        });
       }
 
       verifiedStatus = PAYMENT_STATUSES.SUCCESS;
@@ -245,6 +260,11 @@ const createTransaction = async (req, res) => {
         });
       }
 
+      if (!transaction && verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
+        // Under verified gateway payment, an existing transaction MUST exist
+        throw new Error('ORDER_NOT_FOUND: Server-created transaction record missing for gateway order.');
+      }
+
       if (!transaction) {
         transaction = await Transaction.findOne({
           where: { booking_id, user_id: req.user.id, status: PAYMENT_STATUSES.PENDING },
@@ -264,6 +284,10 @@ const createTransaction = async (req, res) => {
         if (payment_method) transaction.payment_method = payment_method;
         await transaction.save({ transaction: t });
       } else {
+        // Never allow arbitrary untrusted creation of SUCCESS transactions
+        if (verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
+          throw new Error('SECURITY_VIOLATION: Cannot confirm booking without matching server-created transaction.');
+        }
         transaction = await Transaction.create({
           booking_id,
           user_id: req.user.id,
@@ -273,7 +297,7 @@ const createTransaction = async (req, res) => {
           signature: gateway_signature || null,
           amount: authoritativeAmount,
           currency: 'INR',
-          payment_method: payment_method || (verifiedStatus === PAYMENT_STATUSES.SUCCESS ? 'Gateway (Verified)' : 'UPI (Pending Verification)'),
+          payment_method: payment_method || 'UPI (Pending Verification)',
           status: verifiedStatus
         }, { transaction: t });
       }
@@ -456,28 +480,25 @@ const handlePaymentWebhook = async (req, res) => {
         txn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.PENDING }, lock: t.LOCK.UPDATE, transaction: t });
       }
 
-      if (txn) {
-        if (txn.status === PAYMENT_STATUSES.REFUNDED || txn.status === PAYMENT_STATUSES.REFUND_PENDING) {
-          throw new Error('STATE_CONFLICT: Transaction was refunded concurrently.');
-        }
-        txn.status = PAYMENT_STATUSES.SUCCESS;
-        txn.amount = expectedAmount;
-        if (payment_id) txn.payment_id = payment_id;
-        if (order_id) txn.order_id = order_id;
-        await txn.save({ transaction: t });
-      } else {
-        txn = await Transaction.create({
-          booking_id,
-          user_id: lockedBooking.user_id,
-          transaction_id: `TXN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
-          order_id: order_id || null,
-          payment_id: payment_id || null,
-          amount: expectedAmount,
-          currency: 'INR',
-          payment_method: 'Gateway Webhook (Verified)',
-          status: PAYMENT_STATUSES.SUCCESS
-        }, { transaction: t });
+      if (!txn) {
+        throw new Error('UNKNOWN_PAYMENT_ORDER: No server-created transaction found for this gateway order or booking.');
       }
+
+      if (txn.status === PAYMENT_STATUSES.REFUNDED || txn.status === PAYMENT_STATUSES.REFUND_PENDING) {
+        throw new Error('STATE_CONFLICT: Transaction was refunded concurrently.');
+      }
+      if (txn.booking_id !== lockedBooking.id) {
+        throw new Error('ORDER_MISMATCH: Transaction does not belong to this booking.');
+      }
+      if (Math.abs(Number(txn.amount) - expectedAmount) > 0.01) {
+        throw new Error('AMOUNT_MISMATCH: Gateway webhook amount does not match booking fare.');
+      }
+
+      txn.status = PAYMENT_STATUSES.SUCCESS;
+      txn.amount = expectedAmount;
+      if (payment_id) txn.payment_id = payment_id;
+      if (order_id) txn.order_id = order_id;
+      await txn.save({ transaction: t });
 
       lockedBooking.payment_status = 'Paid';
       lockedBooking.booking_status = 'Confirmed';
@@ -505,10 +526,13 @@ const handlePaymentWebhook = async (req, res) => {
 
     return res.status(200).json({ message: 'Payment webhook processed and booking confirmed.' });
   } catch (error) {
-    if (error.message.startsWith('STATE_CONFLICT')) {
+    if (error.message.startsWith('STATE_CONFLICT') ||
+        error.message.startsWith('UNKNOWN_PAYMENT_ORDER') ||
+        error.message.startsWith('ORDER_MISMATCH') ||
+        error.message.startsWith('AMOUNT_MISMATCH')) {
       return res.status(400).json({ message: error.message });
     }
-    console.error('[Payment Webhook Error]:', error);
+    console.error('[Payment Webhook Error]:', error.message || error);
     return res.status(500).json({ message: 'Internal error processing payment webhook.' });
   }
 };

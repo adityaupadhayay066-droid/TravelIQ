@@ -143,3 +143,4 @@ npm install
 npm run dev
 ```
 The server will synchronize MySQL tables, automatically run seeders, and begin listening on **`http://localhost:5000`**.
+

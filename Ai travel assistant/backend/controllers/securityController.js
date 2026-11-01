@@ -83,6 +83,10 @@ const revokeSession = async (req, res) => {
             await history.save();
         }
 
+        if (!session && !history) {
+            return res.status(404).json({ message: 'Session not found or already revoked.' });
+        }
+
         res.json({ message: 'Device revoked, active session invalidated.' });
     } catch (error) {
         console.error('[Revoke Session Error]:', error);

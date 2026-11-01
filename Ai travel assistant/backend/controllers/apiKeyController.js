@@ -1,6 +1,14 @@
+const crypto = require('crypto');
 const { Organization, ApiKey, ApiUsageLog } = require('../models');
 const { generateKeySecret, PLAN_CONFIGS } = require('../services/apiKeyService');
 const { Op, fn, col } = require('sequelize');
+
+// Trusted server-side catalog for Quota Top-Up Boosters
+const TOP_UP_PACKS = {
+  'pack_1k': { name: '1,000 API Calls', quota: 1000, price_usd: 15 },
+  'pack_5k': { name: '5,000 API Calls', quota: 5000, price_usd: 50 },
+  'pack_25k': { name: '25,000 API Calls', quota: 25000, price_usd: 200 }
+};
 
 /**
  * Helper: Find or create organization for authenticated user.
@@ -111,8 +119,20 @@ exports.listApiKeys = async (req, res) => {
  */
 exports.createApiKey = async (req, res) => {
   try {
-    const { name = 'Default API Key', rate_limit } = req.body;
+    const { name, rate_limit } = req.body;
     const org = await getUserOrganization(req.user);
+
+    let cleanName = 'Default API Key';
+    if (name !== undefined) {
+      if (typeof name !== 'string') {
+        return res.status(400).json({ success: false, error: 'API key name must be a valid string.' });
+      }
+      const trimmed = name.trim();
+      if (!trimmed || trimmed.length > 100) {
+        return res.status(400).json({ success: false, error: 'API key name must be between 1 and 100 characters.' });
+      }
+      cleanName = trimmed;
+    }
 
     // Limit maximum active keys per plan
     const activeKeyCount = await ApiKey.count({ where: { org_id: org.id, is_revoked: false } });
@@ -134,7 +154,7 @@ exports.createApiKey = async (req, res) => {
 
     const apiKey = await ApiKey.create({
       org_id: org.id,
-      name: name.trim() || 'Default Key',
+      name: cleanName,
       key_prefix: keyPrefix,
       key_hint: keyHint,
       key_hash: keyHash,
@@ -244,23 +264,61 @@ const pendingPaymentIntents = new Map();
  */
 exports.initiateDeveloperPayment = async (req, res) => {
   try {
-    const { plan_tier, top_up_quota, top_up_name, payment_method, amount } = req.body;
+    const { plan_tier, top_up_name, payment_method } = req.body;
     const org = await getUserOrganization(req.user);
 
-    const orderId = `TIQ_ORD_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
-    const mockOtp = '849201'; // Default realistic demo 3D-Secure / OTP code
+    let authoritativeAmount = 0;
+    let authoritativeQuota = null;
+    let targetPlanTier = null;
+
+    if (top_up_name) {
+      const pack = TOP_UP_PACKS[top_up_name];
+      if (!pack) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid top-up pack requested. Supported packs: ' + Object.keys(TOP_UP_PACKS).join(', ')
+        });
+      }
+      authoritativeAmount = pack.price_usd;
+      authoritativeQuota = pack.quota;
+    } else if (plan_tier) {
+      if (plan_tier === 'free') {
+        return res.status(400).json({
+          success: false,
+          error: 'Free tier does not require payment checkout. Use /subscription/upgrade directly.'
+        });
+      }
+      const plan = PLAN_CONFIGS[plan_tier];
+      if (!plan) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid subscription plan tier requested: ' + plan_tier
+        });
+      }
+      authoritativeAmount = plan.price_usd;
+      authoritativeQuota = plan.monthly_quota;
+      targetPlanTier = plan_tier;
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: 'Must specify either a valid paid plan_tier or top_up_name.'
+      });
+    }
+
+    const orderId = `TIQ_ORD_${Date.now()}_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    const challengeCode = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     const intentData = {
       orderId,
       orgId: org.id,
       userId: req.user.id,
-      plan_tier,
-      top_up_quota,
-      top_up_name,
+      plan_tier: targetPlanTier,
+      top_up_quota: authoritativeQuota && !targetPlanTier ? authoritativeQuota : null,
+      top_up_name: top_up_name || null,
       payment_method: payment_method || 'CARD',
-      amount: amount || (PLAN_CONFIGS[plan_tier]?.price_usd || 0),
-      mockOtp,
+      amount: authoritativeAmount,
+      challengeCode,
       expiresAt,
       status: 'AWAITING_VERIFICATION'
     };
@@ -285,9 +343,8 @@ exports.initiateDeveloperPayment = async (req, res) => {
       verification_type: payment_method === 'UPI' ? 'UPI_PIN' : (payment_method === 'NETBANKING' ? 'NETBANKING_AUTH' : '3DS_OTP'),
       phone_hint: phoneHint,
       email_hint: emailHint,
-      test_otp_hint: mockOtp,
       expires_in_seconds: 600,
-      amount: intentData.amount
+      amount: authoritativeAmount
     });
   } catch (err) {
     console.error('[initiateDeveloperPayment Error]:', err);
@@ -324,13 +381,22 @@ exports.verifyDeveloperPayment = async (req, res) => {
       });
     }
 
-    const validCodes = [intent.mockOtp, '849201'];
     const submittedCode = String(verification_code || '').trim();
-
-    if (!submittedCode || !validCodes.includes(submittedCode)) {
+    if (!submittedCode) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid Verification Code! Please enter the 6-digit verification code.'
+        error: 'Verification code is required.'
+      });
+    }
+
+    // Timing-safe cryptographic comparison against server-side intent challenge code
+    const bufExpected = Buffer.from(intent.challengeCode);
+    const bufActual = Buffer.from(submittedCode);
+
+    if (bufExpected.length !== bufActual.length || !crypto.timingSafeEqual(bufExpected, bufActual)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid Verification Code! Verification failed.'
       });
     }
 
@@ -339,11 +405,11 @@ exports.verifyDeveloperPayment = async (req, res) => {
 
     const plan_tier = intent.plan_tier;
     const top_up_quota = intent.top_up_quota;
-    const transactionId = `TIQ-DEV-VERIFIED-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const bankAuthCode = `AUTH-${Math.floor(100000 + Math.random() * 900000)}`;
+    const transactionId = `TIQ-DEV-VERIFIED-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    const bankAuthCode = `AUTH-${crypto.randomInt(100000, 1000000)}`;
     const digitalSignature = crypto.createHash('sha256').update(`${transactionId}-${org.id}-${Date.now()}`).digest('hex');
 
-    // Handle Top-Up Booster Activation
+    // Handle Top-Up Booster Activation strictly using server-persisted quota
     if (top_up_quota) {
       const additionalQuota = parseInt(top_up_quota, 10);
       if (isNaN(additionalQuota) || additionalQuota <= 0) {
@@ -362,7 +428,7 @@ exports.verifyDeveloperPayment = async (req, res) => {
         digital_signature: digitalSignature,
         payment_method: payment_details?.payment_method || intent.payment_method || 'CARD',
         payment_status: 'SETTLED_VERIFIED',
-        amount_paid: payment_details?.amount || intent.amount || 0,
+        amount_paid: intent.amount,
         organization: {
           id: org.id,
           name: org.name,
@@ -374,7 +440,7 @@ exports.verifyDeveloperPayment = async (req, res) => {
       });
     }
 
-    // Handle Subscription Plan Upgrade
+    // Handle Subscription Plan Upgrade strictly using server-persisted plan_tier
     if (plan_tier && PLAN_CONFIGS[plan_tier]) {
       const targetPlan = PLAN_CONFIGS[plan_tier];
       org.plan_tier = plan_tier;
@@ -396,7 +462,7 @@ exports.verifyDeveloperPayment = async (req, res) => {
         digital_signature: digitalSignature,
         payment_method: payment_details?.payment_method || intent.payment_method || 'CARD',
         payment_status: 'SETTLED_VERIFIED',
-        amount_paid: payment_details?.amount || intent.amount || targetPlan.price_usd || 0,
+        amount_paid: intent.amount,
         organization: {
           id: org.id,
           name: org.name,
@@ -475,7 +541,16 @@ exports.updateApiKey = async (req, res) => {
       return res.status(404).json({ success: false, error: 'API key not found' });
     }
 
-    if (name) apiKey.name = name.trim();
+    if (name !== undefined) {
+      if (typeof name !== 'string') {
+        return res.status(400).json({ success: false, error: 'API key name must be a valid string.' });
+      }
+      const trimmed = name.trim();
+      if (!trimmed || trimmed.length > 100) {
+        return res.status(400).json({ success: false, error: 'API key name must be between 1 and 100 characters.' });
+      }
+      apiKey.name = trimmed;
+    }
     if (rate_limit_per_minute !== undefined) {
       const parsed = parseInt(rate_limit_per_minute, 10);
       if (isNaN(parsed) || parsed <= 0) {

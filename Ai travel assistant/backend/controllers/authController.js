@@ -58,7 +58,13 @@ const generateAccessToken = (id, sessionId, role) => {
 const generateRefreshToken = (id, sessionId, deviceId) => {
     const refreshSecret = process.env.JWT_REFRESH_SECRET;
     if (!refreshSecret) throw new Error('JWT_REFRESH_SECRET is not configured');
-    return jwt.sign({ id, sessionId, deviceId }, refreshSecret, {
+    return jwt.sign({
+        id,
+        sessionId,
+        deviceId,
+        jti: crypto.randomBytes(12).toString('hex')
+    }, refreshSecret, {
+        algorithm: 'HS256',
         expiresIn: '7d', // 7 days
     });
 };
@@ -418,9 +424,8 @@ const loginUser = async (req, res) => {
                 ip_address: ipAddress,
                 device_info: userAgent
             });
-            const remaining = 5 - user.failed_attempts;
             return res.status(401).json({
-                message: `Invalid email or password. ${remaining} attempt(s) remaining before lockout.`
+                message: 'Invalid email or password.'
             });
         }
 

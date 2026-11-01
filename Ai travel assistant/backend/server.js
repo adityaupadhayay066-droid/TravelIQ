@@ -61,8 +61,11 @@ if (process.env.NODE_ENV === 'production') {
 
 const app = express();
 
-// ─── Trust proxy for accurate IP detection ───
-app.set('trust proxy', 1);
+// ─── Trust proxy for accurate IP detection (loopback by default; prevents header spoofing) ───
+const trustProxyConfig = process.env.TRUST_PROXY 
+  ? (process.env.TRUST_PROXY === 'true' ? true : (process.env.TRUST_PROXY === 'false' ? false : process.env.TRUST_PROXY))
+  : 'loopback';
+app.set('trust proxy', trustProxyConfig);
 
 // ─── Security Headers ───
 app.use(helmet({
@@ -131,7 +134,8 @@ app.use(cors({
       return callback(null, true);
     }
 
-    return callback(new Error('Blocked by CORS policy: Origin not allowed.'));
+    // Reject origin cleanly by withholding CORS headers without throwing an HTTP 500 exception
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

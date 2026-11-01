@@ -8,6 +8,11 @@ const { authenticateApiKey, recordUsage } = require('../services/apiKeyService')
  *   Authorization: Bearer tiq_live_abc...
  */
 const requireApiKey = async (req, res, next) => {
+  // Allow browser CORS preflight requests without requiring API key
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   const startTime = Date.now();
   const apiKeyHeader = req.headers['x-api-key'] || req.headers['x-api-token'];
   let rawKey = apiKeyHeader;
@@ -28,6 +33,17 @@ const requireApiKey = async (req, res, next) => {
     const authResult = await authenticateApiKey(rawKey);
 
     if (!authResult.valid) {
+      if (authResult.rateLimited) {
+        res.setHeader('Retry-After', authResult.retryAfterSeconds);
+        res.setHeader('X-RateLimit-Limit', authResult.limit);
+        res.setHeader('X-RateLimit-Remaining', 0);
+        return res.status(429).json({
+          success: false,
+          error: 'Rate Limit Exceeded',
+          message: authResult.error,
+          retry_after: authResult.retryAfterSeconds
+        });
+      }
       if (authResult.quotaExceeded) {
         return res.status(429).json({
           success: false,
@@ -43,7 +59,7 @@ const requireApiKey = async (req, res, next) => {
       });
     }
 
-    const { apiKey, organization } = authResult;
+    const { apiKey, organization, rateCheck } = authResult;
     req.apiKey = apiKey;
     req.organization = organization;
 
@@ -51,9 +67,11 @@ const requireApiKey = async (req, res, next) => {
     const remainingQuota = Math.max(0, organization.monthly_quota - organization.used_quota);
     res.setHeader('X-Quota-Limit', organization.monthly_quota);
     res.setHeader('X-Quota-Remaining', remainingQuota);
+    res.setHeader('X-RateLimit-Limit', apiKey.rate_limit_per_minute);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, apiKey.rate_limit_per_minute - (rateCheck?.currentCount || 1)));
     res.setHeader('X-Plan-Tier', organization.plan_tier);
 
-    // Track usage upon completion
+    // Track usage telemetry upon completion (quota has already been atomically deducted)
     res.on('finish', () => {
       const durationMs = Date.now() - startTime;
       const ipAddress = req.ip || '127.0.0.1';

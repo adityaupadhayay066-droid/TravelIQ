@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { Op, literal } = require('sequelize');
 const { ApiKey, Organization, ApiUsageLog } = require('../models');
 
 // Plan tier quota configurations
@@ -28,6 +29,39 @@ const PLAN_CONFIGS = {
     price_usd: 499
   }
 };
+
+// In-memory sliding window rate-limiter per API key
+const keyRateLimitWindows = new Map(); // keyId -> [timestamps]
+
+function checkKeyRateLimit(apiKeyId, limitPerMinute) {
+  const now = Date.now();
+  let window = keyRateLimitWindows.get(apiKeyId);
+  if (!window) {
+    window = [];
+    keyRateLimitWindows.set(apiKeyId, window);
+  }
+  // Evict timestamps older than 60 seconds
+  const cutoff = now - 60000;
+  while (window.length > 0 && window[0] <= cutoff) {
+    window.shift();
+  }
+  if (window.length >= limitPerMinute) {
+    const oldest = window[0];
+    const retryAfterSeconds = Math.max(1, Math.ceil((oldest + 60000 - now) / 1000));
+    return {
+      allowed: false,
+      retryAfterSeconds,
+      currentCount: window.length,
+      limit: limitPerMinute
+    };
+  }
+  window.push(now);
+  return {
+    allowed: true,
+    currentCount: window.length,
+    limit: limitPerMinute
+  };
+}
 
 /**
  * Generate a cryptographically secure API key
@@ -81,8 +115,44 @@ async function authenticateApiKey(rawKey) {
     return { valid: false, error: 'Associated organization is not active' };
   }
 
-  // Quota check
-  if (organization.used_quota >= organization.monthly_quota) {
+  // 1. Enforce monthly billing cycle reset (30 days)
+  const now = new Date();
+  const cycleStart = organization.billing_cycle_start ? new Date(organization.billing_cycle_start) : null;
+  if (!cycleStart || (now - cycleStart) >= 30 * 24 * 60 * 60 * 1000) {
+    await Organization.update(
+      { used_quota: 0, billing_cycle_start: now },
+      { where: { id: organization.id } }
+    );
+    organization.used_quota = 0;
+    organization.billing_cycle_start = now;
+  }
+
+  // 2. Strict Per-Minute Rate Limiting
+  const rateLimit = apiKey.rate_limit_per_minute || PLAN_CONFIGS[organization.plan_tier]?.rate_limit_per_minute || 20;
+  const rateCheck = checkKeyRateLimit(apiKey.id, rateLimit);
+  if (!rateCheck.allowed) {
+    return {
+      valid: false,
+      rateLimited: true,
+      retryAfterSeconds: rateCheck.retryAfterSeconds,
+      limit: rateCheck.limit,
+      error: `Rate limit of ${rateCheck.limit} requests per minute exceeded.`
+    };
+  }
+
+  // 3. Concurrency-Safe Atomic Quota Check & Decrement
+  // UPDATE organizations SET used_quota = used_quota + 1 WHERE id = :id AND used_quota < monthly_quota
+  const [affectedRows] = await Organization.update(
+    { used_quota: literal('used_quota + 1') },
+    {
+      where: {
+        id: organization.id,
+        used_quota: { [Op.lt]: organization.monthly_quota }
+      }
+    }
+  );
+
+  if (affectedRows === 0) {
     return {
       valid: false,
       quotaExceeded: true,
@@ -90,11 +160,14 @@ async function authenticateApiKey(rawKey) {
     };
   }
 
-  return { valid: true, apiKey, organization };
+  // Update local organization in-memory count to reflect the increment
+  organization.used_quota += 1;
+
+  return { valid: true, apiKey, organization, rateCheck };
 }
 
 /**
- * Increment usage quota and log API usage
+ * Log API telemetry without double-incrementing quota
  */
 async function recordUsage({ orgId, apiKeyId, endpoint, method, statusCode, responseTimeMs, tokensUsed = 1, ipAddress }) {
   try {
@@ -110,13 +183,7 @@ async function recordUsage({ orgId, apiKeyId, endpoint, method, statusCode, resp
       ip_address: ipAddress
     });
 
-    // 2. Increment organization quota count
-    await Organization.increment('used_quota', {
-      by: 1,
-      where: { id: orgId }
-    });
-
-    // 3. Update apiKey last_used_at
+    // 2. Update apiKey last_used_at
     if (apiKeyId) {
       await ApiKey.update({ last_used_at: new Date() }, { where: { id: apiKeyId } });
     }
@@ -130,5 +197,6 @@ module.exports = {
   generateKeySecret,
   hashApiKey,
   authenticateApiKey,
-  recordUsage
+  recordUsage,
+  checkKeyRateLimit
 };

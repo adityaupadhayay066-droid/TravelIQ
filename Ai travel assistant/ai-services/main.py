@@ -478,13 +478,13 @@ def recommend_route(req: RouteRecommendRequest):
         
         return {
             "preference_rating": round(normalized_rating, 2),
-            "match_confidence": round(80 + normalized_rating * 3, 1)
+            "match_confidence": round((normalized_rating / 5.0) * 100.0, 1)
         }
     except Exception as e:
         logger.error(f"Error in route recommendation: {e}")
         return {
-            "preference_rating": 4.2,
-            "match_confidence": 88.5,
+            "preference_rating": 3.0,
+            "match_confidence": 60.0,
             "fallback": True
         }
 

@@ -28,12 +28,23 @@ router.get('/ping', (req, res) => {
  */
 router.post('/predict-delay', async (req, res) => {
   try {
-    const { train_number, route, weather, day_of_week } = req.body;
-    if (!train_number) {
+    const trainNumber = req.body.train_number || req.body.trainNumber;
+    const route = req.body.route;
+    const weather = req.body.weather;
+    const dayOfWeek = req.body.day_of_week || req.body.dayOfWeek;
+
+    if (!trainNumber) {
       return res.status(400).json({ success: false, error: 'Missing required field: train_number' });
     }
 
-    const prediction = await aiService.predictDelay(req.body);
+    const payload = {
+      train_number: trainNumber,
+      route,
+      weather,
+      day_of_week: dayOfWeek
+    };
+
+    const prediction = await aiService.predictDelay(payload);
     return res.status(200).json({
       success: true,
       data: prediction
@@ -50,12 +61,23 @@ router.post('/predict-delay', async (req, res) => {
  */
 router.post('/predict-fare', async (req, res) => {
   try {
-    const { source, destination, travel_class, travel_date } = req.body;
+    const source = req.body.source;
+    const destination = req.body.destination;
+    const travelClass = req.body.travel_class || req.body.travelClass;
+    const travelDate = req.body.travel_date || req.body.travelDate;
+
     if (!source || !destination) {
       return res.status(400).json({ success: false, error: 'Missing required fields: source, destination' });
     }
 
-    const forecast = await aiService.predictFare(req.body);
+    const payload = {
+      source,
+      destination,
+      travel_class: travelClass,
+      travel_date: travelDate
+    };
+
+    const forecast = await aiService.predictFare(payload);
     return res.status(200).json({
       success: true,
       data: forecast
@@ -72,12 +94,21 @@ router.post('/predict-fare', async (req, res) => {
  */
 router.post('/predict-crowd', async (req, res) => {
   try {
-    const { station_code, train_number, time_slot } = req.body;
-    if (!station_code && !train_number) {
+    const stationCode = req.body.station_code || req.body.stationCode;
+    const trainNumber = req.body.train_number || req.body.trainNumber;
+    const timeSlot = req.body.time_slot || req.body.timeSlot;
+
+    if (!stationCode && !trainNumber) {
       return res.status(400).json({ success: false, error: 'Must provide either station_code or train_number' });
     }
 
-    const prediction = await aiService.predictCrowd(req.body);
+    const payload = {
+      station_code: stationCode,
+      train_number: trainNumber,
+      time_slot: timeSlot
+    };
+
+    const prediction = await aiService.predictCrowd(payload);
     return res.status(200).json({
       success: true,
       data: prediction
@@ -89,7 +120,33 @@ router.post('/predict-crowd', async (req, res) => {
 });
 
 /**
- * Intelligent Route Recommendation API
+ * Route Optimization API (Developer Portal Endpoint)
+ * POST /api/v1/public/optimize-route
+ */
+router.post('/optimize-route', async (req, res) => {
+  try {
+    const source = req.body.source;
+    const destination = req.body.destination;
+    const preference = req.body.preference || req.body.preferences || 'time';
+
+    if (!source || !destination) {
+      return res.status(400).json({ success: false, error: 'Missing source or destination' });
+    }
+
+    const payload = { source, destination, preference };
+    const result = await aiService.optimizeRoute(payload);
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    console.error('[Public API: optimizeRoute Error]:', err.message);
+    return res.status(500).json({ success: false, error: 'Failed to process route optimization' });
+  }
+});
+
+/**
+ * Intelligent Route Recommendation API (NCF Recommender)
  * POST /api/v1/public/recommend-route
  */
 router.post('/recommend-route', async (req, res) => {
@@ -116,12 +173,19 @@ router.post('/recommend-route', async (req, res) => {
  */
 router.post('/recommend-food', async (req, res) => {
   try {
-    const { destination, dietary_pref, budget } = req.body;
+    const destination = req.body.destination;
+    const dietaryPref = req.body.dietary_pref || req.body.dietaryPref;
+    const budget = req.body.budget;
+
     if (!destination) {
       return res.status(400).json({ success: false, error: 'Missing destination' });
     }
 
-    const foodRecs = await aiService.recommendFood(req.body);
+    const foodRecs = await aiService.recommendFood({
+      destination,
+      dietary_pref: dietaryPref,
+      budget
+    });
     return res.status(200).json({
       success: true,
       data: foodRecs

@@ -32,7 +32,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
         // Option 1: Try with Web Search Grounding if requested
         if (tryWebSearch) {
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
                 const body = {
                     contents: [{ parts: [{ text: fullText }] }],
                     tools: [{ googleSearch: {} }],
@@ -42,7 +42,10 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
                     }
                 };
                 const res = await axios.post(url, body, {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
                     timeout: 10000
                 });
                 const parts = res.data?.candidates?.[0]?.content?.parts || [];
@@ -56,7 +59,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
 
         // Option 2: Standard generateContent
         try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
             const body = {
                 contents: [{ parts: [{ text: fullText }] }],
                 generationConfig: {
@@ -65,7 +68,10 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
                 }
             };
             const res = await axios.post(url, body, {
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
                 timeout: 10000
             });
             const parts = res.data?.candidates?.[0]?.content?.parts || [];
