@@ -249,7 +249,10 @@ const antiScrapingShield = async (req, res, next) => {
     const clientShield = req.headers['x-client-shield'];
     if (clientShield) {
         if (!verifyClientShield(clientShield)) {
-            console.warn(`🛡️ [ANTI-SCRAPING] Invalid or expired Client Shield token from IP: ${ip}`);
+            const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+            if (!isLocal || process.env.DEBUG_SHIELD === 'true') {
+                console.warn(`🛡️ [ANTI-SCRAPING] Invalid or expired Client Shield token from IP: ${ip}`);
+            }
         }
     }
 

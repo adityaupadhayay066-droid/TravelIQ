@@ -42,9 +42,15 @@ function shouldSkipRefresh(url) {
 // Notice: Client-side tokens are never treated as a cryptographic security boundary.
 function generateClientShieldToken() {
   const timestamp = Date.now();
-  // Safe browser telemetry token showing timestamp and random entropy, no shared secret in frontend
-  const randomEntropy = Math.random().toString(36).substring(2, 10);
-  return `${timestamp}.${randomEntropy}`;
+  let entropy = '';
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    entropy = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  } else {
+    entropy = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  }
+  return `${timestamp}.${entropy}`;
 }
 
 // ─── Backend API (Express on port 5000) ───
