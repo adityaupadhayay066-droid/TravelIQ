@@ -355,6 +355,63 @@ async function runBookingCreationRegressionTests() {
       }
     });
 
+    // 13. Station name inputs (e.g. 'NEW DELHI') resolve automatically to station codes
+    await test('13. Station name inputs (e.g. NEW DELHI) resolve automatically to valid station codes', async () => {
+      const req = {
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'NEW DELHI',
+          destination_station_code: 'CSTM',
+          train_number: '12951',
+          travel_class: '3A'
+        }
+      };
+      const res = createMockRes();
+      await createBooking(req, res);
+
+      assert.strictEqual(res.statusCode, 201, 'Must accept resolved station name and create booking');
+      assert.strictEqual(res.data.booking.source_station_code, 'NDLS', 'Origin must be resolved to NDLS');
+    });
+
+    // 14. Connecting train with COMBINED class and slash-delimited train numbers
+    await test('14. Connecting train with COMBINED class and slash-delimited train numbers succeeds', async () => {
+      const req = {
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'NEW DELHI',
+          destination_station_code: 'BSB',
+          train_number: '22436 / 12876',
+          travel_class: 'COMBINED',
+          ticket_fare: 1700
+        }
+      };
+      const res = createMockRes();
+      await createBooking(req, res);
+
+      assert.strictEqual(res.statusCode, 201, 'Must accept connecting train booking');
+      assert.strictEqual(res.data.booking.source_station_code, 'NDLS');
+      assert.strictEqual(res.data.booking.travel_class, 'COMBINED');
+      assert.strictEqual(Number(res.data.booking.ticket_fare), 1700);
+    });
+
+    // 15. Truly unknown station is rejected with 400
+    await test('15. Truly unknown station is rejected with 400', async () => {
+      const req = {
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'UNKNOWN_NONEXISTENT_STN',
+          destination_station_code: 'CSTM',
+          train_number: '12951',
+          travel_class: '3A'
+        }
+      };
+      const res = createMockRes();
+      await createBooking(req, res);
+
+      assert.strictEqual(res.statusCode, 400, 'Must reject unknown station');
+      assert.ok(res.data.message.includes('Unknown origin station'));
+    });
+
   } finally {
     // Clean up test user's data
     if (testUser) {

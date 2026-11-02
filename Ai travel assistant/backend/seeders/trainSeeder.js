@@ -239,6 +239,77 @@ const DEFAULT_TRAINS = [
         ]
     },
     {
+        train_number: '04096',
+        train_name: 'PPTA FESTIVL SPL',
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        schedule: [
+            { station_code: 'ANVT', arrival_time: null, departure_time: '00:05:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '06:50:00', departure_time: '06:55:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ALD', arrival_time: '09:40:00', departure_time: '09:45:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BSB', arrival_time: '12:50:00', departure_time: '12:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'GCT', arrival_time: '14:30:00', departure_time: '14:35:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BUI', arrival_time: '16:15:00', departure_time: '16:20:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'CPR', arrival_time: '17:45:00', departure_time: null, day_count: 1, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '04058',
+        train_name: 'ANVT CPR SPL',
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        schedule: [
+            { station_code: 'ANVT', arrival_time: null, departure_time: '00:20:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '07:10:00', departure_time: '07:15:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ALD', arrival_time: '10:05:00', departure_time: '10:10:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BSB', arrival_time: '13:20:00', departure_time: '13:25:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'GCT', arrival_time: '15:10:00', departure_time: '15:15:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BUI', arrival_time: '17:10:00', departure_time: '17:15:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'CPR', arrival_time: '19:00:00', departure_time: null, day_count: 1, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '20504',
+        train_name: 'DBRG RAJDHANI',
+        runs_on: ['TUE', 'SAT'],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '11:25:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '16:35:00', departure_time: '16:40:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ALD', arrival_time: '18:45:00', departure_time: '18:50:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BSB', arrival_time: '21:20:00', departure_time: '21:30:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'BUI', arrival_time: '01:45:00', departure_time: '01:50:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'CPR', arrival_time: '03:15:00', departure_time: null, day_count: 2, stop_sequence: 6 }
+        ]
+    },
+    {
+        train_number: '12562',
+        train_name: 'Swatantrata Senani Superfast Express',
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '21:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ALJN', arrival_time: '22:58:00', departure_time: '23:00:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'CNB', arrival_time: '02:35:00', departure_time: '02:40:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'ALD', arrival_time: '05:25:00', departure_time: '05:30:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BSB', arrival_time: '08:05:00', departure_time: '08:15:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'GCT', arrival_time: '09:30:00', departure_time: '09:35:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'BUI', arrival_time: '10:45:00', departure_time: '10:50:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'CPR', arrival_time: '12:40:00', departure_time: null, day_count: 2, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '14006',
+        train_name: 'Lichchavi Express',
+        runs_on: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        schedule: [
+            { station_code: 'ANVT', arrival_time: null, departure_time: '18:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ALJN', arrival_time: '20:10:00', departure_time: '20:12:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'CNB', arrival_time: '00:15:00', departure_time: '00:20:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'ALD', arrival_time: '03:15:00', departure_time: '03:20:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BSB', arrival_time: '06:05:00', departure_time: '06:15:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'GCT', arrival_time: '07:45:00', departure_time: '07:50:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'BUI', arrival_time: '09:50:00', departure_time: '09:55:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'CPR', arrival_time: '11:30:00', departure_time: null, day_count: 2, stop_sequence: 8 }
+        ]
+    },
+    {
         train_number: '15126',
         train_name: 'Jan Shatabdi Intercity Express',
         schedule: [

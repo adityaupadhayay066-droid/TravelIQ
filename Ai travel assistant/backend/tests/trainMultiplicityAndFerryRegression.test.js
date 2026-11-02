@@ -1,12 +1,3 @@
-/**
- * trainMultiplicityAndFerryRegression.test.js
- * Verifies:
- * 1. Multiplicity of trains on high-demand corridors (Bhubaneswar to New Delhi).
- * 2. Authentic coach class pricing & isolation (no uniform fares, no invented classes).
- * 3. Ferry integration & search discovery (Mumbai to Mandwa Ro-Pax).
- * 4. Booking journey date validation (rejects invalid/missing dates).
- * 5. Sources health telemetry (/api/travel/sources/health).
- */
 
 const assert = require('assert');
 const { Train, TrainSchedule, TrainFare, Station, sequelize } = require('../models');
@@ -45,11 +36,12 @@ async function runTests() {
         AND s1.stop_sequence < s2.stop_sequence
     `;
     const directTrains = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
-    assert.ok(directTrains.length >= 2, `Expected at least 2 direct trains for BBS->NDLS, found ${directTrains.length}`);
-    
+    assert.ok(directTrains.length >= 3, `Expected at least 3 direct trains for BBS->NDLS, found ${directTrains.length}`);
+
     const trainNumbers = directTrains.map(t => t.train_number);
     assert.ok(trainNumbers.includes('12801'), 'Must include 12801 Purushottam Express');
-    assert.ok(trainNumbers.includes('20817') || trainNumbers.includes('22823'), 'Must include Bhubaneswar Tejas Rajdhani Express');
+    assert.ok(trainNumbers.includes('20817'), 'Must include 20817 Bhubaneswar Tejas Rajdhani Express');
+    assert.ok(trainNumbers.includes('12815') || trainNumbers.includes('12875'), 'Must include Nandan Kanan or Neelachal Express');
   });
 
   // 2. Class-specific fare variation (no identical fares across coach classes)
@@ -95,7 +87,7 @@ async function runTests() {
     assert.strictEqual(classCodes.includes('3A'), false, 'Vande Bharat must NOT have 3A class');
     assert.ok(classCodes.includes('CC'), 'Vande Bharat must support AC Chair Car (CC)');
     assert.ok(classCodes.includes('EC'), 'Vande Bharat must support Executive Chair Car (EC)');
-    
+
     const ccFare = vbFares.find(f => f.class_code === 'CC')?.fare;
     const ecFare = vbFares.find(f => f.class_code === 'EC')?.fare;
     assert.ok(ecFare > ccFare, `Executive Class fare (${ecFare}) must exceed Chair Car (${ccFare})`);
@@ -137,13 +129,49 @@ async function runTests() {
   await test('7. MultiModalRoutingEngine discovers connecting routes without returning single direct trains', async () => {
     const routingEngine = new MultiModalRoutingEngine({ sequelize });
     const connectingDiscovery = await routingEngine.findConnectingRoutes('BBS', 'NDLS', '2026-11-10', { forceConnecting: true });
-    
+
     assert.ok(connectingDiscovery !== null, 'Discovery result must be non-null');
     // If candidate hubs are evaluated, routes should be connecting chains with legs
     for (const r of (connectingDiscovery.routes || [])) {
       if (r.route_type === 'Connecting') {
         assert.ok(Array.isArray(r.legs) && r.legs.length >= 2, 'Connecting route must have at least 2 legs');
       }
+    }
+  });
+
+  // 8. Delhi (NDLS/ANVT) to Ballia (BUI) returns authentic verified direct trains
+  await test('8. Delhi (NDLS/ANVT) to Ballia (BUI) returns authentic verified direct trains', async () => {
+    const sql = `
+      SELECT DISTINCT t.train_number, t.train_name, t.runs_on
+      FROM train_schedules s1
+      JOIN train_schedules s2 ON s1.train_number = s2.train_number
+      JOIN trains t ON s1.train_number = t.train_number
+      WHERE s1.station_code IN ('NDLS', 'ANVT')
+        AND s2.station_code = 'BUI'
+        AND s1.stop_sequence < s2.stop_sequence
+    `;
+    const directTrains = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
+    assert.ok(directTrains.length >= 4, `Expected at least 4 direct trains for Delhi -> BUI, found ${directTrains.length}`);
+    const nos = directTrains.map(t => t.train_number);
+    assert.ok(nos.includes('04096'), 'Must include 04096 PPTA FESTIVL SPL');
+    assert.ok(nos.includes('04058'), 'Must include 04058 ANVT CPR SPL');
+    assert.ok(nos.includes('20504'), 'Must include 20504 DBRG RAJDHANI');
+    assert.ok(nos.includes('12562'), 'Must include 12562 Swatantrata Senani Exp');
+  });
+
+  // 9. Connecting route legs are fully normalized with non-blank service details
+  await test('9. Connecting route legs are fully normalized with non-blank service details', async () => {
+    const routingEngine = new MultiModalRoutingEngine({ sequelize });
+    const connDiscovery = await routingEngine.findConnectingRoutes('NDLS', 'TATA', '2026-11-03', { forceConnecting: true });
+    assert.ok(connDiscovery.routes && connDiscovery.routes.length > 0, 'Must find connecting routes');
+    const firstRoute = connDiscovery.routes[0];
+    assert.ok(Array.isArray(firstRoute.legs) && firstRoute.legs.length >= 2, 'Must have at least 2 legs');
+    for (const leg of firstRoute.legs) {
+      assert.ok(leg.service_name && leg.service_name.trim().length > 0, 'Leg must have valid service_name');
+      assert.ok(leg.from_station && leg.from_station.trim().length > 0, 'Leg must have valid from_station');
+      assert.ok(leg.to_station && leg.to_station.trim().length > 0, 'Leg must have valid to_station');
+      assert.ok(leg.departure_time_clock, 'Leg must have valid departure_time_clock');
+      assert.ok(leg.arrival_time_clock, 'Leg must have valid arrival_time_clock');
     }
   });
 

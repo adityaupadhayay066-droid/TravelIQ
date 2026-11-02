@@ -794,20 +794,34 @@ export default function Dashboard() {
                                 );
                               }
 
+                              const serviceTitle = leg.service_name || leg.train_name || leg.name || (leg.service_number ? `Train #${leg.service_number}` : (leg.mode || 'Service'));
+                              const originStn = leg.from_station || leg.from || leg.origin || 'Origin';
+                              const destStn = leg.to_station || leg.to || leg.destination || 'Destination';
+                              const depTime = leg.departure_time_clock || leg.departure || leg.dep_time || '08:00 AM';
+                              const arrTime = leg.arrival_time_clock || leg.arrival || leg.arr_time || '06:00 PM';
+                              const serviceNo = leg.service_number || leg.train_number || leg.number;
+
                               return (
                                 <div key={legIdx} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between text-xs">
                                   <div className="flex items-center gap-3">
                                     <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 text-teal-600 flex items-center justify-center font-bold text-xs shrink-0">
-                                      {legIdx === 0 ? '1' : '2'}
+                                      {legIdx === 0 ? '1' : (leg.leg_number || legIdx + 1)}
                                     </div>
                                     <div>
-                                      <p className="font-bold text-slate-900 dark:text-white">{leg.train_name || leg.type}</p>
-                                      <p className="text-[11px] text-slate-500">{leg.from} → {leg.to}</p>
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-bold text-slate-900 dark:text-white">{serviceTitle}</p>
+                                        {serviceNo && (
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-mono font-semibold">
+                                            #{serviceNo}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-[11px] text-slate-500 font-medium">{originStn} → {destStn}</p>
                                     </div>
                                   </div>
 
                                   <div className="text-right">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">{leg.departure} – {leg.arrival}</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200">{depTime} – {arrTime}</span>
                                     <span className="text-[10px] text-emerald-600 block font-semibold">Seats Available</span>
                                   </div>
                                 </div>

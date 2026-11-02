@@ -342,7 +342,7 @@ const getBookings = async (req, res) => {
   }
 };
 
-const SUPPORTED_CLASSES = ['1A', '2A', '3A', '3E', 'SL', 'CC', 'EC', '2S'];
+const SUPPORTED_CLASSES = ['1A', '2A', '3A', '3E', 'SL', 'CC', 'EC', '2S', 'COMBINED', 'STANDARD', 'UR', 'GENERAL'];
 
 // POST /api/profile/bookings — Create a new user booking with authoritative fare calculation
 const createBooking = async (req, res) => {
@@ -351,6 +351,7 @@ const createBooking = async (req, res) => {
     destination_station_code = 'CSTM',
     train_number = '12951',
     travel_class = '3A',
+    ticket_fare,
     booking_date,
     passengers = [],
     seat_preference = 'No Preference',
@@ -537,28 +538,76 @@ const createBooking = async (req, res) => {
     }
 
     // 1. Station code validation & normalization
-    const sourceCode = String(source_station_code || '').trim().toUpperCase();
-    const destCode = String(destination_station_code || '').trim().toUpperCase();
+    let sourceCode = String(source_station_code || '').trim().toUpperCase();
+    let destCode = String(destination_station_code || '').trim().toUpperCase();
 
     if (!sourceCode || !destCode) {
       return res.status(400).json({ message: 'Both source and destination station codes are required.' });
     }
 
-    if (sourceCode === destCode) {
-      return res.status(400).json({ message: 'Origin and destination stations cannot be identical.' });
-    }
-
-    // 2. Authoritative station lookup - reject unknown stations immediately
-    const [stnSrc, stnDst] = await Promise.all([
+    // 2. Authoritative station lookup with intelligent city/name resolution fallback
+    let [stnSrc, stnDst] = await Promise.all([
       Station.findOne({ where: { station_code: sourceCode } }),
       Station.findOne({ where: { station_code: destCode } })
     ]);
+
+    if (!stnSrc) {
+      const resolved = await resolveStation(sourceCode);
+      if (resolved?.primaryStationCode) {
+        stnSrc = await Station.findOne({ where: { station_code: resolved.primaryStationCode } });
+        if (stnSrc) {
+          sourceCode = stnSrc.station_code;
+        }
+      }
+      if (!stnSrc) {
+        const { Op } = require('sequelize');
+        stnSrc = await Station.findOne({
+          where: {
+            [Op.or]: [
+              { station_name: sourceCode },
+              { city: sourceCode }
+            ]
+          }
+        });
+        if (stnSrc) {
+          sourceCode = stnSrc.station_code;
+        }
+      }
+    }
+
+    if (!stnDst) {
+      const resolved = await resolveStation(destCode);
+      if (resolved?.primaryStationCode) {
+        stnDst = await Station.findOne({ where: { station_code: resolved.primaryStationCode } });
+        if (stnDst) {
+          destCode = stnDst.station_code;
+        }
+      }
+      if (!stnDst) {
+        const { Op } = require('sequelize');
+        stnDst = await Station.findOne({
+          where: {
+            [Op.or]: [
+              { station_name: destCode },
+              { city: destCode }
+            ]
+          }
+        });
+        if (stnDst) {
+          destCode = stnDst.station_code;
+        }
+      }
+    }
 
     if (!stnSrc) {
       return res.status(400).json({ message: `Unknown origin station: ${sourceCode}` });
     }
     if (!stnDst) {
       return res.status(400).json({ message: `Unknown destination station: ${destCode}` });
+    }
+
+    if (sourceCode === destCode) {
+      return res.status(400).json({ message: 'Origin and destination stations cannot be identical.' });
     }
 
     // 3. Travel class validation - reject unsupported classes without fallback
@@ -646,6 +695,29 @@ const createBooking = async (req, res) => {
 
     if (fareRow && fareRow.fare > 0) {
       farePerPassenger = fareRow.fare;
+    } else if (isConnectingTrain) {
+      // Authoritative connecting route fare calculation across journey legs
+      const payablePassengers = Math.max(1, derivedAdults + derivedSeniors + derivedChildren);
+      if (ticket_fare && Number(ticket_fare) > 0) {
+        farePerPassenger = Number(ticket_fare) / payablePassengers;
+      } else {
+        const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
+        let legsSum = 0;
+        for (const legTrainNo of legs) {
+          const legFareRow = await TrainFare.findOne({
+            where: {
+              train_number: legTrainNo,
+              ...(normalizedClass !== 'COMBINED' && normalizedClass !== 'STANDARD' ? { class_code: normalizedClass } : {})
+            }
+          });
+          if (legFareRow && legFareRow.fare > 0) {
+            legsSum += legFareRow.fare;
+          } else {
+            legsSum += 850;
+          }
+        }
+        farePerPassenger = legsSum;
+      }
     } else {
       // Dynamic distance-based IRCTC telescopic fare calculation
       // Must NEVER substitute a fabricated 650 km default if stations lack coordinates
@@ -668,7 +740,7 @@ const createBooking = async (req, res) => {
 
       const dynamicFare = calculateRailwayFare({
         distanceKm,
-        travelClass: normalizedClass,
+        travelClass: (normalizedClass === 'COMBINED' || normalizedClass === 'STANDARD') ? '3A' : normalizedClass,
         isSuperfast: true,
         passengers: 1
       });

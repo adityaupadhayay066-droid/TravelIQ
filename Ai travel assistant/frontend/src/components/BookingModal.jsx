@@ -442,9 +442,21 @@ export default function BookingModal({ train, onClose }) {
 
     try {
       const journeyDateStr = train.journey_date || train.departure_date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const srcCode = train.source_station_code || train.source_code || train.origin_station_code || train.origin_code || 
+        (train.source && train.source.length <= 5 ? train.source : null) ||
+        (train.depStation && train.depStation.length <= 5 ? train.depStation : null) ||
+        (train.legs && train.legs[0] && (train.legs[0].origin_station_code || train.legs[0].source_code || train.legs[0].origin)) ||
+        train.depStation || train.source || 'NDLS';
+
+      const dstCode = train.destination_station_code || train.destination_code || train.dest_station_code || train.dest_code ||
+        (train.dest && train.dest.length <= 5 ? train.dest : null) ||
+        (train.arrStation && train.arrStation.length <= 5 ? train.arrStation : null) ||
+        (train.legs && train.legs[train.legs.length - 1] && (train.legs[train.legs.length - 1].dest_station_code || train.legs[train.legs.length - 1].destination_code || train.legs[train.legs.length - 1].destination)) ||
+        train.arrStation || train.dest || 'MMCT';
+
       const bookingPayload = {
-        source_station_code: train.source_code || train.depStation || train.source || 'NDLS',
-        destination_station_code: train.destination_code || train.arrStation || train.dest || 'MMCT',
+        source_station_code: srcCode,
+        destination_station_code: dstCode,
         train_number: train.train_number || train.number || '12301',
         travel_class: selectedClass,
         ticket_fare: totalFare,

@@ -214,6 +214,8 @@ const searchRoutes = async (req, res) => {
 
         const uniqueTrainNumbers = new Set();
         const processedDbTrains = [];
+        const originStnCode = sourceStation ? sourceStation.station_code : (sourceMatch?.primaryStationCode || originCodes[0] || (source && source.trim().toUpperCase()));
+        const destStnCode = destStation ? destStation.station_code : (destMatch?.primaryStationCode || destCodes[0] || (destination && destination.trim().toUpperCase()));
 
         for (const route of validDbRoutes) {
             if (uniqueTrainNumbers.has(route.train_number)) continue;
@@ -258,6 +260,12 @@ const searchRoutes = async (req, res) => {
                 train_name: route.train_name,
                 number: route.train_number,
                 train_number: route.train_number,
+                source_station_code: route.source_station_code || originStnCode,
+                destination_station_code: route.dest_station_code || destStnCode,
+                source_code: route.source_station_code || originStnCode,
+                destination_code: route.dest_station_code || destStnCode,
+                origin_station_code: route.source_station_code || originStnCode,
+                dest_station_code: route.dest_station_code || destStnCode,
                 depStation: sourceStation ? sourceStation.station_name : source,
                 arrStation: destStation ? destStation.station_name : destination,
                 depTime: route.source_departure ? route.source_departure.substring(0, 5) : '08:00 AM',
@@ -277,8 +285,6 @@ const searchRoutes = async (req, res) => {
             });
         }
 
-        const originStnCode = sourceStation ? sourceStation.station_code : (sourceMatch?.primaryStationCode || originCodes[0] || (source && source.trim().toUpperCase()));
-        const destStnCode = destStation ? destStation.station_code : (destMatch?.primaryStationCode || destCodes[0] || (destination && destination.trim().toUpperCase()));
         const routingEngine = new MultiModalRoutingEngine({ sequelize });
 
         const finalTrains = [...processedDbTrains];
@@ -318,6 +324,21 @@ const searchRoutes = async (req, res) => {
                         }
                     }
 
+                    const normalizedLegs = (conn.legs || []).map(l => ({
+                        ...l,
+                        train_name: l.service_name || l.train_name || l.name,
+                        service_name: l.service_name || l.train_name || l.name,
+                        service_number: l.service_number || l.train_number || l.number,
+                        from: l.from_station || l.from || l.origin,
+                        from_station: l.from_station || l.from || l.origin,
+                        to: l.to_station || l.to || l.destination,
+                        to_station: l.to_station || l.to || l.destination,
+                        departure: l.departure_time_clock || l.departure || l.dep_time,
+                        departure_time_clock: l.departure_time_clock || l.departure || l.dep_time,
+                        arrival: l.arrival_time_clock || l.arrival || l.arr_time,
+                        arrival_time_clock: l.arrival_time_clock || l.arrival || l.arr_time
+                    }));
+
                     finalTrains.push({
                         ...conn,
                         id: conn.id,
@@ -335,12 +356,19 @@ const searchRoutes = async (req, res) => {
                         train_name: `${firstName} → ${lastName}`,
                         number: `${firstNo} / ${lastNo}`,
                         train_number: `${firstNo} / ${lastNo}`,
+                        source_station_code: originStnCode,
+                        destination_station_code: destStnCode,
+                        source_code: originStnCode,
+                        destination_code: destStnCode,
+                        origin_station_code: originStnCode,
+                        dest_station_code: destStnCode,
                         depTime: firstLeg.departure_time_clock || '08:00 AM',
                         arrTime: lastLeg.arrival_time_clock || '08:00 PM',
                         dur: conn.duration || '12h 00m',
                         duration_hours: conn.duration_minutes ? parseFloat((conn.duration_minutes / 60).toFixed(1)) : 12.0,
                         depStation: sourceStation ? sourceStation.station_name : originStnCode,
                         arrStation: destStation ? destStation.station_name : destStnCode,
+                        legs: normalizedLegs,
                         price: combinedFare,
                         fare_inr: combinedFare,
                         classes: combinedFare ? [`Combined - ₹${combinedFare.toLocaleString()}`] : [],
