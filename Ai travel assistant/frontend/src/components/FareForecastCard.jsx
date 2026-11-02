@@ -13,12 +13,24 @@ export default function FareForecastCard({ fareData, loading }) {
     );
   }
 
+  if (!fareData || fareData.current_fare == null) {
+    return (
+      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm text-center">
+        <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+          <DollarSign className="w-5 h-5" />
+        </div>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB] font-display">Smart Fare Prediction</h4>
+        <p className="text-xs text-slate-500 mt-1">Historical forecast model has not computed pricing for this service</p>
+      </div>
+    );
+  }
+
   const {
-    current_fare = 1250,
-    forecasted_fare_7d = 1450,
-    recommendation = "Book Now",
-    demand_level = "High"
-  } = fareData || {};
+    current_fare,
+    forecasted_fare_7d = current_fare,
+    recommendation = "Verified Tariff",
+    demand_level = "Normal"
+  } = fareData;
 
   const isBookNow = recommendation.toLowerCase().includes("book");
   const priceDiff = forecasted_fare_7d - current_fare;

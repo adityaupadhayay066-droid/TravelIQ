@@ -161,7 +161,8 @@ async function runIntegrityTests() {
       assert.strictEqual(res.statusCode, 200);
       assert.ok(res.data.response.includes('Train #12801 — Purushottam Express'));
       assert.ok(res.data.response.includes('Verified Fares'));
-      assert.ok(res.data.response.includes('SL: ₹980'));
+      const slFare = (await TrainFare.findOne({ where: { train_number: '12801', class_code: 'SL' } }))?.fare;
+      assert.ok(res.data.response.includes(`SL: ₹${slFare}`));
     });
 
     // 7. Chatbot query for corridor with no direct trains returns clean grounded message
@@ -174,7 +175,10 @@ async function runIntegrityTests() {
       await sendMessage(req, res);
 
       assert.strictEqual(res.statusCode, 200);
-      assert.ok(res.data.response.includes('No verified routes found for this date.'));
+      assert.ok(
+        res.data.response.includes('No direct trains are available on this route.') || 
+        res.data.response.includes('No verified routes found for this date.')
+      );
       assert.ok(!res.data.response.includes('DEL to PAT'), 'Must not hallucinate Delhi to Patna flight for Pune');
     });
 

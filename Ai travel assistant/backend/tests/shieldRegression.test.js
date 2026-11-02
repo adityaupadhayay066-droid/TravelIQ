@@ -182,12 +182,13 @@ async function runShieldRegressionTests() {
     await test('8. Malicious automated scanners and scrapers (sqlmap, scrapy) ARE blocked with 403', async () => {
       const maliciousUAs = ['sqlmap/1.7#stable', 'Scrapy/2.11.0 (+https://scrapy.org)'];
 
-      for (const ua of maliciousUAs) {
+      for (let i = 0; i < maliciousUAs.length; i++) {
+        const ua = maliciousUAs[i];
         const req = createMockReq({
           url: '/api/travel/search',
           originalUrl: '/api/travel/search',
           headers: { 'user-agent': ua },
-          remoteAddress: `198.51.100.${Math.floor(Math.random() * 200) + 1}`
+          remoteAddress: `198.51.100.${10 + i}`
         });
         const res = createMockRes();
         let nextCalled = false;
@@ -200,7 +201,7 @@ async function runShieldRegressionTests() {
 
     // 9. Spoofed X-Forwarded-For cannot poison or blacklist a victim IP
     await test('9. Direct caller sending spoofed X-Forwarded-For cannot blacklist victim IP', async () => {
-      const victimIP = '198.51.100.99';
+      const victimIP = '198.51.100.222';
       const attackerIP = '203.0.113.50';
 
       // Attacker directly connects from attackerIP, but sends X-Forwarded-For: victimIP into honeypot
@@ -247,7 +248,7 @@ async function runShieldRegressionTests() {
 
     // 11. Legitimate requests from victim IP succeed after spoofing attempt
     await test('11. Legitimate requests from victim IP succeed normally after spoofing attempt', async () => {
-      const victimIP = '198.51.100.99';
+      const victimIP = '198.51.100.222';
       const req = createMockReq({
         url: '/api/travel/stations',
         originalUrl: '/api/travel/stations',

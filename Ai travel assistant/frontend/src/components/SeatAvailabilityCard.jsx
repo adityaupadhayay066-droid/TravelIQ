@@ -13,12 +13,24 @@ export default function SeatAvailabilityCard({ occupancyData, loading }) {
     );
   }
 
+  if (!occupancyData || occupancyData.availability_probability == null) {
+    return (
+      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm text-center">
+        <div className="p-2 bg-[#EEF2ED] text-[#173F3A] dark:bg-[#213530] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+          <Armchair className="w-5 h-5" />
+        </div>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">Seat Forecast</h4>
+        <p className="text-xs text-slate-500 mt-1">Live PRS seat quota unavailable for this train</p>
+      </div>
+    );
+  }
+
   const {
-    availability_probability = 76.0,
-    expected_waiting_list = "Available",
-    seat_demand = "Medium",
-    coach_occupancy_percent = 72.0
-  } = occupancyData || {};
+    availability_probability,
+    expected_waiting_list = "Check PRS",
+    seat_demand = "Standard",
+    coach_occupancy_percent = 50.0
+  } = occupancyData;
 
   let wlRisk = "Low";
   let wlColor = "bg-[#4F7D62]/10 text-[#4F7D62] border border-[#4F7D62]/20 dark:bg-[#4F7D62]/20 dark:text-[#4F7D62] dark:border-[#4F7D62]/30";

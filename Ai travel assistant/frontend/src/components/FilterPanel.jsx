@@ -1,8 +1,8 @@
 import React from 'react';
-import { Filter, Train, Plane, Bus, Armchair, X, RotateCcw } from 'lucide-react';
+import { Filter, Train, Plane, Bus, Ship, Armchair, X, RotateCcw } from 'lucide-react';
 
 export default function FilterPanel({
-  selectedTransport = ['Train', 'Flight', 'Bus'],
+  selectedTransport = ['Train', 'Flight', 'Bus', 'Ferry'],
   onToggleTransport,
   priceMax = 15000,
   onPriceMaxChange,
@@ -23,7 +23,8 @@ export default function FilterPanel({
     { id: '2A', label: 'Second AC (2A)' },
     { id: '1A', label: 'First AC (1A)' },
     { id: 'Economy', label: 'Flight Economy' },
-    { id: 'AC Sleeper', label: 'Bus AC Sleeper' }
+    { id: 'AC Sleeper', label: 'Bus AC Sleeper' },
+    { id: 'Passenger Deck', label: 'Ferry Passenger Deck' }
   ];
 
   return (
@@ -66,7 +67,8 @@ export default function FilterPanel({
           {[
             { id: 'Train', label: 'Indian Railways', icon: Train },
             { id: 'Flight', label: 'Domestic Flights', icon: Plane },
-            { id: 'Bus', label: 'Interstate Buses', icon: Bus }
+            { id: 'Bus', label: 'Interstate Buses', icon: Bus },
+            { id: 'Ferry', label: 'Ro-Pax & Water Metro', icon: Ship }
           ].map(({ id, label, icon: Icon }) => (
             <label key={id} className="flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-[#202A32] dark:text-slate-300 hover:text-[#244C66] dark:hover:text-white transition-colors">
               <input 

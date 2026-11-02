@@ -13,12 +13,24 @@ export default function DelayPredictionCard({ delayData, loading }) {
     );
   }
 
+  if (!delayData || (delayData.expected_arrival_delay_mins == null && delayData.delay_probability == null)) {
+    return (
+      <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm text-center">
+        <div className="p-2 bg-[#EEF2ED] text-[#173F3A] dark:bg-[#213530] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+          <Clock className="w-5 h-5" />
+        </div>
+        <h4 className="text-xs font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB] font-['Manrope']">Delay Prediction</h4>
+        <p className="text-xs text-slate-500 mt-1">Telemetry telemetry unavailable for scheduled route</p>
+      </div>
+    );
+  }
+
   const {
-    expected_arrival_delay_mins = 18,
-    expected_departure_delay_mins = 12,
-    delay_probability = 35.0,
-    confidence = 92.0
-  } = delayData || {};
+    expected_arrival_delay_mins = 0,
+    expected_departure_delay_mins = 0,
+    delay_probability = 10.0,
+    confidence = 80.0
+  } = delayData;
 
   const maxDelay = Math.max(expected_arrival_delay_mins, expected_departure_delay_mins);
   let risk = "Low";

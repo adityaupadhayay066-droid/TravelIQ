@@ -451,6 +451,442 @@ const DEFAULT_TRAINS = [
             { station_code: 'BKSC', arrival_time: '18:40:00', departure_time: '18:42:00', day_count: 1, stop_sequence: 4 },
             { station_code: 'TATA', arrival_time: '20:45:00', departure_time: null, day_count: 1, stop_sequence: 5 }
         ]
+    },
+    // --- BHUBANESWAR <-> NEW DELHI CORRIDOR ---
+    {
+        train_number: '20817',
+        train_name: 'Bhubaneswar - New Delhi Tejas Rajdhani Express (via Sambalpur)',
+        runs_on: ["SAT"],
+        schedule: [
+            { station_code: 'BBS', arrival_time: null, departure_time: '07:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CTC', arrival_time: '07:50:00', departure_time: '07:52:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DNKL', arrival_time: '08:32:00', departure_time: '08:34:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'ANGL', arrival_time: '09:25:00', departure_time: '09:27:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'SBPY', arrival_time: '11:23:00', departure_time: '11:25:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'JSG', arrival_time: '12:38:00', departure_time: '12:40:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'ROU', arrival_time: '14:00:00', departure_time: '14:08:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'CKP', arrival_time: '15:31:00', departure_time: '15:33:00', day_count: 1, stop_sequence: 8 },
+            { station_code: 'PRR', arrival_time: '16:43:00', departure_time: '16:45:00', day_count: 1, stop_sequence: 9 },
+            { station_code: 'GMO', arrival_time: '18:00:00', departure_time: '18:05:00', day_count: 1, stop_sequence: 10 },
+            { station_code: 'KQR', arrival_time: '19:02:00', departure_time: '19:04:00', day_count: 1, stop_sequence: 11 },
+            { station_code: 'GAYA', arrival_time: '20:00:00', departure_time: '20:05:00', day_count: 1, stop_sequence: 12 },
+            { station_code: 'DDU', arrival_time: '22:40:00', departure_time: '22:50:00', day_count: 1, stop_sequence: 13 },
+            { station_code: 'PRYJ', arrival_time: '00:35:00', departure_time: '00:37:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'CNB', arrival_time: '02:30:00', departure_time: '02:35:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'NDLS', arrival_time: '09:55:00', departure_time: null, day_count: 2, stop_sequence: 16 }
+        ]
+    },
+    {
+        train_number: '20818',
+        train_name: 'New Delhi - Bhubaneswar Tejas Rajdhani Express (via Sambalpur)',
+        runs_on: ["SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '17:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '21:42:00', departure_time: '21:47:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'PRYJ', arrival_time: '23:53:00', departure_time: '23:55:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'DDU', arrival_time: '01:47:00', departure_time: '01:57:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'GAYA', arrival_time: '04:10:00', departure_time: '04:15:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'KQR', arrival_time: '05:18:00', departure_time: '05:20:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'GMO', arrival_time: '06:55:00', departure_time: '07:00:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'PRR', arrival_time: '08:18:00', departure_time: '08:20:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'CKP', arrival_time: '09:34:00', departure_time: '09:36:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'ROU', arrival_time: '11:05:00', departure_time: '11:10:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'JSG', arrival_time: '12:38:00', departure_time: '12:40:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'SBPY', arrival_time: '13:30:00', departure_time: '13:35:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'ANGL', arrival_time: '15:45:00', departure_time: '15:47:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'DNKL', arrival_time: '16:45:00', departure_time: '16:47:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'CTC', arrival_time: '19:08:00', departure_time: '19:10:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'BBS', arrival_time: '20:10:00', departure_time: null, day_count: 2, stop_sequence: 16 }
+        ]
+    },
+    {
+        train_number: '22823',
+        train_name: 'Bhubaneswar - New Delhi Tejas Rajdhani Express (via Tatanagar)',
+        runs_on: ["MON", "TUE", "THU", "FRI"],
+        schedule: [
+            { station_code: 'BBS', arrival_time: null, departure_time: '09:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CTC', arrival_time: '09:54:00', departure_time: '09:56:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BHC', arrival_time: '11:35:00', departure_time: '11:37:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BLS', arrival_time: '12:13:00', departure_time: '12:15:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'HIJ', arrival_time: '13:45:00', departure_time: '13:55:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'TATA', arrival_time: '15:47:00', departure_time: '15:52:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'BKSC', arrival_time: '18:20:00', departure_time: '18:25:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'GMO', arrival_time: '19:25:00', departure_time: '19:30:00', day_count: 1, stop_sequence: 8 },
+            { station_code: 'KQR', arrival_time: '20:20:00', departure_time: '20:22:00', day_count: 1, stop_sequence: 9 },
+            { station_code: 'GAYA', arrival_time: '21:30:00', departure_time: '21:35:00', day_count: 1, stop_sequence: 10 },
+            { station_code: 'DDU', arrival_time: '23:45:00', departure_time: '23:55:00', day_count: 1, stop_sequence: 11 },
+            { station_code: 'PRYJ', arrival_time: '01:43:00', departure_time: '01:45:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'CNB', arrival_time: '04:20:00', departure_time: '04:25:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'NDLS', arrival_time: '09:55:00', departure_time: null, day_count: 2, stop_sequence: 14 }
+        ]
+    },
+    {
+        train_number: '22824',
+        train_name: 'New Delhi - Bhubaneswar Tejas Rajdhani Express (via Tatanagar)',
+        runs_on: ["TUE", "WED", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '17:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '21:42:00', departure_time: '21:47:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'PRYJ', arrival_time: '23:53:00', departure_time: '23:55:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'DDU', arrival_time: '01:47:00', departure_time: '01:57:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'GAYA', arrival_time: '04:10:00', departure_time: '04:15:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'KQR', arrival_time: '05:18:00', departure_time: '05:20:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'GMO', arrival_time: '06:55:00', departure_time: '07:00:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'BKSC', arrival_time: '07:55:00', departure_time: '08:00:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'TATA', arrival_time: '10:35:00', departure_time: '10:40:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'HIJ', arrival_time: '12:40:00', departure_time: '12:50:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'BLS', arrival_time: '14:13:00', departure_time: '14:15:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'BHC', arrival_time: '15:13:00', departure_time: '15:15:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'CTC', arrival_time: '16:43:00', departure_time: '16:45:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'BBS', arrival_time: '17:30:00', departure_time: null, day_count: 2, stop_sequence: 14 }
+        ]
+    },
+    {
+        train_number: '12815',
+        train_name: 'Nandan Kanan Express',
+        runs_on: ["MON", "WED", "THU", "SAT"],
+        schedule: [
+            { station_code: 'PURI', arrival_time: null, departure_time: '11:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'KUR', arrival_time: '11:45:00', departure_time: '11:50:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BBS', arrival_time: '12:15:00', departure_time: '12:20:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'CTC', arrival_time: '12:50:00', departure_time: '12:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'JJKR', arrival_time: '13:50:00', departure_time: '13:52:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BHC', arrival_time: '14:40:00', departure_time: '14:42:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'BLS', arrival_time: '15:25:00', departure_time: '15:30:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'HIJ', arrival_time: '17:05:00', departure_time: '17:15:00', day_count: 1, stop_sequence: 8 },
+            { station_code: 'ADRA', arrival_time: '20:35:00', departure_time: '20:40:00', day_count: 1, stop_sequence: 9 },
+            { station_code: 'GMO', arrival_time: '22:45:00', departure_time: '22:50:00', day_count: 1, stop_sequence: 10 },
+            { station_code: 'GAYA', arrival_time: '01:25:00', departure_time: '01:30:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'DDU', arrival_time: '04:20:00', departure_time: '04:30:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'PRYJ', arrival_time: '07:00:00', departure_time: '07:05:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'CNB', arrival_time: '09:50:00', departure_time: '09:55:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'ALJN', arrival_time: '13:10:00', departure_time: '13:12:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'ANVT', arrival_time: '15:05:00', departure_time: null, day_count: 2, stop_sequence: 16 }
+        ]
+    },
+    {
+        train_number: '12816',
+        train_name: 'Nandan Kanan Express (Return)',
+        runs_on: ["MON", "WED", "THU", "SAT"],
+        schedule: [
+            { station_code: 'ANVT', arrival_time: null, departure_time: '07:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ALJN', arrival_time: '09:05:00', departure_time: '09:07:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'CNB', arrival_time: '13:20:00', departure_time: '13:25:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'PRYJ', arrival_time: '16:05:00', departure_time: '16:10:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'DDU', arrival_time: '18:30:00', departure_time: '18:40:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'GAYA', arrival_time: '21:40:00', departure_time: '21:45:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'GMO', arrival_time: '00:30:00', departure_time: '00:35:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'ADRA', arrival_time: '02:15:00', departure_time: '02:20:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'HIJ', arrival_time: '05:25:00', departure_time: '05:35:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'BLS', arrival_time: '06:58:00', departure_time: '07:00:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'BHC', arrival_time: '07:58:00', departure_time: '08:00:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'JJKR', arrival_time: '08:38:00', departure_time: '08:40:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'CTC', arrival_time: '09:40:00', departure_time: '09:45:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'BBS', arrival_time: '10:30:00', departure_time: '10:35:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'KUR', arrival_time: '11:00:00', departure_time: '11:05:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'PURI', arrival_time: '13:15:00', departure_time: null, day_count: 2, stop_sequence: 16 }
+        ]
+    },
+    {
+        train_number: '12875',
+        train_name: 'Neelachal Express',
+        runs_on: ["TUE", "FRI", "SUN"],
+        schedule: [
+            { station_code: 'PURI', arrival_time: null, departure_time: '11:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'KUR', arrival_time: '11:45:00', departure_time: '11:50:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BBS', arrival_time: '12:15:00', departure_time: '12:20:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'CTC', arrival_time: '12:50:00', departure_time: '12:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'JJKR', arrival_time: '13:50:00', departure_time: '13:52:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BHC', arrival_time: '14:40:00', departure_time: '14:42:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'BLS', arrival_time: '15:25:00', departure_time: '15:30:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'HIJ', arrival_time: '17:05:00', departure_time: '17:15:00', day_count: 1, stop_sequence: 8 },
+            { station_code: 'TATA', arrival_time: '19:22:00', departure_time: '19:32:00', day_count: 1, stop_sequence: 9 },
+            { station_code: 'BKSC', arrival_time: '22:15:00', departure_time: '22:20:00', day_count: 1, stop_sequence: 10 },
+            { station_code: 'GMO', arrival_time: '23:25:00', departure_time: '23:30:00', day_count: 1, stop_sequence: 11 },
+            { station_code: 'GAYA', arrival_time: '01:50:00', departure_time: '01:55:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'DDU', arrival_time: '04:55:00', departure_time: '05:05:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'BSB', arrival_time: '05:40:00', departure_time: '05:50:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'LKO', arrival_time: '13:15:00', departure_time: '13:25:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'CNB', arrival_time: '15:00:00', departure_time: '15:05:00', day_count: 2, stop_sequence: 16 },
+            { station_code: 'ALJN', arrival_time: '18:43:00', departure_time: '18:45:00', day_count: 2, stop_sequence: 17 },
+            { station_code: 'ANVT', arrival_time: '21:15:00', departure_time: null, day_count: 2, stop_sequence: 18 }
+        ]
+    },
+    {
+        train_number: '12876',
+        train_name: 'Neelachal Express (Return)',
+        runs_on: ["TUE", "FRI", "SUN"],
+        schedule: [
+            { station_code: 'ANVT', arrival_time: null, departure_time: '07:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ALJN', arrival_time: '09:05:00', departure_time: '09:07:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'CNB', arrival_time: '13:20:00', departure_time: '13:25:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'LKO', arrival_time: '15:00:00', departure_time: '15:10:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'BSB', arrival_time: '21:30:00', departure_time: '21:40:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'DDU', arrival_time: '22:40:00', departure_time: '22:50:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'GAYA', arrival_time: '01:25:00', departure_time: '01:30:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'GMO', arrival_time: '03:50:00', departure_time: '03:55:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'BKSC', arrival_time: '05:05:00', departure_time: '05:10:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'TATA', arrival_time: '07:55:00', departure_time: '08:05:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'HIJ', arrival_time: '10:15:00', departure_time: '10:25:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'BLS', arrival_time: '11:58:00', departure_time: '12:00:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'BHC', arrival_time: '12:58:00', departure_time: '13:00:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'JJKR', arrival_time: '13:38:00', departure_time: '13:40:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'CTC', arrival_time: '14:40:00', departure_time: '14:45:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'BBS', arrival_time: '15:30:00', departure_time: '15:35:00', day_count: 2, stop_sequence: 16 },
+            { station_code: 'KUR', arrival_time: '16:00:00', departure_time: '16:05:00', day_count: 2, stop_sequence: 17 },
+            { station_code: 'PURI', arrival_time: '18:15:00', departure_time: null, day_count: 2, stop_sequence: 18 }
+        ]
+    },
+    {
+        train_number: '18477',
+        train_name: 'Kalinga Utkal Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'PURI', arrival_time: null, departure_time: '20:45:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'KUR', arrival_time: '21:25:00', departure_time: '21:30:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BBS', arrival_time: '21:55:00', departure_time: '22:00:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'CTC', arrival_time: '22:40:00', departure_time: '22:45:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'JJKR', arrival_time: '23:41:00', departure_time: '23:43:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BHC', arrival_time: '00:38:00', departure_time: '00:40:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'BLS', arrival_time: '01:28:00', departure_time: '01:30:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'HIJ', arrival_time: '03:05:00', departure_time: '03:15:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'TATA', arrival_time: '05:45:00', departure_time: '05:55:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'CKP', arrival_time: '06:50:00', departure_time: '06:55:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'ROU', arrival_time: '08:25:00', departure_time: '08:33:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'JSG', arrival_time: '10:13:00', departure_time: '10:15:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'RIG', arrival_time: '11:13:00', departure_time: '11:15:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'BSP', arrival_time: '13:10:00', departure_time: '13:25:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'KTE', arrival_time: '19:20:00', departure_time: '19:30:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'SGO', arrival_time: '22:45:00', departure_time: '22:50:00', day_count: 2, stop_sequence: 16 },
+            { station_code: 'GWL', arrival_time: '03:58:00', departure_time: '04:00:00', day_count: 3, stop_sequence: 17 },
+            { station_code: 'MTJ', arrival_time: '06:28:00', departure_time: '06:30:00', day_count: 3, stop_sequence: 18 },
+            { station_code: 'NZM', arrival_time: '09:40:00', departure_time: null, day_count: 3, stop_sequence: 19 }
+        ]
+    },
+    {
+        train_number: '18478',
+        train_name: 'Kalinga Utkal Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NZM', arrival_time: null, departure_time: '12:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'MTJ', arrival_time: '13:45:00', departure_time: '13:50:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'GWL', arrival_time: '16:30:00', departure_time: '16:32:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'SGO', arrival_time: '21:50:00', departure_time: '21:55:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'KTE', arrival_time: '01:45:00', departure_time: '01:55:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'BSP', arrival_time: '08:00:00', departure_time: '08:15:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'RIG', arrival_time: '10:00:00', departure_time: '10:02:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'JSG', arrival_time: '11:15:00', departure_time: '11:17:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'ROU', arrival_time: '12:45:00', departure_time: '12:53:00', day_count: 2, stop_sequence: 9 },
+            { station_code: 'CKP', arrival_time: '14:20:00', departure_time: '14:25:00', day_count: 2, stop_sequence: 10 },
+            { station_code: 'TATA', arrival_time: '15:35:00', departure_time: '15:45:00', day_count: 2, stop_sequence: 11 },
+            { station_code: 'HIJ', arrival_time: '18:10:00', departure_time: '18:20:00', day_count: 2, stop_sequence: 12 },
+            { station_code: 'BLS', arrival_time: '19:50:00', departure_time: '19:52:00', day_count: 2, stop_sequence: 13 },
+            { station_code: 'BHC', arrival_time: '20:50:00', departure_time: '20:52:00', day_count: 2, stop_sequence: 14 },
+            { station_code: 'JJKR', arrival_time: '21:30:00', departure_time: '21:32:00', day_count: 2, stop_sequence: 15 },
+            { station_code: 'CTC', arrival_time: '22:35:00', departure_time: '22:40:00', day_count: 2, stop_sequence: 16 },
+            { station_code: 'BBS', arrival_time: '23:25:00', departure_time: '23:30:00', day_count: 2, stop_sequence: 17 },
+            { station_code: 'KUR', arrival_time: '00:05:00', departure_time: '00:10:00', day_count: 3, stop_sequence: 18 },
+            { station_code: 'PURI', arrival_time: '01:25:00', departure_time: null, day_count: 3, stop_sequence: 19 }
+        ]
+    },
+    // --- MUMBAI <-> NEW DELHI CORRIDOR ---
+    {
+        train_number: '12953',
+        train_name: 'August Kranti Tejas Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'BCT', arrival_time: null, departure_time: '17:40:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BVI', arrival_time: '18:11:00', departure_time: '18:13:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ST', arrival_time: '20:50:00', departure_time: '20:55:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BRC', arrival_time: '22:19:00', departure_time: '22:29:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'RTM', arrival_time: '01:50:00', departure_time: '01:53:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'KOTA', arrival_time: '04:40:00', departure_time: '04:45:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'MTJ', arrival_time: '07:58:00', departure_time: '08:00:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'NZM', arrival_time: '09:43:00', departure_time: null, day_count: 2, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '12954',
+        train_name: 'August Kranti Tejas Rajdhani Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NZM', arrival_time: null, departure_time: '17:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'MTJ', arrival_time: '18:43:00', departure_time: '18:45:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'KOTA', arrival_time: '22:00:00', departure_time: '22:10:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'RTM', arrival_time: '01:45:00', departure_time: '01:53:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BRC', arrival_time: '05:18:00', departure_time: '05:28:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'ST', arrival_time: '07:00:00', departure_time: '07:05:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'BVI', arrival_time: '09:27:00', departure_time: '09:29:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'BCT', arrival_time: '10:05:00', departure_time: null, day_count: 2, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '12137',
+        train_name: 'Punjab Mail',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'CSMT', arrival_time: null, departure_time: '19:35:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'DR', arrival_time: '19:47:00', departure_time: '19:50:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'BSL', arrival_time: '02:05:00', departure_time: '02:10:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'BPL', arrival_time: '09:40:00', departure_time: '09:45:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BINA', arrival_time: '11:53:00', departure_time: '11:55:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'GWL', arrival_time: '15:40:00', departure_time: '15:42:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'MTJ', arrival_time: '18:53:00', departure_time: '18:55:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'NZM', arrival_time: '21:18:00', departure_time: '21:20:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'NDLS', arrival_time: '21:40:00', departure_time: null, day_count: 2, stop_sequence: 9 }
+        ]
+    },
+    {
+        train_number: '12138',
+        train_name: 'Punjab Mail (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '05:15:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'NZM', arrival_time: '05:26:00', departure_time: '05:28:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'MTJ', arrival_time: '07:00:00', departure_time: '07:02:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'GWL', arrival_time: '09:41:00', departure_time: '09:43:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'BINA', arrival_time: '13:38:00', departure_time: '13:40:00', day_count: 1, stop_sequence: 5 },
+            { station_code: 'BPL', arrival_time: '15:35:00', departure_time: '15:40:00', day_count: 1, stop_sequence: 6 },
+            { station_code: 'BSL', arrival_time: '23:30:00', departure_time: '23:35:00', day_count: 1, stop_sequence: 7 },
+            { station_code: 'DR', arrival_time: '07:02:00', departure_time: '07:05:00', day_count: 2, stop_sequence: 8 },
+            { station_code: 'CSMT', arrival_time: '07:35:00', departure_time: null, day_count: 2, stop_sequence: 9 }
+        ]
+    },
+    // --- KOLKATA (HOWRAH/SEALDAH) <-> NEW DELHI CORRIDOR ---
+    {
+        train_number: '12313',
+        train_name: 'Sealdah - New Delhi Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'SDAH', arrival_time: null, departure_time: '16:50:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'ASN', arrival_time: '19:16:00', departure_time: '19:20:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DHN', arrival_time: '20:20:00', departure_time: '20:25:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'GAYA', arrival_time: '22:57:00', departure_time: '23:00:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'DDU', arrival_time: '01:15:00', departure_time: '01:25:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'CNB', arrival_time: '05:20:00', departure_time: '05:25:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'NDLS', arrival_time: '10:50:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '12314',
+        train_name: 'New Delhi - Sealdah Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '16:30:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'CNB', arrival_time: '21:12:00', departure_time: '21:17:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DDU', arrival_time: '01:27:00', departure_time: '01:37:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'GAYA', arrival_time: '03:45:00', departure_time: '03:48:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'DHN', arrival_time: '06:18:00', departure_time: '06:23:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'ASN', arrival_time: '07:09:00', departure_time: '07:11:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'SDAH', arrival_time: '10:10:00', departure_time: null, day_count: 2, stop_sequence: 7 }
+        ]
+    },
+    // --- BENGALURU <-> NEW DELHI CORRIDOR ---
+    {
+        train_number: '22691',
+        train_name: 'KSR Bengaluru - Hazrat Nizamuddin Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'SBC', arrival_time: null, departure_time: '20:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'SC', arrival_time: '07:00:00', departure_time: '07:15:00', day_count: 2, stop_sequence: 2 },
+            { station_code: 'KZJ', arrival_time: '08:58:00', departure_time: '09:00:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'BPQ', arrival_time: '12:20:00', departure_time: '12:25:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'NGP', arrival_time: '14:55:00', departure_time: '15:00:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'BPL', arrival_time: '20:50:00', departure_time: '21:00:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'GWL', arrival_time: '01:50:00', departure_time: '01:52:00', day_count: 3, stop_sequence: 7 },
+            { station_code: 'NZM', arrival_time: '05:30:00', departure_time: null, day_count: 3, stop_sequence: 8 }
+        ]
+    },
+    {
+        train_number: '22692',
+        train_name: 'Hazrat Nizamuddin - KSR Bengaluru Rajdhani Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NZM', arrival_time: null, departure_time: '20:45:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'GWL', arrival_time: '00:28:00', departure_time: '00:30:00', day_count: 2, stop_sequence: 2 },
+            { station_code: 'BPL', arrival_time: '05:25:00', departure_time: '05:35:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'NGP', arrival_time: '11:25:00', departure_time: '11:30:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BPQ', arrival_time: '14:30:00', departure_time: '14:35:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'KZJ', arrival_time: '17:18:00', departure_time: '17:20:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'SC', arrival_time: '19:10:00', departure_time: '19:25:00', day_count: 2, stop_sequence: 7 },
+            { station_code: 'SBC', arrival_time: '05:20:00', departure_time: null, day_count: 3, stop_sequence: 8 }
+        ]
+    },
+    // --- CHENNAI <-> NEW DELHI CORRIDOR ---
+    {
+        train_number: '12621',
+        train_name: 'Tamil Nadu Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'MAS', arrival_time: null, departure_time: '22:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BZA', arrival_time: '03:55:00', departure_time: '04:05:00', day_count: 2, stop_sequence: 2 },
+            { station_code: 'BPQ', arrival_time: '10:00:00', departure_time: '10:05:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'NGP', arrival_time: '13:50:00', departure_time: '13:55:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BPL', arrival_time: '20:10:00', departure_time: '20:20:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'GWL', arrival_time: '01:50:00', departure_time: '01:52:00', day_count: 3, stop_sequence: 6 },
+            { station_code: 'NDLS', arrival_time: '06:30:00', departure_time: null, day_count: 3, stop_sequence: 7 }
+        ]
+    },
+    {
+        train_number: '12622',
+        train_name: 'Tamil Nadu Express (Return)',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        schedule: [
+            { station_code: 'NDLS', arrival_time: null, departure_time: '21:05:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'GWL', arrival_time: '01:13:00', departure_time: '01:15:00', day_count: 2, stop_sequence: 2 },
+            { station_code: 'BPL', arrival_time: '06:45:00', departure_time: '06:50:00', day_count: 2, stop_sequence: 3 },
+            { station_code: 'NGP', arrival_time: '13:05:00', departure_time: '13:10:00', day_count: 2, stop_sequence: 4 },
+            { station_code: 'BPQ', arrival_time: '16:55:00', departure_time: '17:00:00', day_count: 2, stop_sequence: 5 },
+            { station_code: 'BZA', arrival_time: '23:15:00', departure_time: '23:25:00', day_count: 2, stop_sequence: 6 },
+            { station_code: 'MAS', arrival_time: '06:35:00', departure_time: null, day_count: 3, stop_sequence: 7 }
+        ]
+    },
+    // --- MUMBAI <-> GOA / AHMEDABAD / PUNE CORRIDOR ---
+    {
+        train_number: '20901',
+        train_name: 'Mumbai Central - Gandhinagar Capital Vande Bharat Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT"],
+        schedule: [
+            { station_code: 'BCT', arrival_time: null, departure_time: '06:10:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BVI', arrival_time: '06:32:00', departure_time: '06:34:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ST', arrival_time: '08:55:00', departure_time: '08:58:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BRC', arrival_time: '10:08:00', departure_time: '10:13:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'ADI', arrival_time: '11:25:00', departure_time: '11:30:00', day_count: 1, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '20902',
+        train_name: 'Gandhinagar Capital - Mumbai Central Vande Bharat Express',
+        runs_on: ["MON", "TUE", "WED", "THU", "FRI", "SAT"],
+        schedule: [
+            { station_code: 'ADI', arrival_time: null, departure_time: '15:00:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'BRC', arrival_time: '15:58:00', departure_time: '16:03:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'ST', arrival_time: '17:10:00', departure_time: '17:13:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'BVI', arrival_time: '19:32:00', departure_time: '19:34:00', day_count: 1, stop_sequence: 4 },
+            { station_code: 'BCT', arrival_time: '20:15:00', departure_time: null, day_count: 1, stop_sequence: 5 }
+        ]
+    },
+    {
+        train_number: '22229',
+        train_name: 'Mumbai CSMT - Madgaon Vande Bharat Express',
+        runs_on: ["MON", "WED", "FRI"],
+        schedule: [
+            { station_code: 'CSMT', arrival_time: null, departure_time: '05:25:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'DR', arrival_time: '05:37:00', departure_time: '05:40:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'THVM', arrival_time: '12:00:00', departure_time: '12:02:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'MAO', arrival_time: '13:10:00', departure_time: null, day_count: 1, stop_sequence: 4 }
+        ]
+    },
+    {
+        train_number: '22230',
+        train_name: 'Madgaon - Mumbai CSMT Vande Bharat Express',
+        runs_on: ["TUE", "THU", "SAT"],
+        schedule: [
+            { station_code: 'MAO', arrival_time: null, departure_time: '14:40:00', day_count: 1, stop_sequence: 1 },
+            { station_code: 'THVM', arrival_time: '15:30:00', departure_time: '15:32:00', day_count: 1, stop_sequence: 2 },
+            { station_code: 'DR', arrival_time: '21:55:00', departure_time: '21:57:00', day_count: 1, stop_sequence: 3 },
+            { station_code: 'CSMT', arrival_time: '22:25:00', departure_time: null, day_count: 1, stop_sequence: 4 }
+        ]
     }
 ];
 
@@ -459,7 +895,7 @@ async function seedDefaultTrains() {
     for (const item of DEFAULT_TRAINS) {
         const src = item.schedule && item.schedule.length > 0 ? item.schedule[0].station_code : 'NDLS';
         const dst = item.schedule && item.schedule.length > 0 ? item.schedule[item.schedule.length - 1].station_code : 'BBS';
-        await Train.findOrCreate({
+        const [trainRecord, created] = await Train.findOrCreate({
             where: { train_number: item.train_number },
             defaults: {
                 train_number: item.train_number,
@@ -467,14 +903,22 @@ async function seedDefaultTrains() {
                 source_station: src,
                 destination_station: dst,
                 runs_on: item.runs_on || ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
-                service_type: 'Express',
+                service_type: item.service_type || 'Express',
                 frequency: item.runs_on ? `${item.runs_on.length} days/week` : 'Daily'
             }
         });
+        if (!created) {
+            await trainRecord.update({
+                train_name: item.train_name,
+                source_station: src,
+                destination_station: dst,
+                runs_on: item.runs_on || ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+            });
+        }
 
         // Insert schedules
         for (const sch of item.schedule) {
-            await TrainSchedule.findOrCreate({
+            const [schRec, schCreated] = await TrainSchedule.findOrCreate({
                 where: {
                     train_number: item.train_number,
                     stop_sequence: sch.stop_sequence
@@ -488,6 +932,14 @@ async function seedDefaultTrains() {
                     stop_sequence: sch.stop_sequence
                 }
             });
+            if (!schCreated) {
+                await schRec.update({
+                    station_code: sch.station_code,
+                    arrival_time: sch.arrival_time,
+                    departure_time: sch.departure_time,
+                    day_count: sch.day_count
+                });
+            }
         }
     }
     console.log(`✅ Seeded ${DEFAULT_TRAINS.length} built-in trains and schedules successfully.`);
@@ -495,9 +947,12 @@ async function seedDefaultTrains() {
 
 const seedTrains = async () => {
     try {
+        // Always ensure curated corridor trains are up to date
+        await seedDefaultTrains();
+
         const count = await Train.count();
-        if (count > 0) {
-            console.log('Trains already seeded. Skipping...');
+        if (count > DEFAULT_TRAINS.length) {
+            console.log('Trains already seeded. Skipping full CSV import...');
             return;
         }
 
@@ -509,7 +964,6 @@ const seedTrains = async () => {
         const dataPath = possiblePaths.find(p => fs.existsSync(p));
         if (!dataPath) {
             console.log('Trains schedule.csv not found. Falling back to built-in express train dataset.');
-            await seedDefaultTrains();
             return;
         }
 
@@ -582,5 +1036,18 @@ const seedTrains = async () => {
     }
 };
 
-module.exports = { seedTrains, seedDefaultTrains };
+if (require.main === module) {
+    const sequelize = require('../config/db');
+    sequelize.authenticate().then(async () => {
+        console.log('Connected to MySQL. Running train seeder...');
+        await seedDefaultTrains();
+        console.log('Train seeder finished.');
+        process.exit(0);
+    }).catch(err => {
+        console.error('Database connection error in trainSeeder:', err);
+        process.exit(1);
+    });
+}
+
+module.exports = { seedTrains, seedDefaultTrains, DEFAULT_TRAINS };
 

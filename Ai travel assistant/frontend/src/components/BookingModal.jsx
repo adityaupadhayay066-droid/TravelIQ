@@ -305,9 +305,12 @@ export default function BookingModal({ train, onClose }) {
   
   const totalBaseFare = (adultCount * baseFarePerAdult) + (childCount * baseFarePerChild);
   
-  const reservationCharge = passengerCount * (transportType === 'Flight' ? 120 : transportType === 'Bus' ? 25 : 40);
-  const superfastCharge = passengerCount * (transportType === 'Flight' ? 180 : transportType === 'Bus' ? 30 : 45);
-  const convenienceFee = 25; // Flat fee
+  // Official railway fares from TrainFare already include base fare, reservation fee, superfast surcharge & GST.
+  // We do not double charge these fees on top of authoritative tariff.
+  const isTrain = transportType === 'Train';
+  const reservationCharge = isTrain ? 0 : passengerCount * (transportType === 'Flight' ? 120 : 25);
+  const superfastCharge = isTrain ? 0 : passengerCount * (transportType === 'Flight' ? 180 : 30);
+  const convenienceFee = 0; // Seamless platform booking
   
   const totalFare = totalBaseFare > 0 ? (totalBaseFare + reservationCharge + superfastCharge + convenienceFee) : 0;
   // -------------------------------
@@ -1502,24 +1505,27 @@ export default function BookingModal({ train, onClose }) {
                     </h4>
                     
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB]">Base Fare ({adultCount}A, {childCount}C)</span>
+                      <span className="text-[#66736F] dark:text-[#A3B0AB]">{isTrain ? 'Official IRCTC Tariff' : 'Base Fare'} ({adultCount}A{childCount > 0 ? `, ${childCount}C` : ''})</span>
                       <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{totalBaseFare.toLocaleString()}</span>
                     </div>
                     
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB]">Reservation Charge</span>
-                      <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{reservationCharge}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB]">Superfast / Surcharge</span>
-                      <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{superfastCharge}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB]">Convenience Fee</span>
-                      <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{convenienceFee}</span>
-                    </div>
+                    {isTrain ? (
+                      <div className="text-[10px] text-teal-600 dark:text-teal-400">
+                        ✓ All inclusive (Base, Reservation, Superfast & GST)
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-[#66736F] dark:text-[#A3B0AB]">Reservation Charge</span>
+                          <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{reservationCharge}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-[#66736F] dark:text-[#A3B0AB]">Surcharge</span>
+                          <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{superfastCharge}</span>
+                        </div>
+                      </>
+                    )}
                     
                     <div className="flex justify-between items-center pt-2.5 border-t border-[#E3DED2] dark:border-[#2A403A]">
                       <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">Total Fare</span>

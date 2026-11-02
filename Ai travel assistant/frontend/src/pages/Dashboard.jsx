@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Calendar, Users, Edit3, Train, Plane, Bus, Sparkles, Sliders, X, 
+  Search, Calendar, Users, Edit3, Train, Plane, Bus, Ship, Sparkles, Sliders, X, 
   RotateCcw, Filter, ArrowRight, ArrowRightLeft, Clock, ShieldCheck, 
   CheckCircle2, AlertCircle, ChevronDown, ChevronRight, Info, Building2,
   Armchair, DollarSign, MapPin, Compass
@@ -56,7 +56,7 @@ export default function Dashboard() {
 
   // Filter States
   const [selectedTransport, setSelectedTransport] = useState(() => {
-    return location.state?.modeFilter || ['Train', 'Flight', 'Bus'];
+    return location.state?.modeFilter || ['Train', 'Flight', 'Bus', 'Ferry'];
   });
   const [priceMax, setPriceMax] = useState(15000);
   const [selectedStops, setSelectedStops] = useState(['Non-stop', '1 Stop', '2+ Stops']);
@@ -65,7 +65,7 @@ export default function Dashboard() {
   // Calculate active filters count
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (selectedTransport.length < 3) count += (3 - selectedTransport.length);
+    if (selectedTransport.length < 4) count += (4 - selectedTransport.length);
     if (priceMax < 15000) count += 1;
     if (selectedStops.length < 3) count += (3 - selectedStops.length);
     if (selectedClasses.length > 0) count += selectedClasses.length;
@@ -562,8 +562,9 @@ export default function Dashboard() {
                     const isTrain = item.type === 'Train' || item.train_name;
                     const isFlight = item.type === 'Flight';
                     const isBus = item.type === 'Bus';
+                    const isFerry = item.type === 'Ferry' || item.mode === 'Ferry';
                     const title = item.name || item.train_name || 'Express Service';
-                    const number = item.number || item.train_number || '--';
+                    const number = item.number || item.train_number || item.service_number || '--';
                     const dep = item.depTime || item.departure_time || item.source_departure || '--:--';
                     const arr = item.arrTime || item.arrival_time || item.dest_arrival || '--:--';
                     const dur = item.dur || item.duration || '--';
@@ -588,9 +589,11 @@ export default function Dashboard() {
                                 ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400' 
                                 : isBus 
                                 ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400' 
+                                : isFerry
+                                ? 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400'
                                 : 'bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400'
                             }`}>
-                              {isFlight ? <Plane className="w-5 h-5" /> : isBus ? <Bus className="w-5 h-5" /> : <Train className="w-5 h-5" />}
+                              {isFlight ? <Plane className="w-5 h-5" /> : isBus ? <Bus className="w-5 h-5" /> : isFerry ? <Ship className="w-5 h-5" /> : <Train className="w-5 h-5" />}
                             </div>
 
                             <div className="min-w-0">

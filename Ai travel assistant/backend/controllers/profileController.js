@@ -611,13 +611,14 @@ const createBooking = async (req, res) => {
           });
         }
 
-        // Date verification: check operating days when date is specified
-        if (booking_date && !trainRunsOnDate(targetTrainObj, booking_date)) {
+        // Date verification: check operating days against journey date
+        const dateToCheck = journeyDate || booking_date;
+        if (dateToCheck && !trainRunsOnDate(targetTrainObj, dateToCheck)) {
           const runsOnStr = Array.isArray(targetTrainObj.runs_on) 
             ? targetTrainObj.runs_on.join(', ') 
             : (targetTrainObj.runs_on || 'Specific Days');
           return res.status(400).json({ 
-            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not operate on ${booking_date}. Running days: ${runsOnStr}.` 
+            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not operate on ${dateToCheck}. Running days: ${runsOnStr}.` 
           });
         }
       }

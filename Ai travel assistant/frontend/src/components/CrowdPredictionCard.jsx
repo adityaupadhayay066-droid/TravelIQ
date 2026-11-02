@@ -13,12 +13,24 @@ export default function CrowdPredictionCard({ crowdData, loading }) {
     );
   }
 
+  if (!crowdData || (crowdData.crowd_level == null && crowdData.expected_crowd_percent == null)) {
+    return (
+      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] text-center">
+        <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+          <Users className="w-5 h-5" />
+        </div>
+        <h4 className="font-['Manrope',sans-serif] text-xs font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">Crowd Prediction</h4>
+        <p className="text-xs text-slate-500 mt-1">Platform congestion metrics unavailable</p>
+      </div>
+    );
+  }
+
   const {
-    crowd_level = "High",
-    expected_crowd_percent = 84.0,
-    platform_congestion_percent = 78.0,
-    peak_time_alert = true
-  } = crowdData || {};
+    crowd_level = "Moderate",
+    expected_crowd_percent = 50.0,
+    platform_congestion_percent = 50.0,
+    peak_time_alert = false
+  } = crowdData;
 
   let crowdColor = "bg-[#4F7D62]/10 text-[#4F7D62] dark:text-[#78A98E] border border-[#4F7D62]/25 dark:border-[#4F7D62]/40";
   if (crowd_level === "Very High" || crowd_level === "High") {
@@ -28,7 +40,7 @@ export default function CrowdPredictionCard({ crowdData, loading }) {
   }
 
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -2 }}
       className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all"
     >

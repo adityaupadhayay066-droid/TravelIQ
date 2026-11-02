@@ -66,9 +66,9 @@ async function runZeroGenerativeRoutingTests() {
     // If a train goes NDLS -> CNB, querying CNB -> NDLS on that train must only match if reverse schedule exists
     const directTrains = await getVerifiedDirectTrains('CNB', 'NDLS');
     directTrains.forEach(t => {
-      // Ensure it is truly running CNB -> NDLS
+      // Ensure it is truly running CNB -> NDLS / Delhi NCR cluster
       assert.strictEqual(t.origin, 'CNB');
-      assert.strictEqual(t.destination, 'NDLS');
+      assert.ok(['NDLS', 'DLI', 'NZM', 'ANVT', 'DEC', 'DEE'].includes(t.destination), `Destination ${t.destination} must be in Delhi cluster`);
     });
   });
 

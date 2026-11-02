@@ -1,5 +1,6 @@
 const { resolveAirport, hasCommercialAirport, getNearestAirport } = require('../utils/airportRegistry');
 const { trainRunsOnDate } = require('./routeValidationEngine');
+const { DEFAULT_TRAINS } = require('../seeders/trainSeeder');
 
 // ─── 1. UNIVERSAL HUB INDEX (NATIONWIDE COVERAGE) ───────────────────────────
 // Ranked junction stations by degree centrality and connectivity tier.
@@ -625,6 +626,26 @@ const VERIFIED_TRAIN_SCHEDULES = [
   }
 ];
 
+// Dynamically augment in-memory schedule network with comprehensive built-in corridor trains
+if (DEFAULT_TRAINS && Array.isArray(DEFAULT_TRAINS)) {
+  for (const dt of DEFAULT_TRAINS) {
+    if (!VERIFIED_TRAIN_SCHEDULES.some(t => t.train_number === dt.train_number)) {
+      VERIFIED_TRAIN_SCHEDULES.push({
+        train_number: dt.train_number,
+        train_name: dt.train_name,
+        runs_on: dt.runs_on || ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+        stops: (dt.schedule || []).map(s => ({
+          station_code: s.station_code,
+          dep: s.departure_time,
+          arr: s.arrival_time,
+          day: s.day_count || 1,
+          stop_sequence: s.stop_sequence
+        }))
+      });
+    }
+  }
+}
+
 // Verified Commercial Flight Schedules between Metro Hubs
 const VERIFIED_FLIGHT_SCHEDULES = [
   {
@@ -947,14 +968,14 @@ class MultiModalRoutingEngine {
   /**
    * Main 2-leg chain discovery engine through the Universal Hub Architecture.
    */
-  async findConnectingRoutes(originCode, destCode, travelDate = null) {
+  async findConnectingRoutes(originCode, destCode, travelDate = null, options = {}) {
     const origClean = String(originCode).toUpperCase().trim();
     const destClean = String(destCode).toUpperCase().trim();
     const safeDate = travelDate || new Date().toISOString().split('T')[0];
 
     // 1. First verify if a direct path exists; if invalid, do not hallucinate!
     const directTrains = await this.findVerifiedDirectTrains(origClean, destClean, safeDate);
-    if (directTrains.length > 0) {
+    if (directTrains.length > 0 && !options.forceConnecting && !options.includeConnecting) {
       return {
         hasDirectRoute: true,
         routes: directTrains

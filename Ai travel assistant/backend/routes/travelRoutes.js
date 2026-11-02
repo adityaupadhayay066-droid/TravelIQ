@@ -10,12 +10,14 @@ const {
     getUserAnalytics,
     searchRoutes,
     searchTrains,
-    getLiveTrainStatus
+    getLiveTrainStatus,
+    getSourcesHealth
 } = require('../controllers/travelController');
 
 const { searchStations } = require('../controllers/stationController');
 
 // Rate limited travel search & compute endpoints
+router.get('/sources/health', getSourcesHealth);
 router.get('/stations/search', travelLimiter, searchStations);
 router.post('/routes/search', travelLimiter, searchRoutes);
 router.get('/trains/search', travelLimiter, searchTrains);

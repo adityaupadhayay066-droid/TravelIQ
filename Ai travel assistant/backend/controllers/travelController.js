@@ -7,6 +7,7 @@ const { MultiModalRoutingEngine } = require('../services/multiModalRoutingEngine
 const { getTrainTrackingDetails } = require('../services/trainTrackingService');
 const { resolveStation, parseTravelDate } = require('../services/stationResolver');
 const { validateTransportRecord } = require('../services/transportValidationEngine');
+const { searchFerriesFromProvider, VERIFIED_FERRY_SCHEDULES } = require('../services/adapters/ferryProviderAdapter');
 
 const predictTrip = async (req, res) => {
     try {
@@ -284,7 +285,7 @@ const searchRoutes = async (req, res) => {
 
         // If direct path does not exist or direct options are limited, query verified connecting routes via Universal Hub Architecture.
         if (processedDbTrains.length < 3) {
-            const connectingDiscovery = await routingEngine.findConnectingRoutes(originStnCode, destStnCode, departureDate);
+            const connectingDiscovery = await routingEngine.findConnectingRoutes(originStnCode, destStnCode, departureDate, { forceConnecting: true });
             for (const conn of (connectingDiscovery.routes || [])) {
                 if (!uniqueTrainNumbers.has(conn.id)) {
                     uniqueTrainNumbers.add(conn.id);
@@ -354,11 +355,19 @@ const searchRoutes = async (req, res) => {
             }
         }
 
-        // Final multimodal collection
-        const finalFlights = discovery.flights;
-        const finalBuses = discovery.buses;
-        const allTransports = [...finalTrains, ...finalFlights, ...finalBuses];
+        // Final multimodal collection: Trains, Flights, Buses, and Ferries
+        const finalFlights = discovery.flights || [];
+        const finalBuses = discovery.buses || [];
+        
+        // Search verified maritime and coastal ferries
+        const ferryDiscovery = await searchFerriesFromProvider({
+            originInput: source,
+            destInput: destination,
+            departureDate
+        });
+        const finalFerries = ferryDiscovery.ferries || [];
 
+        const allTransports = [...finalTrains, ...finalFlights, ...finalBuses, ...finalFerries];
 
         // Log search telemetry in SearchAnalytics
         try {
@@ -377,6 +386,7 @@ const searchRoutes = async (req, res) => {
             trains: finalTrains,
             flights: finalFlights,
             buses: finalBuses,
+            ferries: finalFerries,
             allTransports,
             totalResults: allTransports.length,
             distanceKm: discovery.distanceKm,
@@ -435,6 +445,38 @@ const getLiveTrainStatus = async (req, res) => {
     }
 };
 
+const getSourcesHealth = async (req, res) => {
+    try {
+        const [stationsCount, trainsCount, schedulesCount, faresCount] = await Promise.all([
+            Station.count(),
+            Train.count(),
+            TrainSchedule.count(),
+            TrainFare.count()
+        ]);
+
+        res.json({
+            status: 'HEALTHY',
+            timestamp: new Date().toISOString(),
+            counts: {
+                stations: stationsCount,
+                trains: trainsCount,
+                schedules: schedulesCount,
+                fares: faresCount,
+                ferry_routes: VERIFIED_FERRY_SCHEDULES.length
+            },
+            providers: {
+                irctc_sql_database: { status: 'healthy', records: trainsCount },
+                verified_maritime_ferry_registry: { status: 'healthy', active_routes: VERIFIED_FERRY_SCHEDULES.length },
+                verified_flight_registry: { status: 'healthy' },
+                interstate_bus_network: { status: 'healthy' }
+            }
+        });
+    } catch (error) {
+        console.error('[Sources Health Error]:', error.message);
+        res.status(500).json({ status: 'ERROR', error: error.message });
+    }
+};
+
 module.exports = {
     predictTrip,
     optimizeTripRoute,
@@ -443,5 +485,6 @@ module.exports = {
     getUserAnalytics,
     searchRoutes,
     searchTrains,
-    getLiveTrainStatus
+    getLiveTrainStatus,
+    getSourcesHealth
 };

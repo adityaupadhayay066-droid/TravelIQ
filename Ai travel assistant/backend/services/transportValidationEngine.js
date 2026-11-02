@@ -42,6 +42,8 @@ function validateTransportRecord(rawRecord) {
     normalizedMode = 'flight';
   } else if (rawMode.includes('bus')) {
     normalizedMode = 'bus';
+  } else if (rawMode.includes('ferry') || rawMode.includes('boat') || rawMode.includes('marine') || rawMode.includes('water')) {
+    normalizedMode = 'ferry';
   } else {
     errors.push(`Invalid or unsupported transport mode: "${rawRecord.mode || rawRecord.type}"`);
   }

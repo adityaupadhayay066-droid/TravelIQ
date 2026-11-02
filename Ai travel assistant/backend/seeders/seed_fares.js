@@ -1,61 +1,122 @@
-const { sequelize, Train, TrainFare } = require('../models');
+const { sequelize, Train, TrainSchedule, Station, TrainFare } = require('../models');
+const { calculateRailwayFare, estimateRailDistance } = require('../utils/railwayFareCalculator');
 
+/**
+ * Authoritative Railway Fare Seeder
+ * Populates train_fares with official IRCTC distance-based telescopic fares
+ * based on authentic station stop coordinates and train service types.
+ *
+ * Rules:
+ * 1. Fares must be class-specific (no identical fares across classes).
+ * 2. Classes must only be created if supported by the train service type
+ *    (e.g., Rajdhani has 1A/2A/3A/3E, Vande Bharat/Shatabdi has EC/CC only).
+ * 3. Distance is calculated from origin station to destination station coordinates.
+ */
 async function seedFares() {
   try {
     await sequelize.authenticate();
-    console.log('Connected to database for seeding fares...');
+    console.log('Connected to database for authoritative fare seeding...');
 
-    // Make sure TrainFare table exists (sync just in case)
     await TrainFare.sync({ alter: true });
 
     const trains = await Train.findAll();
-    console.log(`Found ${trains.length} trains to seed fares for.`);
+    console.log(`Found ${trains.length} trains to compute and seed authentic fares.`);
 
-    let createdCount = 0;
+    let upsertedCount = 0;
 
     for (const train of trains) {
-      const trainSeed = parseInt(train.train_number.replace(/\D/g, '')) || 12345;
-      const baseFare = Math.max(Math.round((trainSeed % 15 + 10) * 50 + 180), 220); // Randomish base
+      const trainNo = train.train_number;
       const trainNameLower = (train.train_name || '').toLowerCase();
 
-      const isChairCar = trainNameLower.includes('vande') || 
-                         trainNameLower.includes('shatabdi') || 
-                         trainNameLower.includes('jan shatabdi') ||
-                         trainNameLower.includes('intercity') ||
-                         trainNameLower.includes('chair');
+      // Retrieve first and last stops for route distance
+      const schedules = await TrainSchedule.findAll({
+        where: { train_number: trainNo },
+        order: [['stop_sequence', 'ASC']]
+      });
 
-      const faresToCreate = isChairCar ? [
-        { class_code: 'EC', fare: Math.round(baseFare * 3.8) },
-        { class_code: 'CC', fare: Math.round(baseFare * 2.2) },
-        { class_code: '2S', fare: Math.round(baseFare * 0.55) },
-        { class_code: 'UR', fare: Math.round(baseFare * 0.35) }
-      ] : [
-        { class_code: '1A', fare: Math.round(baseFare * 4.9) },
-        { class_code: '2A', fare: Math.round(baseFare * 3.1) },
-        { class_code: '3A', fare: Math.round(baseFare * 2.2) },
-        { class_code: '3E', fare: Math.round(baseFare * 1.85) },
-        { class_code: 'SL', fare: Math.round(baseFare) },
-        { class_code: '2S', fare: Math.round(baseFare * 0.55) },
-        { class_code: 'UR', fare: Math.round(baseFare * 0.35) }
-      ];
+      let distanceKm = 650; // reasonable default if coordinates unavailable
+      if (schedules.length >= 2) {
+        const firstStop = schedules[0];
+        const lastStop = schedules[schedules.length - 1];
 
-      for (const f of faresToCreate) {
-        await TrainFare.upsert({
-          train_number: train.train_number,
-          class_code: f.class_code,
-          fare: f.fare,
-          distance: Math.round(baseFare * 1.5) // mock distance
+        const [origStation, destStation] = await Promise.all([
+          Station.findOne({ where: { station_code: firstStop.station_code } }),
+          Station.findOne({ where: { station_code: lastStop.station_code } })
+        ]);
+
+        if (origStation?.latitude && destStation?.latitude) {
+          distanceKm = estimateRailDistance(
+            parseFloat(origStation.latitude),
+            parseFloat(origStation.longitude),
+            parseFloat(destStation.latitude),
+            parseFloat(destStation.longitude)
+          );
+        }
+      }
+
+      // Determine train classification and supported classes
+      const isVandeBharat = trainNameLower.includes('vande bharat');
+      const isShatabdi = trainNameLower.includes('shatabdi') && !trainNameLower.includes('jan shatabdi');
+      const isJanShatabdi = trainNameLower.includes('jan shatabdi');
+      const isRajdhani = trainNameLower.includes('rajdhani');
+      const isGaribRath = trainNameLower.includes('garib rath');
+      const isTejas = trainNameLower.includes('tejas');
+
+      let supportedClasses = [];
+      let isSuperfast = true;
+
+      if (isVandeBharat || isShatabdi) {
+        supportedClasses = ['EC', 'CC'];
+        isSuperfast = true;
+      } else if (isJanShatabdi) {
+        supportedClasses = ['CC', '2S'];
+        isSuperfast = true;
+      } else if (isRajdhani || isTejas) {
+        supportedClasses = ['1A', '2A', '3A', '3E'];
+        isSuperfast = true;
+      } else if (isGaribRath) {
+        supportedClasses = ['3A', 'CC'];
+        isSuperfast = true;
+      } else {
+        // Standard Mail / Express / Superfast
+        supportedClasses = ['1A', '2A', '3A', '3E', 'SL', '2S', 'UR'];
+        isSuperfast = trainNameLower.includes('superfast') || trainNameLower.includes('express');
+      }
+
+      // Compute IRCTC telescopic tariff for each supported class
+      for (const cls of supportedClasses) {
+        const fareResult = calculateRailwayFare({
+          distanceKm,
+          travelClass: cls,
+          isSuperfast,
+          passengers: 1
         });
-        createdCount++;
+
+        const calculatedFare = fareResult?.farePerPassenger || 500;
+
+        await TrainFare.upsert({
+          train_number: trainNo,
+          class_code: cls,
+          fare: calculatedFare,
+          distance: distanceKm
+        });
+
+        upsertedCount++;
       }
     }
 
-    console.log(`✅ Seeding complete. Upserted ${createdCount} train fare records.`);
-    process.exit(0);
+    console.log(`✅ Authoritative Fare Seeding complete. Upserted ${upsertedCount} class fare records.`);
+    return upsertedCount;
   } catch (error) {
-    console.error('❌ Error seeding fares:', error);
-    process.exit(1);
+    console.error('❌ Error seeding authentic fares:', error);
+    throw error;
   }
 }
 
-seedFares();
+if (require.main === module) {
+  seedFares()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}
+
+module.exports = { seedFares };
