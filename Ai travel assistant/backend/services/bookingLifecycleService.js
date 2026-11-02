@@ -51,14 +51,25 @@ function generateBookingReference() {
  * Enforces atomic state transitions, row-level locking, transition validity,
  * and preserves an auditable transition log.
  */
-async function transitionBookingState({
-  bookingId,
-  targetBookingStatus,
-  targetPaymentStatus,
-  actor = { id: 1, role: 'SYSTEM' },
-  reason = 'Lifecycle transition',
-  existingTransaction = null
-}) {
+async function transitionBookingState(arg1, arg2, arg3, arg4) {
+  let bookingId, targetBookingStatus, targetPaymentStatus, actor, reason, existingTransaction;
+
+  if (typeof arg1 === 'object' && arg1 !== null) {
+    bookingId = arg1.bookingId;
+    targetBookingStatus = arg1.targetBookingStatus;
+    targetPaymentStatus = arg1.targetPaymentStatus;
+    actor = arg1.actor || { id: 1, role: 'SYSTEM' };
+    reason = arg1.reason || 'Lifecycle transition';
+    existingTransaction = arg1.existingTransaction || null;
+  } else {
+    bookingId = arg1;
+    targetBookingStatus = arg2;
+    targetPaymentStatus = arg3;
+    const opts = typeof arg4 === 'object' && arg4 !== null ? arg4 : {};
+    actor = opts.actor || { id: 1, role: 'SYSTEM' };
+    reason = opts.reason || 'Lifecycle transition';
+    existingTransaction = opts.existingTransaction || null;
+  }
   const executeTransition = async (t) => {
     // 1. Fetch booking with row-level lock
     const booking = await Booking.findByPk(bookingId, {

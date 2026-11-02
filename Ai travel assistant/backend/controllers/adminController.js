@@ -1026,6 +1026,26 @@ const updateBooking = async (req, res) => {
         const booking = await Booking.findByPk(id);
         if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
 
+        if (req.body.booking_status) {
+            const currentB = booking.booking_status || 'Pending';
+            const currentP = booking.payment_status || 'Pending';
+
+            // Invariant: Never allow an admin to re-confirm a cancelled or refunded booking
+            if ((currentB === 'Cancelled' || currentB === 'Refunded' || currentP === 'Refunded') && req.body.booking_status === 'Confirmed') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Illegal booking transition: A cancelled or refunded booking cannot be re-confirmed.'
+                });
+            }
+
+            if (req.body.booking_status === 'Refunded' && currentP !== 'Paid' && currentP !== 'Refund Pending' && currentP !== 'Refunded') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Illegal booking transition: Cannot transition unpaid booking to Refunded.'
+                });
+            }
+        }
+
         const allowedFields = ['booking_status', 'seat_preference', 'berth_preference', 'passenger_details'];
         const safeData = {};
         for (const field of allowedFields) {

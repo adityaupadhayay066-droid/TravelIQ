@@ -342,11 +342,15 @@ const createTransaction = async (req, res) => {
       });
     }
 
+    const updatedBooking = await Booking.findByPk(booking.id);
+
     res.status(201).json({
       message: verifiedStatus === PAYMENT_STATUSES.SUCCESS 
         ? 'Transaction successfully verified and logged.' 
         : `Transaction created with status: ${verifiedStatus}.`,
-      transaction: result
+      transaction: result,
+      booking_status: updatedBooking ? updatedBooking.booking_status : booking.booking_status,
+      payment_status: updatedBooking ? updatedBooking.payment_status : booking.payment_status
     });
   } catch (error) {
     if (error.message.startsWith('ALREADY_PAID')) {
