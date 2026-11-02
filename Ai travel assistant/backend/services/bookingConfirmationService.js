@@ -7,8 +7,17 @@ const n8nService = require('./n8nService');
  * Dispatches confirmation side effects ONLY after payment verification succeeds.
  * Guarantees idempotency: retries will not duplicate emails, webhooks, or analytics credits.
  */
-async function processBookingConfirmationSideEffects({ bookingId, user: providedUser = null }) {
-  if (!bookingId) return;
+async function processBookingConfirmationSideEffects(arg, userOptional = null) {
+  let bookingId = null;
+  let providedUser = userOptional;
+  if (typeof arg === 'object' && arg !== null) {
+    bookingId = arg.bookingId;
+    providedUser = arg.user || providedUser;
+  } else {
+    bookingId = arg;
+  }
+
+  if (!bookingId) return { success: false, reason: 'NO_BOOKING_ID' };
 
   const booking = await Booking.findByPk(bookingId, {
     include: [{ model: User }]
@@ -16,13 +25,13 @@ async function processBookingConfirmationSideEffects({ bookingId, user: provided
 
   if (!booking) {
     console.warn(`[ConfirmationSideEffects] Booking #${bookingId} not found.`);
-    return;
+    return { success: false, reason: 'BOOKING_NOT_FOUND' };
   }
 
   // CRITICAL INVARIANT: Never trigger confirmation side effects for unpaid, cancelled, or expired bookings
   if (booking.booking_status !== 'Confirmed' || booking.payment_status !== 'Paid') {
     console.warn(`[ConfirmationSideEffects] Refusing confirmation side effects for non-confirmed booking #${bookingId} (Booking: ${booking.booking_status}, Payment: ${booking.payment_status})`);
-    return;
+    return { success: false, reason: 'NOT_CONFIRMED' };
   }
 
   const user = providedUser || booking.User;
@@ -40,7 +49,7 @@ async function processBookingConfirmationSideEffects({ bookingId, user: provided
 
   if (eventRecord && eventRecord.delivery_status === 'DELIVERED') {
     console.log(`[ConfirmationSideEffects] Confirmation side effects already completed for booking #${booking.id}. Skipping.`);
-    return { success: true, alreadyDelivered: true };
+    return { success: true, alreadyProcessed: true, alreadyDelivered: true };
   }
 
   if (!eventRecord) {
@@ -123,7 +132,9 @@ async function processBookingConfirmationSideEffects({ bookingId, user: provided
 
   return {
     success: true,
+    alreadyProcessed: false,
     emailSent: emailSuccess,
+    webhookSent: n8nSuccess,
     n8nDelivered: n8nSuccess,
     booking_reference: booking.booking_reference
   };
