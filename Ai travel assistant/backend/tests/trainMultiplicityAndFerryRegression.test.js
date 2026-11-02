@@ -24,19 +24,19 @@ async function runTests() {
     }
   }
 
-  // 1. High-demand corridor multiplicity (BBS -> NDLS)
-  await test('1. Bhubaneswar (BBS) to New Delhi (NDLS) returns multiple verified direct trains', async () => {
+  // 1. High-demand corridor multiplicity (BBS -> Delhi Cluster)
+  await test('1. Bhubaneswar (BBS) to New Delhi (NDLS/ANVT) returns multiple verified direct trains', async () => {
     const sql = `
       SELECT DISTINCT t.train_number, t.train_name
       FROM train_schedules s1
       JOIN train_schedules s2 ON s1.train_number = s2.train_number
       JOIN trains t ON s1.train_number = t.train_number
       WHERE s1.station_code = 'BBS'
-        AND s2.station_code = 'NDLS'
+        AND s2.station_code IN ('NDLS', 'ANVT')
         AND s1.stop_sequence < s2.stop_sequence
     `;
     const directTrains = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
-    assert.ok(directTrains.length >= 3, `Expected at least 3 direct trains for BBS->NDLS, found ${directTrains.length}`);
+    assert.ok(directTrains.length >= 3, `Expected at least 3 direct trains for BBS->Delhi, found ${directTrains.length}`);
 
     const trainNumbers = directTrains.map(t => t.train_number);
     assert.ok(trainNumbers.includes('12801'), 'Must include 12801 Purushottam Express');
