@@ -304,6 +304,17 @@ const searchRoutes = async (req, res) => {
                     let combinedFare = null;
                     if (firstLeg.fare && lastLeg.fare) {
                         combinedFare = firstLeg.fare + lastLeg.fare;
+                    } else if (conn.fare) {
+                        combinedFare = conn.fare;
+                    } else {
+                        // Robust lookup in TrainFare database
+                        const f1 = (await TrainFare.findOne({ where: { train_number: String(firstNo).trim(), class_code: 'SL' } }))?.fare 
+                                || (await TrainFare.findOne({ where: { train_number: String(firstNo).trim() } }))?.fare || 0;
+                        const f2 = (await TrainFare.findOne({ where: { train_number: String(lastNo).trim(), class_code: 'SL' } }))?.fare 
+                                || (await TrainFare.findOne({ where: { train_number: String(lastNo).trim() } }))?.fare || 0;
+                        if (f1 > 0 || f2 > 0) {
+                            combinedFare = f1 + f2;
+                        }
                     }
 
                     finalTrains.push({

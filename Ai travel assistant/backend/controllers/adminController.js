@@ -14,6 +14,7 @@ const bcrypt = require('bcryptjs');
 const os = require('os');
 const axios = require('axios');
 const { getTrainTrackingDetails } = require('../services/trainTrackingService');
+const { transitionBookingState, generateBookingReference, BOOKING_STATUSES, PAYMENT_STATUSES } = require('../services/bookingLifecycleService');
 
 // 1. DASHBOARD & PLATFORM ANALYTICS
 const getAnalytics = async (req, res) => {
@@ -1034,6 +1035,20 @@ const updateBooking = async (req, res) => {
         }
 
         await booking.update(safeData);
+
+        if (AdminLog) {
+            try {
+                await AdminLog.create({
+                    admin_id: req.user?.id || 1,
+                    action: 'ADMIN_UPDATE_BOOKING',
+                    target_id: String(booking.id),
+                    details: `Admin updated booking #${booking.id} (${booking.booking_reference || booking.id})`
+                });
+            } catch (auditErr) {
+                console.warn('[AdminController] Audit log notice:', auditErr.message);
+            }
+        }
+
         return res.json({ success: true, booking, message: 'Booking updated.' });
     } catch (error) {
         console.error('[AdminController updateBooking Error]:', error.message);
@@ -1056,16 +1071,36 @@ const createBooking = async (req, res) => {
             adult_count,
             child_count,
             senior_count,
-            passenger_details
+            passenger_details,
+            passengers
         } = req.body;
 
-        if (!user_id || !trip_id) {
-            return res.status(400).json({ success: false, message: 'user_id and trip_id are required.' });
+        if (!user_id) {
+            return res.status(400).json({ success: false, message: 'user_id is required.' });
         }
+
+        let effectiveTripId = trip_id;
+        if (!effectiveTripId) {
+            const trip = await Trip.create({
+                user_id,
+                source: source_station_code || 'NDLS',
+                destination: destination_station_code || 'CNB',
+                travel_date: new Date(),
+                status: 'Planned'
+            });
+            effectiveTripId = trip.id;
+        }
+
+        if (source_station_code && destination_station_code && source_station_code === destination_station_code) {
+            return res.status(400).json({ success: false, message: 'Origin and destination stations cannot be identical.' });
+        }
+
+        const bookingRef = generateBookingReference();
 
         const booking = await Booking.create({
             user_id,
-            trip_id,
+            trip_id: effectiveTripId,
+            booking_reference: bookingRef,
             source_station_code: source_station_code || null,
             destination_station_code: destination_station_code || null,
             train_number: train_number || null,
@@ -1078,8 +1113,23 @@ const createBooking = async (req, res) => {
             adult_count: adult_count || 1,
             child_count: child_count || 0,
             senior_count: senior_count || 0,
-            passenger_details: passenger_details || null
+            passenger_details: passenger_details || null,
+            passengers: passengers || null
         });
+
+        if (AdminLog) {
+            try {
+                await AdminLog.create({
+                    admin_id: req.user?.id || 1,
+                    action: 'ADMIN_CREATE_BOOKING',
+                    target_id: String(booking.id),
+                    details: `Admin created booking #${booking.id} (${bookingRef}) for user #${user_id}`
+                });
+            } catch (auditErr) {
+                console.warn('[AdminController] Audit log notice:', auditErr.message);
+            }
+        }
+
         return res.status(201).json({ success: true, booking });
     } catch (error) {
         console.error('[AdminController createBooking Error]:', error.message);

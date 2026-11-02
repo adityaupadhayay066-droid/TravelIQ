@@ -390,6 +390,9 @@ export default function BookingModal({ train, onClose }) {
   };
 
   const handleNextStep = () => {
+    if (transportType !== 'Train') {
+      return toast.error(`Online ticketing is currently supported for Trains only. ${transportType} routes are provided for search & schedule comparison.`);
+    }
     if (!selectedClass) {
       return toast.error("Please select a travel class to continue.");
     }
@@ -397,6 +400,9 @@ export default function BookingModal({ train, onClose }) {
   };
 
   const handleConfirm = () => {
+    if (transportType !== 'Train') {
+      return toast.error("Online ticketing is currently supported for Trains only.");
+    }
     const invalid = passengers.some(p => !p.name || !p.age || !p.gender);
     if (invalid) return toast.error("Please fill in name, age, and gender for all passengers.");
     if (!selectedClass) return toast.error("Please select a travel class.");
@@ -407,6 +413,9 @@ export default function BookingModal({ train, onClose }) {
 
   // Process secure payment using backend API
   const handleProcessBookingPayment = async () => {
+    if (transportType !== 'Train') {
+      return toast.error("Ticketing is only available for train journeys.");
+    }
     if (paymentTab === 'upi') {
       if (!upiId || !upiId.includes('@')) {
         return toast.error("Please enter a valid UPI ID (e.g. aditya@oksbi or 9876543210@paytm)");
@@ -429,13 +438,16 @@ export default function BookingModal({ train, onClose }) {
     setIsProcessing(true);
 
     try {
+      const journeyDateStr = train.journey_date || train.departure_date || new Date(Date.now() + 86400000).toISOString().split('T')[0];
       const bookingPayload = {
-        source_station_code: train.source_code || train.depStation || train.source || 'DEL',
-        destination_station_code: train.destination_code || train.arrStation || train.dest || 'BOM',
+        source_station_code: train.source_code || train.depStation || train.source || 'NDLS',
+        destination_station_code: train.destination_code || train.arrStation || train.dest || 'MMCT',
         train_number: train.train_number || train.number || '12301',
         travel_class: selectedClass,
         ticket_fare: totalFare,
         booking_date: new Date(),
+        journey_date: journeyDateStr,
+        transport_type: 'Train',
         passengers: passengers,
         seat_preference: passengers[0]?.seatPref || 'No Preference',
         berth_preference: passengers[0]?.seatPref || 'No Preference',
@@ -444,32 +456,53 @@ export default function BookingModal({ train, onClose }) {
         total_passengers: passengerCount
       };
 
-      // 1. Create database booking
+      // 1. Create database booking (server returns Pending)
       const res = await api.post('/profile/bookings', bookingPayload);
       const booking = res.data.booking;
 
-      // 2. Log payment transaction
+      // 2. Create authoritative payment order bound to booking
+      let order = null;
       try {
-        const paymentMethodName = paymentTab === 'qr'
-          ? 'UPI_QR_SANDBOX'
-          : paymentTab === 'upi' 
-            ? `UPI_${upiId}` 
-            : paymentTab.toUpperCase();
+        const orderRes = await api.post('/payment/order', { booking_id: booking.id });
+        order = orderRes.data;
+      } catch (orderErr) {
+        console.warn("Payment order creation notice:", orderErr.message);
+      }
 
-        await api.post('/payment/transaction', {
+      // 3. Submit transaction attempt (never pass client status: 'Success')
+      const paymentMethodName = paymentTab === 'qr'
+        ? 'UPI_QR_SANDBOX'
+        : paymentTab === 'upi' 
+          ? `UPI_${upiId}` 
+          : paymentTab.toUpperCase();
+
+      let txn = null;
+      let confirmedState = false;
+      try {
+        const txnRes = await api.post('/payment/transaction', {
           booking_id: booking.id,
+          gateway_order_id: order?.order_id,
           amount: totalFare,
-          payment_method: paymentMethodName,
-          status: 'Success',
-          transaction_ref: paymentTab === 'qr' ? `QR_TXN_${Date.now()}` : `UPI_TXN_${Date.now()}`
+          payment_method: paymentMethodName
         });
+        txn = txnRes.data.transaction;
+        confirmedState = txnRes.data.booking_status === 'Confirmed' || txn?.status === 'Success';
       } catch (payErr) {
         console.warn("Payment transaction log notice:", payErr.message);
       }
 
-      setConfirmedBookingData(booking);
+      setConfirmedBookingData({
+        ...booking,
+        booking_status: confirmedState ? 'Confirmed' : 'Pending',
+        payment_status: confirmedState ? 'Paid' : 'Pending'
+      });
       setBookingComplete(true);
-      toast.success("Payment verified! Ticket booked successfully.");
+
+      if (confirmedState) {
+        toast.success("Payment verified! Ticket booked successfully.");
+      } else {
+        toast("Booking created in Pending state. Awaiting verified payment settlement.", { icon: "⏳" });
+      }
     } catch (err) {
       console.error("Booking error:", err);
       toast.error(err.response?.data?.message || "Booking transaction failed. Please try again.");
@@ -533,21 +566,37 @@ export default function BookingModal({ train, onClose }) {
                     <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12" />
                   </div>
                 </motion.div>
-                <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Booking Confirmed!</h3>
+                <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">
+                  {confirmedBookingData?.booking_status === 'Confirmed' ? 'Booking Confirmed!' : 'Booking Created (Pending Payment)'}
+                </h3>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mb-6 max-w-md">
-                  Your reservation on <strong>{train?.train_name || train?.name}</strong> has been confirmed and verified.
+                  {confirmedBookingData?.booking_status === 'Confirmed' ? (
+                    <>Your reservation on <strong>{train?.train_name || train?.name}</strong> has been confirmed and verified.</>
+                  ) : (
+                    <>Your reservation request on <strong>{train?.train_name || train?.name}</strong> has been recorded. Complete payment verification to receive your confirmed ticket.</>
+                  )}
                 </p>
                 
                 {confirmedBookingData && (
                   <div className="w-full max-w-md bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 sm:p-5 text-left space-y-3 shadow-sm">
                     <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">PNR / Ticket Ref</span>
-                      <span className="font-bold text-[#263238] dark:text-[#F7F5EF] font-mono text-sm">49204{confirmedBookingData.id}49</span>
+                      <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">TravelIQ Reference</span>
+                      <span className="font-bold text-[#263238] dark:text-[#F7F5EF] font-mono text-sm">{confirmedBookingData.booking_reference || `TIQ-${confirmedBookingData.id}`}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
+                      <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Booking Status</span>
+                      <span className="font-bold text-xs uppercase text-[#263238] dark:text-[#F7F5EF]">
+                        {confirmedBookingData.booking_status || 'Pending'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Payment Status</span>
-                      <span className="bg-[#4F7D62]/15 text-[#4F7D62] border border-[#4F7D62]/30 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" /> Paid (₹{totalFare.toLocaleString()})
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase flex items-center gap-1 ${
+                        confirmedBookingData.payment_status === 'Paid'
+                          ? 'bg-[#4F7D62]/15 text-[#4F7D62] border border-[#4F7D62]/30'
+                          : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30'
+                      }`}>
+                        <ShieldCheck className="w-3 h-3" /> {confirmedBookingData.payment_status || 'Pending'} (₹{totalFare.toLocaleString()})
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
@@ -643,6 +692,16 @@ export default function BookingModal({ train, onClose }) {
                         Choose your preferred travel category and fare option.
                       </p>
                     </div>
+
+                    {transportType !== 'Train' && (
+                      <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 rounded-xl text-left text-xs text-amber-800 dark:text-amber-200 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-amber-900 dark:text-amber-100">Direct booking unsupported for {transportType}s</p>
+                          <p className="mt-0.5 text-amber-700 dark:text-amber-300 leading-relaxed">TravelIQ currently supports online ticketing reservations for Trains only. Flight and Bus schedules are displayed for itinerary exploration and multi-modal routing. Direct carrier checkout for {transportType.toLowerCase()}s will be available in an upcoming release.</p>
+                        </div>
+                      </div>
+                    )}
                     
                     {availableClasses.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
@@ -701,11 +760,11 @@ export default function BookingModal({ train, onClose }) {
                     <div className="pt-4 flex justify-end">
                       <button 
                         onClick={handleNextStep}
-                        disabled={!selectedClass || availableClasses.length === 0}
+                        disabled={!selectedClass || availableClasses.length === 0 || transportType !== 'Train'}
                         className="bg-[#D96C4F] hover:bg-[#C75D43] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-7 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer text-sm"
                       >
-                        Continue to Passenger Details
-                        <ArrowRight className="w-4 h-4" />
+                        {transportType === 'Train' ? 'Continue to Passenger Details' : `${transportType} Booking Unsupported`}
+                        {transportType === 'Train' && <ArrowRight className="w-4 h-4" />}
                       </button>
                     </div>
                   </motion.div>

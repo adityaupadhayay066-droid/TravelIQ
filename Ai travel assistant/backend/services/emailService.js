@@ -88,12 +88,12 @@ async function sendEmail({ to, subject, html, text, otpCode, purpose = 'notifica
 async function sendBookingConfirmation({ user, booking }) {
     if (!user || !user.email) return;
 
-    const pnr = `49204${booking.id}49`;
+    const bookingRef = booking.booking_reference || `TIQ-BR-${booking.id}`;
     const passengerNames = Array.isArray(booking.passengers)
         ? booking.passengers.map(p => typeof p === 'string' ? p : p.name).filter(Boolean).join(', ')
         : 'Confirmed Passenger';
 
-    const subject = `🎫 Booking Confirmed: Service #${booking.train_number || '12301'} (PNR: ${pnr})`;
+    const subject = `🎫 Booking Confirmed: Service #${booking.train_number || '12301'} (Booking Ref: ${bookingRef})`;
 
     const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff;">
@@ -104,8 +104,8 @@ async function sendBookingConfirmation({ user, booking }) {
         <div style="padding: 24px;">
             <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">PNR / Reference:</span>
-                    <strong style="font-size: 15px; color: #173F3A; font-family: monospace;">${pnr}</strong>
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">TravelIQ Booking Ref:</span>
+                    <strong style="font-size: 15px; color: #173F3A; font-family: monospace;">${bookingRef}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span style="font-size: 12px; color: #64748b;">Service Number:</span>
@@ -150,7 +150,7 @@ async function sendBookingConfirmation({ user, booking }) {
     console.log('\n┌────────────────────────────────────────────────────────┐');
     console.log(`│ 📱 [TRAVELIQ SMS SIMULATOR] Booking SMS Dispatched    `);
     console.log(`│ To: ${user.phone || 'N/A'} (${user.name || 'Traveler'})`);
-    console.log(`│ PNR: ${pnr} | Train: #${booking.train_number || '12301'}`);
+    console.log(`│ Booking Ref: ${bookingRef} | Train: #${booking.train_number || '12301'}`);
     console.log(`│ Route: ${booking.source_station_code} ➔ ${booking.destination_station_code}`);
     console.log(`│ Class: ${booking.travel_class || 'SL'} | Fare: ₹${booking.ticket_fare}`);
     console.log(`│ Status: CONFIRMED ✅                                   `);

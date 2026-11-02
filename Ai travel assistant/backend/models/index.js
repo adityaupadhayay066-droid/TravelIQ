@@ -53,6 +53,8 @@ const Report = require('./Report');
 const AdminNotification = require('./AdminNotification');
 const HotelReservation = require('./HotelReservation');
 const ProcessedWebhookEvent = require('./ProcessedWebhookEvent');
+const IdempotencyKey = require('./IdempotencyKey');
+const BookingEvent = require('./BookingEvent');
 
 
 // Relationships
@@ -279,6 +281,8 @@ module.exports = {
   AdminNotification,
   HotelReservation,
   ProcessedWebhookEvent,
+  IdempotencyKey,
+  BookingEvent,
   Organization,
   ApiKey,
   ApiUsageLog

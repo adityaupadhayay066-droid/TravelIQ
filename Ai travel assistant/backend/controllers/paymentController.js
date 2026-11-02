@@ -1,9 +1,11 @@
 'use strict';
 const crypto = require('crypto');
-const { Transaction, PaymentLog, Booking, User, Trip, ProcessedWebhookEvent, sequelize } = require('../models');
+const PDFDocument = require('pdfkit');
+const { Transaction, PaymentLog, Booking, User, Trip, Station, Train, TrainSchedule, TrainFare, ProcessedWebhookEvent, sequelize } = require('../models');
+const { transitionBookingState, BOOKING_STATUSES, PAYMENT_STATUSES: BOOKING_PAYMENT_STATUSES } = require('../services/bookingLifecycleService');
 
 /**
- * Explicit Payment States
+ * Explicit Payment / Transaction States
  */
 const PAYMENT_STATUSES = {
   PENDING: 'Pending',
@@ -13,6 +15,7 @@ const PAYMENT_STATUSES = {
   REFUNDED: 'Refunded',
   CANCELLED: 'Cancelled'
 };
+const { processBookingConfirmationSideEffects } = require('../services/bookingConfirmationService');
 
 /**
  * Robust HTML escaping to prevent XSS in receipt generation
@@ -54,6 +57,9 @@ const createOrder = async (req, res) => {
 
     if (booking.booking_status === 'Cancelled') {
       return res.status(400).json({ message: 'Cannot create payment order for a cancelled booking.' });
+    }
+    if (booking.booking_status === 'Expired') {
+      return res.status(400).json({ message: 'Cannot create payment order for an expired booking.' });
     }
 
     const authoritativeAmount = Number(booking.ticket_fare);
@@ -139,6 +145,9 @@ const createTransaction = async (req, res) => {
     }
     if (booking.payment_status === 'Refunded' || booking.booking_status === 'Cancelled') {
       return res.status(400).json({ message: 'Cannot process payment for a cancelled or refunded booking.' });
+    }
+    if (booking.booking_status === 'Expired') {
+      return res.status(400).json({ message: 'Cannot process payment for an expired booking.' });
     }
 
     // Authoritative amount recalculated strictly from server booking record
@@ -303,9 +312,14 @@ const createTransaction = async (req, res) => {
       }
 
       if (verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
-        lockedBooking.payment_status = 'Paid';
-        lockedBooking.booking_status = 'Confirmed';
-        await lockedBooking.save({ transaction: t });
+        await transitionBookingState({
+          bookingId: lockedBooking.id,
+          targetBookingStatus: 'Confirmed',
+          targetPaymentStatus: 'Paid',
+          actor: { id: req.user.id, role: req.user.role || 'USER' },
+          reason: 'Cryptographically verified checkout transaction',
+          existingTransaction: t
+        });
       }
 
       await PaymentLog.create({
@@ -317,6 +331,16 @@ const createTransaction = async (req, res) => {
 
       return transaction;
     });
+
+    // Initiate confirmation side effects (email, n8n, analytics) only after transaction commits
+    if (verifiedStatus === PAYMENT_STATUSES.SUCCESS) {
+      processBookingConfirmationSideEffects({
+        bookingId: booking.id,
+        user: req.user
+      }).catch(err => {
+        console.warn('[PaymentController] Side effects execution error:', err.message);
+      });
+    }
 
     res.status(201).json({
       message: verifiedStatus === PAYMENT_STATUSES.SUCCESS 
@@ -429,6 +453,11 @@ const handlePaymentWebhook = async (req, res) => {
         message: 'Cannot process payment webhook: Booking has been cancelled.'
       });
     }
+    if (booking.booking_status === 'Expired') {
+      return res.status(400).json({
+        message: 'Cannot process payment webhook: Booking has expired.'
+      });
+    }
 
     // 5. Payment ID & Transaction Replay Check (Idempotency)
     let existingTxn = null;
@@ -500,9 +529,14 @@ const handlePaymentWebhook = async (req, res) => {
       if (order_id) txn.order_id = order_id;
       await txn.save({ transaction: t });
 
-      lockedBooking.payment_status = 'Paid';
-      lockedBooking.booking_status = 'Confirmed';
-      await lockedBooking.save({ transaction: t });
+      await transitionBookingState({
+        bookingId: lockedBooking.id,
+        targetBookingStatus: 'Confirmed',
+        targetPaymentStatus: 'Paid',
+        actor: { id: 1, role: 'WEBHOOK_GATEWAY' },
+        reason: `Webhook verified payment ${payment_id || order_id}`,
+        existingTransaction: t
+      });
 
       if (event_id) {
         await ProcessedWebhookEvent.create({
@@ -522,6 +556,12 @@ const handlePaymentWebhook = async (req, res) => {
         payment_method: 'Gateway Webhook (Verified)',
         details: `Webhook verified payment for booking #${booking_id}`
       }, { transaction: t });
+    });
+
+    processBookingConfirmationSideEffects({
+      bookingId: booking.id
+    }).catch(err => {
+      console.warn('[PaymentController Webhook] Side effects execution error:', err.message);
     });
 
     return res.status(200).json({ message: 'Payment webhook processed and booking confirmed.' });
@@ -762,53 +802,105 @@ function getStationName(code) {
 }
 
 /**
- * Generate coach and berth assignment based on travel class
+ * Build authentic PDF document stream using PDFKit
  */
-function getCoachAndBerth(travelClass, idx, seatPref, berthPref) {
-  const cls = (travelClass || '3A').toUpperCase();
-  const berthTypes = ['LB - Lower Berth', 'MB - Middle Berth', 'UB - Upper Berth', 'SL - Side Lower', 'SU - Side Upper'];
-  const seatTypes = ['WS - Window Seat', 'AS - Aisle Seat', 'MS - Middle Seat'];
+function buildTicketPdf(booking, user, transaction, scheduleInfo) {
+  const doc = new PDFDocument({ margin: 40, size: 'A4' });
+  const bookingRef = booking.booking_reference || `TIQ-BR-${booking.id}`;
+  const isConfirmed = booking.booking_status === 'Confirmed' && booking.payment_status === 'Paid';
+  const statusText = isConfirmed ? 'CONFIRMED' : 
+                     (booking.booking_status === 'Cancelled' ? 'CANCELLED' :
+                     (booking.booking_status === 'Expired' ? 'EXPIRED' :
+                     (booking.payment_status === 'Refund Pending' ? 'REFUND PENDING' :
+                     (booking.payment_status === 'Refunded' ? 'REFUNDED' :
+                     (booking.payment_status === 'Failed' ? 'PAYMENT FAILED' : 'PAYMENT PENDING')))));
 
-  let coachPrefix = 'B2';
-  let berthNum = 21 + (idx * 3);
-  let berthLabel = berthPref && berthPref !== 'No Preference' ? berthPref : berthTypes[idx % berthTypes.length];
+  const bannerColor = isConfirmed ? '#16a34a' : (statusText === 'PAYMENT PENDING' ? '#d97706' : '#dc2626');
 
-  if (cls === '1A' || cls.includes('FIRST')) {
-    coachPrefix = 'H1';
-    berthNum = `Cabin A / ${idx + 1}`;
-    berthLabel = 'Coupe / First AC';
-  } else if (cls === '2A' || cls.includes('2 TIER')) {
-    coachPrefix = 'A1';
-    berthNum = 14 + (idx * 2);
-    berthLabel = berthPref && berthPref !== 'No Preference' ? berthPref : (idx % 2 === 0 ? 'LB - Lower Berth' : 'UB - Upper Berth');
-  } else if (cls === '3A' || cls === '3E' || cls.includes('3 TIER')) {
-    coachPrefix = cls === '3E' ? 'M1' : 'B3';
-    berthNum = 18 + (idx * 4);
-    berthLabel = berthPref && berthPref !== 'No Preference' ? berthPref : berthTypes[idx % 5];
-  } else if (cls === 'CC' || cls === 'EC' || cls.includes('CHAIR')) {
-    coachPrefix = cls === 'EC' ? 'E1' : 'C2';
-    berthNum = 24 + (idx * 2);
-    berthLabel = seatPref && seatPref !== 'No Preference' ? seatPref : seatTypes[idx % seatTypes.length];
-  } else if (cls === 'SL' || cls.includes('SLEEPER')) {
-    coachPrefix = 'S6';
-    berthNum = 20 + (idx * 4);
-    berthLabel = berthPref && berthPref !== 'No Preference' ? berthPref : berthTypes[idx % 5];
-  } else if (cls === '2S' || cls === 'UR') {
-    coachPrefix = 'D2';
-    berthNum = 42 + idx;
-    berthLabel = 'Second Sitting (2S)';
-  }
+  // Header Banner
+  doc.rect(40, 40, 515, 55).fill('#0b3b60');
+  doc.fillColor('#ffffff').fontSize(18).font('Helvetica-Bold').text('TravelIQ E-TICKET RECEIPT', 55, 50);
+  doc.fontSize(10).font('Helvetica').text('TravelIQ Intelligent Travel Assistant — Authentic Booking Record', 55, 72);
 
-  return {
-    coach: coachPrefix,
-    berth: berthNum,
-    type: berthLabel,
-    statusText: `CNF / ${coachPrefix} / ${berthNum} / ${berthLabel.split(' ')[0]}`
-  };
+  // Status & Reference Bar
+  doc.rect(40, 100, 515, 28).fill(bannerColor);
+  doc.fillColor('#ffffff').fontSize(11).font('Helvetica-Bold').text(`TRAVELIQ BOOKING REF: ${bookingRef}`, 55, 108);
+  doc.text(`STATUS: ${statusText}`, 410, 108);
+
+  // Journey Summary Box
+  doc.fillColor('#0f172a').fontSize(11).font('Helvetica-Bold').text('Journey Details', 40, 142);
+  doc.rect(40, 158, 515, 80).strokeColor('#cbd5e1').stroke();
+
+  doc.fontSize(9).font('Helvetica-Bold').text('Origin Station:', 55, 168);
+  doc.font('Helvetica').text(`${booking.source_station_code} — ${scheduleInfo.sourceStation}`, 145, 168);
+  doc.font('Helvetica-Bold').text('Destination:', 310, 168);
+  doc.font('Helvetica').text(`${booking.destination_station_code} — ${scheduleInfo.destStation}`, 390, 168);
+
+  doc.font('Helvetica-Bold').text('Train / Service:', 55, 188);
+  doc.font('Helvetica').text(`#${booking.train_number} (${scheduleInfo.trainName})`, 145, 188);
+  doc.font('Helvetica-Bold').text('Class:', 310, 188);
+  doc.font('Helvetica').text(booking.travel_class || '3A', 390, 188);
+
+  doc.font('Helvetica-Bold').text('Journey Date:', 55, 208);
+  doc.font('Helvetica').text(booking.journey_date || scheduleInfo.formattedBookingDate, 145, 208);
+  doc.font('Helvetica-Bold').text('Departure Time:', 310, 208);
+  doc.font('Helvetica').text(scheduleInfo.depTime, 390, 208);
+
+  // Passenger Table
+  doc.fontSize(11).font('Helvetica-Bold').text('Passenger Information', 40, 252);
+  doc.rect(40, 268, 515, 20).fill('#f1f5f9');
+  doc.fillColor('#334155').fontSize(9).font('Helvetica-Bold');
+  doc.text('#', 55, 273);
+  doc.text('Passenger Name', 85, 273);
+  doc.text('Age', 260, 273);
+  doc.text('Gender', 320, 273);
+  doc.text('Booking Status', 400, 273);
+
+  let y = 295;
+  const paxList = Array.isArray(booking.passengers) && booking.passengers.length > 0 
+    ? booking.passengers 
+    : [{ name: user?.name || 'Primary Passenger', age: 30, gender: 'Male' }];
+
+  paxList.forEach((p, idx) => {
+    doc.fillColor('#0f172a').fontSize(9).font('Helvetica');
+    doc.text(String(idx + 1), 55, y);
+    doc.text(p.name || 'Traveler', 85, y);
+    doc.text(`${p.age || 30} Yrs`, 260, y);
+    doc.text(p.gender || 'Male', 320, y);
+    doc.text(isConfirmed ? 'Confirmed (Allotted on Chart Prep)' : statusText, 400, y);
+    y += 18;
+  });
+
+  // Fare & Payment Summary
+  y += 12;
+  doc.fontSize(11).font('Helvetica-Bold').text('Payment & Fare Summary', 40, y);
+  y += 16;
+  doc.rect(40, y, 515, 60).strokeColor('#cbd5e1').stroke();
+
+  doc.fontSize(9).font('Helvetica-Bold').text('Authoritative Fare:', 55, y + 12);
+  doc.font('Helvetica').text(`INR ${(Number(booking.ticket_fare) || 0).toFixed(2)}`, 160, y + 12);
+  doc.font('Helvetica-Bold').text('Payment Status:', 310, y + 12);
+  doc.font('Helvetica').text(booking.payment_status || 'Unpaid', 420, y + 12);
+
+  doc.font('Helvetica-Bold').text('Payment Method:', 55, y + 32);
+  doc.font('Helvetica').text(transaction?.payment_method || 'Gateway Pending', 160, y + 32);
+  doc.font('Helvetica-Bold').text('Transaction Ref:', 310, y + 32);
+  doc.font('Helvetica').text(transaction?.transaction_id || 'N/A', 420, y + 32);
+
+  // Security Token & Advisory
+  y += 75;
+  doc.rect(40, y, 515, 55).fill('#f8fafc');
+  const token = crypto.createHmac('sha256', 'traveliq_ticket_seal').update(bookingRef).digest('hex').slice(0, 16).toUpperCase();
+  doc.fillColor('#0b3b60').fontSize(9).font('Helvetica-Bold').text(`Verification Token: TIQ-SEC-${token}`, 55, y + 12);
+  doc.fillColor('#64748b').fontSize(8).font('Helvetica').text('TravelIQ server-generated verification document. Please carry valid government-issued photo ID during travel.', 55, y + 26);
+  doc.text(`Official Distance: ${scheduleInfo.distance} | Arrival: ${scheduleInfo.arrTime}`, 55, y + 38);
+
+  doc.end();
+  return doc;
 }
 
 /**
- * Generate a printable PDF-styled E-Ticket and Receipt matching IRCTC & TravelIQ co-branded official format.
+ * Generate a printable PDF or HTML-styled E-Ticket matching authentic booking records.
  */
 const getReceiptPDF = async (req, res) => {
   const { bookingId } = req.params;
@@ -829,11 +921,9 @@ const getReceiptPDF = async (req, res) => {
     }
 
     const transaction = await Transaction.findOne({ where: { booking_id: bookingId } });
-    const cleanId = String(bookingId).padStart(4, '0');
-    const pnrNumber = `49204${cleanId}49`;
-    const formattedPNR = `${pnrNumber.slice(0, 3)}-${pnrNumber.slice(3, 10)}`;
-    const txnId = transaction ? transaction.transaction_id : `TXN-TIQ-IRCTC-${23025700 + parseInt(bookingId, 10)}`;
-    const paymentMethod = transaction ? transaction.payment_method : 'UPI (Sandbox Verified)';
+    const bookingRef = booking.booking_reference || `TIQ-BR-${booking.id}`;
+    const txnId = transaction ? transaction.transaction_id : `TXN-TIQ-${booking.id}`;
+    const paymentMethod = transaction ? transaction.payment_method : 'Pending Payment';
     
     const bookingDateObj = booking.booking_date ? new Date(booking.booking_date) : new Date();
     const formattedBookingDate = bookingDateObj.toLocaleDateString('en-IN', {
@@ -844,804 +934,244 @@ const getReceiptPDF = async (req, res) => {
     });
     const fullBookingTimestamp = `${formattedBookingDate} ${formattedBookingTime} HRS`;
 
-    const sourceStation = escapeHtml(getStationName(booking.source_station_code));
-    const destStation = escapeHtml(getStationName(booking.destination_station_code));
+    // Authentic lookup from stations, trains, and schedules
+    const [stnSrc, stnDst, trainObj, fareRow, schedSrc, schedDst] = await Promise.all([
+      Station.findOne({ where: { station_code: (booking.source_station_code || 'NDLS').toUpperCase() } }),
+      Station.findOne({ where: { station_code: (booking.destination_station_code || 'CSTM').toUpperCase() } }),
+      Train.findOne({ where: { train_number: String(booking.train_number || '12951') } }),
+      TrainFare.findOne({ where: { train_number: String(booking.train_number || '12951'), class_code: booking.travel_class || '3A' } }),
+      TrainSchedule.findOne({ where: { train_number: String(booking.train_number || '12951'), station_code: booking.source_station_code } }),
+      TrainSchedule.findOne({ where: { train_number: String(booking.train_number || '12951'), station_code: booking.destination_station_code } })
+    ]);
+
+    const sourceStation = stnSrc ? `${stnSrc.station_name} (${stnSrc.station_code})` : booking.source_station_code;
+    const destStation = stnDst ? `${stnDst.station_name} (${stnDst.station_code})` : booking.destination_station_code;
     const srcCode = escapeHtml((booking.source_station_code || 'NDLS').toUpperCase());
     const dstCode = escapeHtml((booking.destination_station_code || 'CSTM').toUpperCase());
     const trainNo = escapeHtml(booking.train_number || '12951');
-    const trainName = escapeHtml((booking.train_number ? `EXP #${booking.train_number}` : 'MUMBAI RAJDHANI EXP').toUpperCase());
+    const trainName = trainObj ? escapeHtml(trainObj.train_name.toUpperCase()) : `TRAIN #${trainNo}`;
     const travelClass = escapeHtml((booking.travel_class || '3A').toUpperCase());
+
+    const depTime = schedSrc?.departure_time ? `${schedSrc.departure_time} HRS` : 'Timetable departure';
+    const arrTime = schedDst?.arrival_time ? `${schedDst.arrival_time} HRS` : 'Timetable arrival';
+    const distanceStr = fareRow?.distance ? `${fareRow.distance} KM` : 'Per official timetable';
+
+    const isConfirmed = booking.booking_status === 'Confirmed' && booking.payment_status === 'Paid';
+    let statusText = 'CONFIRMED';
+    let statusBadgeColor = '#16a34a';
+
+    if (booking.booking_status === 'Cancelled') {
+      statusText = 'CANCELLED';
+      statusBadgeColor = '#dc2626';
+    } else if (booking.payment_status === 'Refund Pending') {
+      statusText = 'REFUND PENDING';
+      statusBadgeColor = '#9333ea';
+    } else if (booking.payment_status === 'Refunded') {
+      statusText = 'REFUNDED';
+      statusBadgeColor = '#475569';
+    } else if (booking.booking_status === 'Expired') {
+      statusText = 'EXPIRED';
+      statusBadgeColor = '#6b7280';
+    } else if (booking.payment_status === 'Failed') {
+      statusText = 'PAYMENT FAILED';
+      statusBadgeColor = '#dc2626';
+    } else if (!isConfirmed) {
+      statusText = 'PAYMENT PENDING';
+      statusBadgeColor = '#d97706';
+    }
 
     // Passenger list extraction
     let passengersList = [];
     if (Array.isArray(booking.passengers) && booking.passengers.length > 0) {
       passengersList = booking.passengers;
     } else {
-      const primaryName = (booking.User && booking.User.name) || (req.user && req.user.name) || 'Aditya Upadhyay';
+      const primaryName = (booking.User && booking.User.name) || (req.user && req.user.name) || 'Traveler';
       passengersList = [{
         name: primaryName,
-        age: 24,
+        age: 30,
         gender: 'Male',
         seat_preference: booking.seat_preference || 'No Preference',
         berth_preference: booking.berth_preference || 'No Preference'
       }];
     }
 
-    const totalFare = Number(booking.ticket_fare) || 1604;
-    const baseFare = Math.max(100, Math.round(totalFare - 35.85));
-    const irctcFee = '35.40';
-    const insuranceFee = '0.45';
-    const fareInWords = numberToWordsINR(totalFare);
+    const totalFare = Number(booking.ticket_fare) || 0;
 
-    // Build authentic IRCTC Electronic Reservation Slip (ERS) HTML
+    const scheduleInfo = {
+      sourceStation,
+      destStation,
+      trainName,
+      depTime,
+      arrTime,
+      distance: distanceStr,
+      formattedBookingDate
+    };
+
+    // If client requested PDF or default format is PDF:
+    if (req.query.format !== 'html') {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="TravelIQ_Ticket_${bookingRef}.pdf"`);
+      const pdfDoc = buildTicketPdf(booking, req.user || booking.User, transaction, scheduleInfo);
+      return pdfDoc.pipe(res);
+    }
+
+    // HTML Rendering when explicitly requested via format=html
+    const verificationToken = crypto.createHmac('sha256', 'traveliq_ticket_seal').update(bookingRef).digest('hex').slice(0, 16).toUpperCase();
+
     const html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>TravelIQ_IRCTC_Ticket_${formattedPNR}</title>
+      <title>TravelIQ_Ticket_${bookingRef}</title>
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=JetBrains+Mono:wght@500;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
       <style>
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
           font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
           background-color: #f1f5f9;
           color: #1e293b;
           line-height: 1.35;
           padding: 20px 10px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
         }
-
-        /* Top Action Bar (Screen Only) */
-        .action-bar {
-          max-width: 850px;
-          margin: 0 auto 16px auto;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: #ffffff;
-          padding: 12px 20px;
-          border-radius: 12px;
-          border: 1px solid #cbd5e1;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        .action-btn-group {
-          display: flex;
-          gap: 10px;
-        }
-        .btn-action {
-          padding: 8px 18px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.2s;
-          border: none;
-        }
-        .btn-primary {
-          background-color: #0b3b60;
-          color: #ffffff;
-        }
-        .btn-primary:hover {
-          background-color: #082842;
-        }
-        .btn-secondary {
-          background-color: #f8fafc;
-          color: #334155;
-          border: 1px solid #cbd5e1;
-        }
-        .btn-secondary:hover {
-          background-color: #e2e8f0;
-        }
-
-        /* Main IRCTC Ticket Container */
         .ticket-wrapper {
           max-width: 850px;
           margin: 0 auto;
           background: #ffffff;
-          border: 2px solid #0b3b60;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-          position: relative;
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.06);
           overflow: hidden;
         }
-
-        /* Subtle Watermark */
-        .watermark {
-          position: absolute;
-          top: 45%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-30deg);
-          font-size: 64px;
-          font-weight: 900;
-          color: rgba(11, 59, 96, 0.035);
-          white-space: nowrap;
-          pointer-events: none;
-          z-index: 0;
-          text-transform: uppercase;
-          letter-spacing: 4px;
-          font-family: 'Outfit', sans-serif;
-        }
-
-        /* Ticket Header */
         .ticket-header {
-          position: relative;
-          z-index: 1;
-          background: #ffffff;
-          border-bottom: 2px solid #0b3b60;
-          padding: 14px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .brand-section {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-        .logo-box {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .brand-title {
-          font-family: 'Outfit', sans-serif;
-          font-size: 26px;
-          font-weight: 900;
-          color: #14532d;
-          letter-spacing: -0.5px;
-          display: flex;
-          align-items: center;
-        }
-        .brand-title span {
-          color: #e58a3a;
-          margin-left: 1px;
-        }
-        .brand-badge {
-          display: block;
-          font-size: 9px;
-          font-weight: 700;
-          text-transform: uppercase;
-          color: #0b3b60;
-          letter-spacing: 0.5px;
-          margin-top: -2px;
-        }
-
-        .center-heading {
-          text-align: center;
-          flex: 1;
-          padding: 0 15px;
-        }
-        .gov-title {
-          font-size: 13px;
-          font-weight: 800;
-          color: #0b3b60;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-        }
-        .ers-title {
-          font-size: 16px;
-          font-weight: 900;
-          color: #b91c1c;
-          letter-spacing: 0.8px;
-          margin: 2px 0;
-          text-transform: uppercase;
-        }
-        .ers-subtitle {
-          font-size: 10px;
-          font-weight: 500;
-          color: #475569;
-        }
-
-        .rail-emblem-box {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .qr-header-img {
-          width: 58px;
-          height: 58px;
-          border: 1px solid #cbd5e1;
-          padding: 2px;
-          border-radius: 4px;
-          background: #ffffff;
-        }
-
-        /* Top Key Alert Bar (PNR & Train) */
-        .pnr-strip {
-          position: relative;
-          z-index: 1;
           background: #0b3b60;
           color: #ffffff;
-          padding: 8px 18px;
+          padding: 16px 24px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 2px solid #e58a3a;
         }
-        .pnr-col {
+        .brand-title { font-size: 20px; font-weight: 800; }
+        .pnr-strip {
+          background: #f8fafc;
+          border-bottom: 2px solid #e2e8f0;
+          padding: 12px 24px;
           display: flex;
-          align-items: baseline;
-          gap: 8px;
+          justify-content: space-between;
+          align-items: center;
         }
-        .pnr-label {
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          color: #93c5fd;
-          letter-spacing: 0.5px;
-        }
-        .pnr-num {
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 20px;
-          font-weight: 800;
+        .pnr-num { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 800; color: #0b3b60; }
+        .status-badge {
+          background: ${statusBadgeColor};
           color: #ffffff;
-          letter-spacing: 1px;
-        }
-        .status-badge-cnf {
-          background-color: #16a34a;
-          color: #ffffff;
-          padding: 4px 12px;
-          border-radius: 4px;
+          padding: 6px 14px;
+          border-radius: 6px;
           font-weight: 800;
           font-size: 12px;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Grid Tables */
-        .ticket-body {
-          position: relative;
-          z-index: 1;
-          padding: 12px 16px;
-        }
-
-        .section-header {
-          background-color: #f1f5f9;
-          border-left: 4px solid #0b3b60;
-          padding: 4px 10px;
-          font-size: 11px;
-          font-weight: 800;
-          text-transform: uppercase;
-          color: #0b3b60;
           letter-spacing: 0.5px;
-          margin-top: 10px;
-          margin-bottom: 6px;
-        }
-
-        table.irctc-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 11.5px;
-          margin-bottom: 10px;
-          background: #ffffff;
-        }
-        table.irctc-table th, 
-        table.irctc-table td {
-          border: 1px solid #cbd5e1;
-          padding: 6px 8px;
-          text-align: left;
-        }
-        table.irctc-table th {
-          background-color: #f8fafc;
-          color: #334155;
-          font-weight: 700;
-          font-size: 10.5px;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
         }
-        table.irctc-table td {
-          color: #0f172a;
-        }
-        .cell-label {
-          font-size: 9.5px;
-          font-weight: 600;
-          color: #64748b;
-          text-transform: uppercase;
-          display: block;
-          margin-bottom: 1px;
-        }
-        .cell-value {
-          font-weight: 700;
-          color: #0f172a;
-        }
-        .cell-highlight {
-          color: #0b3b60;
-          font-weight: 800;
-        }
-
-        /* Route Display Highlight Box */
-        .route-grid {
-          display: grid;
-          grid-template-columns: 1fr 60px 1fr;
-          align-items: center;
-          border: 1px solid #cbd5e1;
-          background: #f8fafc;
-          padding: 10px 16px;
-          border-radius: 6px;
-          margin-bottom: 10px;
-        }
-        .route-station {
-          display: flex;
-          flex-direction: column;
-        }
-        .route-station.right {
-          text-align: right;
-        }
-        .route-code {
-          font-family: 'Outfit', sans-serif;
-          font-size: 22px;
-          font-weight: 900;
-          color: #0b3b60;
-          letter-spacing: -0.5px;
-        }
-        .route-name {
-          font-size: 11px;
-          font-weight: 600;
-          color: #475569;
-        }
-        .route-arrow {
-          text-align: center;
-          font-size: 20px;
-          color: #e58a3a;
-          font-weight: 800;
-        }
-
-        /* Passenger Table Specifics */
-        .passenger-table th {
-          background-color: #0b3b60;
-          color: #ffffff;
-          font-size: 10px;
-        }
-        .passenger-table td {
-          padding: 8px;
-        }
-        .status-cnf-cell {
-          color: #15803d;
-          font-weight: 800;
-          font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Fare Summary Section */
-        .fare-and-security {
-          display: grid;
-          grid-template-columns: 1.3fr 1fr;
-          gap: 12px;
-          margin-top: 6px;
-          margin-bottom: 12px;
-        }
-        .fare-box {
-          border: 1px solid #cbd5e1;
-          background: #ffffff;
-        }
-        .fare-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 11px;
-        }
-        .fare-table td {
-          padding: 4px 8px;
-          border-bottom: 1px solid #f1f5f9;
-        }
-        .fare-table tr.total-row {
-          background-color: #f1f5f9;
-          font-weight: 800;
-          font-size: 12px;
-          border-top: 2px solid #0b3b60;
-          border-bottom: 2px solid #0b3b60;
-        }
-        .fare-table tr.total-row td {
-          color: #0b3b60;
-          padding: 7px 8px;
-        }
-
-        .security-box {
-          border: 1px solid #cbd5e1;
-          background: #f8fafc;
-          padding: 10px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          border-radius: 4px;
-        }
-        .stamp-box {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: #dcfce7;
-          border: 1px dashed #16a34a;
-          padding: 6px 10px;
-          border-radius: 6px;
-        }
-        .stamp-text {
-          font-size: 9.5px;
-          font-weight: 700;
-          color: #166534;
-          line-height: 1.25;
-        }
-        .barcode-container {
-          text-align: center;
-          padding: 6px 0 0 0;
-        }
-        .barcode-bars {
-          letter-spacing: 3px;
-          font-family: 'JetBrains Mono', monospace;
-          font-weight: 900;
-          font-size: 15px;
-          color: #0f172a;
-        }
-        .barcode-num {
-          font-size: 9px;
-          font-family: 'JetBrains Mono', monospace;
-          color: #64748b;
-        }
-
-        /* Advisory Guidelines */
-        .advisory-box {
-          border: 1px solid #cbd5e1;
-          background: #fffbeb;
-          padding: 8px 12px;
-          border-radius: 4px;
-          font-size: 9.5px;
-          color: #78350f;
-          line-height: 1.45;
-          margin-bottom: 8px;
-        }
-        .advisory-title {
-          font-weight: 800;
-          text-transform: uppercase;
-          color: #92400e;
-          margin-bottom: 3px;
-          font-size: 10px;
-        }
-        .advisory-list {
-          padding-left: 14px;
-        }
-
-        /* Footer */
-        .ticket-footer {
-          border-top: 1px solid #cbd5e1;
-          padding: 8px 16px;
-          background: #f8fafc;
-          font-size: 9.5px;
-          color: #64748b;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        @media print {
-          body {
-            background-color: #ffffff;
-            padding: 0;
-            color: #000000;
-          }
-          .action-bar {
-            display: none !important;
-          }
-          .ticket-wrapper {
-            box-shadow: none;
-            border: 1.5px solid #000000;
-            max-width: 100%;
-          }
-          .ticket-header {
-            border-bottom: 1.5px solid #000000;
-          }
-          .pnr-strip {
-            background: #0b3b60 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
-          }
-        }
+        .ticket-body { padding: 20px 24px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .info-box { background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .info-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .info-val { font-size: 13px; font-weight: 600; color: #0f172a; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; font-size: 12px; }
+        th { background: #f1f5f9; font-weight: 700; color: #334155; }
+        .ticket-footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 24px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; }
       </style>
     </head>
     <body>
-
-      <!-- Top Screen Action Bar -->
-      <div class="action-bar">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 18px;">🚆</span>
-          <div>
-            <strong style="font-size: 13px; color: #0b3b60;">TravelIQ Official E-Ticket & Receipt</strong>
-            <span style="font-size: 11px; color: #64748b; display: block;">Booking Reference #TIQ-BK-${bookingId} • Confirmed</span>
-          </div>
-        </div>
-        <div class="action-btn-group">
-          <button onclick="window.print()" class="btn-action btn-primary">
-            🖨️ Print Ticket / Save PDF
-          </button>
-          <button onclick="window.close()" class="btn-action btn-secondary">
-            ✕ Close
-          </button>
-        </div>
-      </div>
-
-      <!-- Main IRCTC Ticket Container -->
       <div class="ticket-wrapper">
-        <div class="watermark">TRAVELIQ RAILWAYS</div>
-
-        <!-- Official Header -->
         <div class="ticket-header">
-          <div class="brand-section">
-            <div class="logo-box">
-              <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #14532d, #16a34a); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-                🚆
-              </div>
-              <div>
-                <div class="brand-title">Travel<span>IQ</span></div>
-                <span class="brand-badge">IRCTC Co-Branded Rail Partner</span>
-              </div>
-            </div>
+          <div>
+            <div class="brand-title">TravelIQ Smart Assistant</div>
+            <div style="font-size: 11px; color: #93c5fd;">Electronic Travel Record</div>
           </div>
-
-          <div class="center-heading">
-            <div class="gov-title">INDIAN RAILWAYS / IRCTC - TRAVELIQ</div>
-            <div class="ers-title">ELECTRONIC RESERVATION SLIP (ERS)</div>
-            <div class="ers-subtitle">Valid for travel along with original Photo Identity Card</div>
-          </div>
-
-          <div class="rail-emblem-box">
-            <!-- Authentic High-Resolution SVG QR Code -->
-            <svg class="qr-header-img" viewBox="0 0 100 100" fill="#0b3b60">
-              <rect x="0" y="0" width="100" height="100" fill="#ffffff"/>
-              <!-- Position detection patterns -->
-              <rect x="10" y="10" width="22" height="22" fill="#0b3b60"/>
-              <rect x="14" y="14" width="14" height="14" fill="#ffffff"/>
-              <rect x="17" y="17" width="8" height="8" fill="#0b3b60"/>
-
-              <rect x="68" y="10" width="22" height="22" fill="#0b3b60"/>
-              <rect x="72" y="14" width="14" height="14" fill="#ffffff"/>
-              <rect x="75" y="17" width="8" height="8" fill="#0b3b60"/>
-
-              <rect x="10" y="68" width="22" height="22" fill="#0b3b60"/>
-              <rect x="14" y="72" width="14" height="14" fill="#ffffff"/>
-              <rect x="17" y="75" width="8" height="8" fill="#0b3b60"/>
-
-              <!-- Data bits -->
-              <rect x="36" y="12" width="6" height="6" fill="#0b3b60"/>
-              <rect x="46" y="12" width="6" height="6" fill="#0b3b60"/>
-              <rect x="56" y="12" width="6" height="6" fill="#0b3b60"/>
-              <rect x="36" y="24" width="6" height="6" fill="#0b3b60"/>
-              <rect x="46" y="24" width="16" height="6" fill="#0b3b60"/>
-
-              <rect x="12" y="38" width="6" height="6" fill="#0b3b60"/>
-              <rect x="24" y="38" width="18" height="6" fill="#0b3b60"/>
-              <rect x="48" y="38" width="8" height="8" fill="#0b3b60"/>
-              <rect x="62" y="38" width="6" height="6" fill="#0b3b60"/>
-              <rect x="74" y="38" width="14" height="6" fill="#0b3b60"/>
-
-              <rect x="36" y="48" width="18" height="6" fill="#0b3b60"/>
-              <rect x="60" y="48" width="12" height="12" fill="#0b3b60"/>
-              <rect x="78" y="48" width="10" height="6" fill="#0b3b60"/>
-
-              <rect x="12" y="58" width="6" height="6" fill="#0b3b60"/>
-              <rect x="24" y="58" width="6" height="6" fill="#0b3b60"/>
-              <rect x="36" y="58" width="12" height="6" fill="#0b3b60"/>
-              <rect x="78" y="58" width="10" height="12" fill="#0b3b60"/>
-
-              <rect x="36" y="68" width="8" height="8" fill="#0b3b60"/>
-              <rect x="48" y="68" width="8" height="8" fill="#0b3b60"/>
-              <rect x="60" y="68" width="12" height="6" fill="#0b3b60"/>
-
-              <rect x="36" y="80" width="18" height="8" fill="#0b3b60"/>
-              <rect x="60" y="80" width="8" height="8" fill="#0b3b60"/>
-              <rect x="74" y="76" width="14" height="12" fill="#0b3b60"/>
-            </svg>
+          <div style="text-align: right; font-size: 11px;">
+            Booking Date: ${fullBookingTimestamp}
           </div>
         </div>
 
-        <!-- PNR & Train High-Priority Bar -->
         <div class="pnr-strip">
-          <div class="pnr-col">
-            <span class="pnr-label">PNR Number:</span>
-            <span class="pnr-num">${formattedPNR}</span>
+          <div>
+            <span style="font-size: 11px; font-weight: 600; color: #64748b;">TRAVELIQ BOOKING REF:</span>
+            <span class="pnr-num">${bookingRef}</span>
           </div>
-          <div class="pnr-col">
-            <span class="pnr-label">Train No & Name:</span>
-            <span style="font-weight: 800; font-size: 14px; color: #fef08a;">${trainNo} / ${trainName}</span>
-          </div>
-          <div class="pnr-col">
-            <span class="status-badge-cnf">CONFIRMED (CNF)</span>
-          </div>
+          <div class="status-badge">${statusText}</div>
         </div>
 
-        <!-- Ticket Body Details -->
         <div class="ticket-body">
-
-          <!-- Route Visual Grid -->
-          <div class="route-grid">
-            <div class="route-station">
-              <span class="cell-label">Origin / Boarding Station</span>
-              <span class="route-code">${srcCode}</span>
-              <span class="route-name">${sourceStation}</span>
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-label">Origin / Departure</div>
+              <div class="info-val">${srcCode} — ${sourceStation}</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Departure: ${depTime}</div>
             </div>
-            <div class="route-arrow">➔</div>
-            <div class="route-station right">
-              <span class="cell-label">Destination / Reservation Upto</span>
-              <span class="route-code">${dstCode}</span>
-              <span class="route-name">${destStation}</span>
+            <div class="info-box">
+              <div class="info-label">Destination / Arrival</div>
+              <div class="info-val">${dstCode} — ${destStation}</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Arrival: ${arrTime}</div>
             </div>
           </div>
 
-          <!-- Trip & Reservation Matrix Table -->
-          <table class="irctc-table">
-            <tr>
-              <td style="width: 25%;">
-                <span class="cell-label">Quota</span>
-                <span class="cell-value">GENERAL (GN)</span>
-              </td>
-              <td style="width: 25%;">
-                <span class="cell-label">Class</span>
-                <span class="cell-value cell-highlight">${travelClass} - ${travelClass === '3A' ? 'AC 3 TIER' : travelClass === '2A' ? 'AC 2 TIER' : travelClass === '1A' ? 'AC FIRST CLASS' : travelClass === 'CC' ? 'AC CHAIR CAR' : travelClass === 'SL' ? 'SLEEPER CLASS' : 'SECOND SITTING'}</span>
-              </td>
-              <td style="width: 25%;">
-                <span class="cell-label">Booking Date & Time</span>
-                <span class="cell-value">${fullBookingTimestamp}</span>
-              </td>
-              <td style="width: 25%;">
-                <span class="cell-label">Distance / Adults / Children</span>
-                <span class="cell-value">1,384 KM / ${passengersList.length} A / 0 C</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class="cell-label">Scheduled Departure</span>
-                <span class="cell-value">${formattedBookingDate} • 16:30 HRS</span>
-              </td>
-              <td>
-                <span class="cell-label">Scheduled Arrival</span>
-                <span class="cell-value">${formattedBookingDate} • 08:35 HRS</span>
-              </td>
-              <td>
-                <span class="cell-label">Transaction ID</span>
-                <span class="cell-value" style="font-family: monospace; font-size: 11px;">${txnId}</span>
-              </td>
-              <td>
-                <span class="cell-label">Expected Platform</span>
-                <span class="cell-value" style="color: #0b3b60; font-weight: 800;">PF #3 (Main Island)</span>
-              </td>
-            </tr>
-          </table>
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-label">Service & Class</div>
+              <div class="info-val">${trainName} (#${trainNo}) — Class: ${travelClass}</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Journey Date: ${booking.journey_date || formattedBookingDate}</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Payment & Security</div>
+              <div class="info-val">Fare: ₹${totalFare.toFixed(2)} (${paymentMethod})</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Token: TIQ-SEC-${verificationToken}</div>
+            </div>
+          </div>
 
-          <!-- Passenger Details Section -->
-          <div class="section-header">Passenger Details (${passengersList.length} Traveler${passengersList.length > 1 ? 's' : ''})</div>
-          <table class="irctc-table passenger-table">
+          <div style="font-weight: 700; font-size: 13px; margin-bottom: 8px;">Passenger Details</div>
+          <table>
             <thead>
               <tr>
-                <th style="width: 5%; text-align: center;">#</th>
-                <th style="width: 32%;">Passenger Name</th>
-                <th style="width: 10%; text-align: center;">Age</th>
-                <th style="width: 13%; text-align: center;">Gender</th>
-                <th style="width: 20%;">Booking Status</th>
-                <th style="width: 20%;">Current Status</th>
+                <th style="width: 5%;">#</th>
+                <th style="width: 40%;">Passenger Name</th>
+                <th style="width: 15%;">Age</th>
+                <th style="width: 15%;">Gender</th>
+                <th style="width: 25%;">Status / Coach & Berth</th>
               </tr>
             </thead>
             <tbody>
-              ${passengersList.map((p, idx) => {
-                const safeName = escapeHtml(p.name || 'Aditya Upadhyay');
-                const safeAge = parseInt(p.age, 10) || 24;
-                const safeGender = escapeHtml(p.gender || 'Male');
-                const alloc = getCoachAndBerth(travelClass, idx, p.seat_preference || booking.seat_preference, p.berth_preference || booking.berth_preference);
-                const safeStatus = escapeHtml(alloc.statusText);
-                return `
+              ${passengersList.map((p, idx) => `
                 <tr>
-                  <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
-                  <td><strong style="color: #0f172a; text-transform: uppercase;">${safeName}</strong></td>
-                  <td style="text-align: center;">${safeAge} Yrs</td>
-                  <td style="text-align: center;">${safeGender}</td>
-                  <td class="status-cnf-cell">${safeStatus}</td>
-                  <td class="status-cnf-cell">${safeStatus}</td>
+                  <td>${idx + 1}</td>
+                  <td><strong>${escapeHtml(p.name)}</strong></td>
+                  <td>${p.age} Yrs</td>
+                  <td>${escapeHtml(p.gender || 'Male')}</td>
+                  <td>${isConfirmed ? 'Confirmed (Allocated on Chart Prep)' : statusText}</td>
                 </tr>
-                `;
-              }).join('')}
+              `).join('')}
             </tbody>
           </table>
 
-          <!-- Fare Breakdown and Security Stamp -->
-          <div class="fare-and-security">
-            
-            <!-- Fare Table -->
-            <div class="fare-box">
-              <div class="section-header" style="margin: 0; border-left: none; background: #0b3b60; color: #ffffff;">Fare Details (GST Included)</div>
-              <table class="fare-table">
-                <tr>
-                  <td>Ticket Base Fare</td>
-                  <td style="text-align: right; font-weight: 600;">₹${baseFare.toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td>TravelIQ / IRCTC Convenience Fee</td>
-                  <td style="text-align: right; font-weight: 600;">₹${irctcFee}</td>
-                </tr>
-                <tr>
-                  <td>Travel Insurance Premium (Optional)</td>
-                  <td style="text-align: right; font-weight: 600;">₹${insuranceFee}</td>
-                </tr>
-                <tr>
-                  <td>Payment Gateway / Agent Charges</td>
-                  <td style="text-align: right; font-weight: 600; color: #16a34a;">₹0.00 (Waived)</td>
-                </tr>
-                <tr class="total-row">
-                  <td><strong>Total Amount Paid</strong></td>
-                  <td style="text-align: right; font-size: 14px;"><strong>₹${totalFare.toFixed(2)}</strong></td>
-                </tr>
-                <tr>
-                  <td colspan="2" style="font-size: 9.5px; color: #475569; padding: 5px 8px; background: #fafafa;">
-                    <strong>Amount in Words:</strong> ${fareInWords}
-                  </td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Security & Verification -->
-            <div class="security-box">
-              <div class="stamp-box">
-                <span style="font-size: 22px;">🛡️</span>
-                <div class="stamp-text">
-                  <strong>DIGITALLY SIGNED & VERIFIED</strong><br>
-                  TravelIQ Rail Engine • Verified Sandbox Settlement
-                </div>
-              </div>
-
-              <div style="font-size: 10px; color: #475569; margin: 6px 0; line-height: 1.35;">
-                <strong>Payment Mode:</strong> ${paymentMethod}<br>
-                <strong>Security Token:</strong> SHA256-${pnrNumber.slice(0, 6)}TIQ<br>
-                <strong>IRCTC Agent ID:</strong> TIQ-RAIL-CORP-091
-              </div>
-
-              <div class="barcode-container">
-                <div class="barcode-bars">||||| ||| |||| || ||||| ||| || |||||</div>
-                <div class="barcode-num">*${pnrNumber}*</div>
-              </div>
-            </div>
-
+          <div style="font-size: 11px; color: #64748b; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <strong>Advisory:</strong> Passengers must carry a valid government-issued photo ID during journey. Fares and schedules are verified against authoritative timetable sources.
           </div>
-
-          <!-- Mandatory Passenger Guidelines (IRCTC Standard Instructions) -->
-          <div class="advisory-box">
-            <div class="advisory-title">⚠️ Important Passenger Information & Advisory</div>
-            <ol class="advisory-list">
-              <li>One of the passengers booked on this E-Ticket must carry any one of the original prescribed Identity Cards (Aadhaar Card, Passport, Voter ID, Driving Licence, Student ID, or Bank Passbook with photograph).</li>
-              <li>A physical printout is <strong>not mandatory</strong>. The Electronic Reservation Slip (ERS) displayed on your mobile device along with valid ID proof is valid for travel.</li>
-              <li>Confirmed tickets can be cancelled online through TravelIQ up to 4 hours prior to the scheduled departure or chart preparation.</li>
-              <li>Please verify the departure platform & real-time train status before arrival. Railway Enquiry: Dial <strong>139</strong>.</li>
-            </ol>
-          </div>
-
         </div>
 
-        <!-- Ticket Footer -->
         <div class="ticket-footer">
-          <div>
-            <strong>TravelIQ 24x7 Customer Support:</strong> support@traveliq.in | Toll-Free: 1800-872-8354
-          </div>
-          <div>
-            Generated on ${fullBookingTimestamp} • System Ver. 4.2
-          </div>
+          <div>TravelIQ Customer Support: support@traveliq.in</div>
+          <div>Ref: ${bookingRef} • Token: ${verificationToken}</div>
         </div>
-
       </div>
-
     </body>
     </html>
     `;
 
     res.setHeader('Content-Type', 'text/html');
-    res.send(html);
+    return res.send(html);
   } catch (error) {
     console.error('[Receipt PDF Generation Error]:', error);
     res.status(500).send('<h3>Error generating ticket invoice PDF</h3>');

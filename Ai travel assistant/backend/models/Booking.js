@@ -11,6 +11,12 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  booking_reference: {
+    type: DataTypes.STRING(64),
+    allowNull: false,
+    unique: true,
+    defaultValue: () => `TIQ-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
+  },
   trip_id: {
     type: DataTypes.INTEGER,
     allowNull: false
@@ -26,6 +32,22 @@ const Booking = sequelize.define('Booking', {
   booking_date: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  journey_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  transport_type: {
+    type: DataTypes.STRING(50),
+    defaultValue: 'Train'
+  },
+  idempotency_key: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
+  expires_at: {
+    type: DataTypes.DATE,
+    allowNull: true
   },
   source_station_code: {
     type: DataTypes.STRING,

@@ -1,4 +1,4 @@
-const { ChatbotKnowledge, ChatHistory, User } = require('../models');
+const { ChatbotKnowledge, ChatHistory, User, Train, TrainSchedule, TrainFare, Station } = require('../models');
 const { Op } = require('sequelize');
 const axios = require('axios');
 const { generateGroundedResponse } = require('../services/deterministicRoutingService');
@@ -113,15 +113,42 @@ const sendMessage = async (req, res) => {
                         transitEntities.destination,
                         transitEntities.isDefaultDate ? null : transitEntities.travelDate
                     );
-                    const hasVerifiedRoutes = grounded && grounded.transitData && (
-                        (grounded.transitData.direct_routes && grounded.transitData.direct_routes.length > 0) ||
-                        (grounded.transitData.connecting_routes && grounded.transitData.connecting_routes.length > 0)
-                    );
-                    if (hasVerifiedRoutes && grounded.response) {
+                    if (grounded && grounded.response) {
                         botReply = grounded.response;
                     }
                 } catch (groundErr) {
                     console.error('[Grounded Routing Error]:', groundErr.message);
+                }
+            }
+        }
+
+        // 0b. Zero Generative Lookup: Direct Train Number Inquiries (e.g., "12801", "train 12802")
+        if (!botReply) {
+            const trainMatch = message.match(/\b(1\d{4}|2\d{4})\b/);
+            if (trainMatch) {
+                const trainNo = trainMatch[1];
+                const tr = await Train.findOne({ where: { train_number: trainNo } });
+                if (tr) {
+                    const stops = await TrainSchedule.findAll({ 
+                        where: { train_number: trainNo }, 
+                        order: [['stop_sequence', 'ASC']] 
+                    });
+                    const fares = await TrainFare.findAll({ where: { train_number: trainNo } });
+                    const fareList = fares.length > 0 
+                        ? fares.map(f => `${f.class_code}: ₹${f.fare}`).join(', ') 
+                        : 'Standard telescopic fare applies';
+                    const runsDays = Array.isArray(tr.runs_on) ? tr.runs_on.join(', ') : (tr.runs_on || 'Daily');
+                    const haltSummary = stops.length > 0 
+                        ? `${stops[0].station_code} (${stops[0].departure_time || 'Source'}) ➔ ${stops[stops.length - 1].station_code} (${stops[stops.length - 1].arrival_time || 'Destination'}) via ${stops.length} scheduled halts`
+                        : 'Verified active timetable record';
+
+                    botReply = `🚆 **Train #${tr.train_number} — ${tr.train_name}**\n\n` +
+                        `• **Route**: ${haltSummary}\n` +
+                        `• **Operating Days**: ${runsDays} (${tr.frequency || 'Regular Service'})\n` +
+                        `• **Verified Fares**: ${fareList}\n\n` +
+                        `To book seats on this train, enter ${stops[0]?.station_code || 'origin'} and ${stops[stops.length - 1]?.station_code || 'destination'} in the TravelIQ Search tab!`;
+                } else {
+                    botReply = `Train #${trainNo} was not found in our verified Indian Railways timetable directory. Please check the train number or search on the TravelIQ Route Search page.`;
                 }
             }
         }
@@ -167,12 +194,14 @@ User Question: ${message}`;
             }
         }
 
-        // 2. Data Not in Fed Knowledge Base: Search on Web via Gemini!
+        // 2. Data Not in Fed Knowledge Base: Search on Web via Gemini with strict anti-hallucination guardrail!
         if (!botReply) {
             const webSearchPrompt = `You are TravelIQ AI, India's Smart Travel Concierge.
 The user is asking a travel question that is not in our internal database.
-Please answer their question informatively, accurately, and helpfully with practical travel insights, tips, or itinerary guidance.
-If the inquiry is about booking train tickets or checking live status, also remind them they can search and book directly on TravelIQ!
+CRITICAL APPLICATION SECURITY & ANTI-HALLUCINATION CONSTRAINTS:
+1. NEVER invent, guess, or hallucinate train numbers, railway schedules, train names, or ticket fares.
+2. If the user asks about specific train schedules, train numbers, or ticket prices that are not explicitly provided, state: "I do not have verified timetable records for this specific train or corridor. Please search on the TravelIQ Route Search page for verified IRCTC schedules."
+3. Answer informatively regarding general travel tips, tourist places, weather, food, packing, or booking steps.
 
 User Question: ${message}`;
             botReply = await callGemini(webSearchPrompt, '', true);

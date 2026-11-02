@@ -185,6 +185,10 @@ def find_best_route(source, destination, preference='time'):
         ('NDLS', 'BSB'): {'mode': 'Vande Bharat Express', 'time': 8.0, 'cost': 1250},
         ('HWH', 'ASN'):  {'mode': 'Express Train', 'time': 2.5, 'cost': 220},
         ('CSMT', 'PUNE'): {'mode': 'Intercity Express', 'time': 3.5, 'cost': 180},
+        ('NDLS', 'TATA'): {'mode': 'Purushottam Express (12802)', 'time': 21.2, 'cost': 1030},
+        ('TATA', 'NDLS'): {'mode': 'Purushottam Express (12801)', 'time': 21.5, 'cost': 980},
+        ('NDLS', 'BCT'):  {'mode': 'Tejas Rajdhani Express (12952)', 'time': 15.5, 'cost': 2156},
+        ('BCT', 'NDLS'):  {'mode': 'Tejas Rajdhani Express (12951)', 'time': 15.5, 'cost': 2156},
         ('BOM', 'DEL'):  {'mode': 'Direct Flight', 'time': 2.2, 'cost': 4200},
         ('DEL', 'BOM'):  {'mode': 'Direct Flight', 'time': 2.2, 'cost': 4200}
     }

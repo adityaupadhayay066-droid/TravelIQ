@@ -652,6 +652,18 @@ const VERIFIED_FLIGHT_SCHEDULES = [
     fare_inr: 3890
   },
   {
+    flight_number: '6E-442',
+    airline: 'IndiGo',
+    origin_iata: 'LKO',
+    dest_iata: 'GOI',
+    origin_city: 'Lucknow',
+    dest_city: 'Goa',
+    dep_time: '11:15:00',
+    arr_time: '13:45:00',
+    day_offset: 0,
+    fare_inr: 5400
+  },
+  {
     flight_number: '6E-205',
     airline: 'IndiGo',
     origin_iata: 'DEL',
@@ -1030,7 +1042,8 @@ class MultiModalRoutingEngine {
               arrival_time_utc: leg1ArrIso,
               departure_time_clock: leg1.dep_time,
               arrival_time_clock: leg1.arr_time,
-              day_offset: leg1ArrDayOffset
+              day_offset: leg1ArrDayOffset,
+              fare: leg1.fare || null
             });
 
             if (transferInfo.isClusterTransfer && transferInfo.transferLeg) {
@@ -1047,7 +1060,8 @@ class MultiModalRoutingEngine {
                 cost_inr: transferInfo.transferLeg.cost_inr,
                 departure_time_clock: leg1.arr_time,
                 arrival_time_clock: leg2.dep_time,
-                is_cluster_transfer: true
+                is_cluster_transfer: true,
+                fare: transferInfo.transferLeg.cost_inr || null
               });
             }
 
@@ -1062,8 +1076,12 @@ class MultiModalRoutingEngine {
               arrival_time_utc: leg2ArrIso,
               departure_time_clock: leg2.dep_time,
               arrival_time_clock: leg2.arr_time,
-              day_offset: leg2ArrOffset
+              day_offset: leg2ArrOffset,
+              fare: leg2.fare || null
             });
+
+            const transferCost = (transferInfo.isClusterTransfer && transferInfo.transferLeg?.cost_inr) || 0;
+            const chainFare = (leg1.fare || leg2.fare) ? ((leg1.fare || 0) + (leg2.fare || 0) + transferCost) : null;
 
             const routeId = `CONN_${hub.code}_${leg1.train_number || leg1.number}_${leg2.train_number || leg2.number}`;
             validConnectingChains.push({
@@ -1087,6 +1105,7 @@ class MultiModalRoutingEngine {
               duration_minutes: totalDurationMinutes,
               origin_station: origClean,
               destination_station: destClean,
+              fare: chainFare,
               legs
             });
           }
@@ -1129,6 +1148,7 @@ class MultiModalRoutingEngine {
       if (validateDirectStopSequence(train.stops, fromClean, toClean)) {
         const origStop = train.stops.find(s => s.station_code === fromClean);
         const destStop = train.stops.find(s => s.station_code === toClean);
+        const trainDefaultFare = train.default_fare || train.fare_inr || (train.train_name && (train.train_name.includes('Vande') || train.train_name.includes('Shatabdi')) ? 1250 : (train.classes && train.classes.includes('2S') ? 160 : 450));
         results.push({
           mode: 'Train',
           train_number: train.train_number,
@@ -1137,7 +1157,8 @@ class MultiModalRoutingEngine {
           arr_time: destStop.arr,
           dep_day: origStop.day,
           arr_day: destStop.day,
-          runs_on: train.runs_on
+          runs_on: train.runs_on,
+          fare: trainDefaultFare
         });
       }
     }
@@ -1196,6 +1217,7 @@ class MultiModalRoutingEngine {
           const busArrIso = buildIsoUtcTimestamp(safeDate, bLeg.arr_time, leg2DepOffset);
           const durationMins = Math.round((new Date(busArrIso).getTime() - new Date(leg1DepIso).getTime()) / (60 * 1000));
 
+          const railBusFare = (rLeg.fare || 450) + (bLeg.fare_inr || 350);
           fallbackRoutes.push({
             id: `FALLBACK_RAIL_BUS_${hub.code}_${rLeg.train_number}_${bLeg.bus_number}`,
             type: 'MultiModal_Rail_Bus',
@@ -1210,6 +1232,7 @@ class MultiModalRoutingEngine {
             departure_time_utc: leg1DepIso,
             arrival_time_utc: busArrIso,
             duration: `${Math.floor(durationMins / 60)}h ${durationMins % 60}m`,
+            fare: railBusFare,
             legs: [
               {
                 leg_number: 1,
@@ -1219,7 +1242,8 @@ class MultiModalRoutingEngine {
                 from_station: originCode,
                 to_station: hub.code,
                 departure_time_utc: leg1DepIso,
-                arrival_time_utc: leg1ArrIso
+                arrival_time_utc: leg1ArrIso,
+                fare: rLeg.fare || 450
               },
               {
                 leg_number: 2,
@@ -1229,7 +1253,8 @@ class MultiModalRoutingEngine {
                 from_station: `${hub.code} ISBT`,
                 to_station: destCode,
                 departure_time_utc: leg2DepIso,
-                arrival_time_utc: busArrIso
+                arrival_time_utc: busArrIso,
+                fare: bLeg.fare_inr || 350
               }
             ]
           });
@@ -1277,10 +1302,9 @@ class MultiModalRoutingEngine {
       });
     }
 
-    // Look up authentic flight schedule for this pair or via transit hub
+    // Look up authentic flight schedule connecting the exact airport pair
     const verifiedFlight = VERIFIED_FLIGHT_SCHEDULES.find(
-      f => (f.origin_iata === srcAirport.iata && f.dest_iata === dstAirport.iata) ||
-           (f.dest_iata === dstAirport.iata)
+      f => f.origin_iata === srcAirport.iata && f.dest_iata === dstAirport.iata
     );
 
     if (!verifiedFlight) {

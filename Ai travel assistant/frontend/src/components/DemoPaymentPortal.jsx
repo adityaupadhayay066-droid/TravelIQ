@@ -517,8 +517,8 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
               {confirmedBooking && (
                 <div className="bg-[var(--color-surface)] dark:bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-[var(--color-border)] p-4 rounded-xl w-full max-w-md text-left mb-6 space-y-2">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">PNR Reference:</span>
-                    <span className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold font-mono">49204{confirmedBooking.id}49</span>
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">TravelIQ Reference:</span>
+                    <span className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold font-mono">{confirmedBooking.booking_reference || confirmedBooking.bookingReference || `TIQ-${confirmedBooking.id}`}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Booking status:</span>

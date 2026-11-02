@@ -332,7 +332,7 @@ async function triggerBookingWebhook(booking, user) {
     callback_url: callbackUrl,
     booking: {
       id: booking.id,
-      booking_reference: `#TK-${booking.id}`,
+      booking_reference: booking.booking_reference || `TIQ-BR-${booking.id}`,
       train_number: booking.train_number || '12301',
       source_station_code: booking.source_station_code,
       destination_station_code: booking.destination_station_code,

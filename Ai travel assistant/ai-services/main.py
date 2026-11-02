@@ -767,10 +767,12 @@ def generate_expert_traveliq_response(message: str) -> dict:
 # ─── Grounded Routing Engine (Zero Generative Routing) ───
 def is_transit_query(message: str) -> bool:
     clean = message.lower().strip()
-    keywords = ["train", "trains", "route", "routes", "travel", "ticket", "transit", "journey", "how to reach", "go to"]
+    keywords = ["train", "trains", "route", "routes", "travel", "ticket", "transit", "journey", "how to reach", "go to", "fare", "price", "schedule", "timing"]
     has_keyword = any(k in clean for k in keywords)
-    has_preposition = bool(re.search(r'\b(from|between|to)\b', clean))
-    return has_keyword and has_preposition
+    station_names = ["delhi", "ndls", "tata", "tatanagar", "ballia", "bui", "patna", "pnbe", "varanasi", "bsb", "howrah", "hwh", "mumbai", "csmt", "cstm", "bct", "pune", "lucknow", "kanpur", "goa"]
+    has_station = any(s in clean for s in station_names)
+    has_preposition = bool(re.search(r'\b(from|between|to|for|via)\b', clean))
+    return (has_keyword and (has_preposition or has_station)) or (has_station and has_preposition)
 
 def extract_transit_stations(message: str):
     clean = message.lower().strip()
@@ -790,6 +792,18 @@ def extract_transit_stations(message: str):
         orig_words = [w for w in origin.split() if w not in stop_words]
         dest_words = [w for w in dest.split() if w not in stop_words]
         return " ".join(orig_words), " ".join(dest_words)
+
+    # Pattern 4: Fallback search for any 2 stations in the text in order of appearance
+    station_names = ["delhi", "ndls", "tata", "tatanagar", "ballia", "bui", "patna", "pnbe", "varanasi", "bsb", "howrah", "hwh", "mumbai", "csmt", "cstm", "bct", "pune", "lucknow", "kanpur", "goa"]
+    found_stns = []
+    for s in station_names:
+        pos = clean.find(s)
+        if pos != -1:
+            found_stns.append((pos, s))
+    found_stns.sort(key=lambda x: x[0])
+    if len(found_stns) >= 2:
+        return found_stns[0][1], found_stns[1][1]
+
     return None, None
 
 def generate_grounded_routing_chat(message: str):

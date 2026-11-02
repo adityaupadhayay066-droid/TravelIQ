@@ -1,8 +1,12 @@
-const { User, Trip, Booking, Analytics, UserActivityLog, TrainFare, Session, RefreshToken, Station, Transaction, sequelize } = require('../models');
+const crypto = require('crypto');
+const { User, Trip, Booking, Analytics, UserActivityLog, Train, TrainSchedule, TrainFare, Session, RefreshToken, Station, Transaction, IdempotencyKey, sequelize } = require('../models');
 const { Op } = require('sequelize');
+const { generateBookingReference, transitionBookingState, BOOKING_STATUSES, PAYMENT_STATUSES, expirePendingBookings } = require('../services/bookingLifecycleService');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
 const { calculateRailwayFare, estimateRailDistance } = require('../utils/railwayFareCalculator');
+const { trainRunsOnDate } = require('../services/routeValidationEngine');
+const { resolveStation } = require('../services/stationResolver');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
@@ -118,7 +122,6 @@ const removeAvatar = async (req, res) => {
 };
 
 const axios = require('axios');
-const crypto = require('crypto');
 
 async function checkPwnedPassword(password) {
     const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
@@ -352,20 +355,185 @@ const createBooking = async (req, res) => {
     passengers = [],
     seat_preference = 'No Preference',
     berth_preference = 'No Preference',
-    adult_count = 1,
-    child_count = 0,
-    infant_count = 0,
-    senior_count = 0,
-    total_passengers = 1
+    adult_count,
+    child_count,
+    infant_count,
+    senior_count,
+    total_passengers
   } = req.body;
 
   try {
-    const passengerCount = Array.isArray(passengers) && passengers.length > 0
-      ? passengers.length
-      : Math.max(1, parseInt(total_passengers) || 1);
+    // 0. Transport type validation
+    const rawTransport = req.body.transport_type || req.body.travel_mode || 'Train';
+    const transportType = String(rawTransport).trim();
+    if (transportType.toLowerCase() !== 'train') {
+      return res.status(400).json({
+        message: `Direct ticketing is currently supported for Trains only. Direct booking for '${transportType}' is unavailable.`
+      });
+    }
 
-    if (passengerCount < 1 || passengerCount > 10) {
+    // 0b. Journey date validation
+    const rawDate = req.body.journey_date !== undefined ? req.body.journey_date : (req.body.departure_date !== undefined ? req.body.departure_date : booking_date);
+    let journeyDate = null;
+    if (rawDate !== undefined && rawDate !== null && rawDate !== '') {
+      const dateStr = String(rawDate).slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return res.status(400).json({ message: 'Invalid journey_date format. Please use YYYY-MM-DD.' });
+      }
+      const parsedDate = new Date(dateStr + 'T00:00:00Z');
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ message: 'Invalid journey_date format.' });
+      }
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (dateStr < todayStr) {
+        return res.status(400).json({ message: 'Journey date cannot be in the past.' });
+      }
+      const maxDateStr = new Date(Date.now() + 120 * 86400000).toISOString().slice(0, 10);
+      if (dateStr > maxDateStr) {
+        return res.status(400).json({ message: 'Journey date cannot exceed the 120 days advance booking window (120-day limit).' });
+      }
+      journeyDate = dateStr;
+    } else if (rawDate === '') {
+      return res.status(400).json({ message: 'journey_date cannot be empty.' });
+    } else {
+      journeyDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    }
+
+    // 0c. Strict Passenger validation & Count Derivation
+    if (Array.isArray(req.body.passengers) && req.body.passengers.length === 0) {
+      return res.status(400).json({ message: 'Booking must contain at least 1 passenger.' });
+    }
+
+    let rawPax = passengers;
+    if (!rawPax || (Array.isArray(rawPax) && rawPax.length === 0)) {
+      const pCount = Math.max(1, parseInt(total_passengers) || 1);
+      rawPax = Array.from({ length: pCount }, (_, i) => ({
+        name: req.user?.name || `Traveler ${i + 1}`,
+        age: 30,
+        gender: 'Male'
+      }));
+    }
+
+    if (!Array.isArray(rawPax)) {
+      return res.status(400).json({ message: 'Passenger list must be an array.' });
+    }
+
+    if (rawPax.length < 1 || rawPax.length > 10) {
       return res.status(400).json({ message: 'Invalid passenger count: between 1 and 10 travelers permitted per booking.' });
+    }
+
+    const validatedPassengers = [];
+    for (let i = 0; i < rawPax.length; i++) {
+      const p = rawPax[i];
+      if (typeof p !== 'object' || p === null || Array.isArray(p)) {
+        return res.status(400).json({ message: `Passenger #${i + 1} must be a valid passenger object.` });
+      }
+      if (typeof p.name !== 'string') {
+        return res.status(400).json({ message: `Passenger #${i + 1} name must be a string.` });
+      }
+      const trimmedName = p.name.trim();
+      if (trimmedName.length === 0) {
+        return res.status(400).json({ message: `Passenger must have a valid non-empty name.` });
+      }
+      if (trimmedName.length > 100) {
+        return res.status(400).json({ message: `Passenger #${i + 1} name cannot exceed 100 characters.` });
+      }
+
+      let ageNum = 30;
+      if (p.age !== undefined && p.age !== null && p.age !== '') {
+        ageNum = Number(p.age);
+        if (!Number.isInteger(ageNum) || isNaN(ageNum)) {
+          return res.status(400).json({ message: `Passenger #${i + 1} age must be an integer.` });
+        }
+        if (ageNum < 0 || ageNum > 125) {
+          return res.status(400).json({ message: `Passenger age must be a valid age between 0 and 125.` });
+        }
+      }
+
+      let gender = 'Male';
+      if (p.gender !== undefined) {
+        if (typeof p.gender !== 'string') {
+          return res.status(400).json({ message: `Passenger #${i + 1} gender must be a string.` });
+        }
+        const gTrim = p.gender.trim();
+        const allowedGenders = ['Male', 'Female', 'Other', 'M', 'F', 'O'];
+        if (!allowedGenders.includes(gTrim)) {
+          return res.status(400).json({ message: `Passenger #${i + 1} gender must be one of: ${allowedGenders.join(', ')}.` });
+        }
+        gender = gTrim;
+      }
+
+      validatedPassengers.push({
+        name: trimmedName,
+        age: ageNum,
+        gender,
+        seat_preference: p.seat_preference || seat_preference || 'No Preference',
+        berth_preference: p.berth_preference || berth_preference || 'No Preference'
+      });
+    }
+
+    // Derive passenger counts
+    let derivedAdults = 0, derivedSeniors = 0, derivedChildren = 0, derivedInfants = 0;
+    for (const p of validatedPassengers) {
+      if (p.age >= 60) derivedSeniors++;
+      else if (p.age >= 12) derivedAdults++;
+      else if (p.age >= 5) derivedChildren++;
+      else derivedInfants++;
+    }
+
+    if (adult_count !== undefined) {
+      const clientAdults = Number(adult_count);
+      if (clientAdults !== (derivedAdults + derivedSeniors) && clientAdults !== derivedAdults) {
+        return res.status(400).json({ message: 'Client-supplied adult count does not match validated passenger list.' });
+      }
+    }
+    if (child_count !== undefined && Number(child_count) !== derivedChildren) {
+      return res.status(400).json({ message: 'Client-supplied child count does not match validated passenger list.' });
+    }
+    if (infant_count !== undefined && Number(infant_count) !== derivedInfants) {
+      return res.status(400).json({ message: 'Client-supplied infant count does not match validated passenger list.' });
+    }
+
+    if (total_passengers !== undefined && total_passengers !== null && Number(total_passengers) !== validatedPassengers.length) {
+      return res.status(400).json({ message: 'Passenger count mismatch between total_passengers and passenger list.' });
+    }
+
+    const passengerCount = validatedPassengers.length;
+
+    // 0d. Idempotency Key Handling
+    const headers = req.headers || {};
+    const idempotencyKey = headers['idempotency-key'] || headers['x-idempotency-key'] || req.body?.idempotency_key;
+    let requestHash = null;
+
+    if (idempotencyKey) {
+      const payloadToHash = {
+        user_id: req.user.id,
+        source: String(source_station_code || '').trim().toUpperCase(),
+        destination: String(destination_station_code || '').trim().toUpperCase(),
+        train: String(train_number || '').trim(),
+        class: String(travel_class || '').trim().toUpperCase(),
+        journey_date: journeyDate,
+        passengers: validatedPassengers.map(p => ({ name: p.name.toLowerCase(), age: p.age }))
+      };
+      requestHash = crypto.createHash('sha256').update(JSON.stringify(payloadToHash)).digest('hex');
+
+      const existingRecord = await IdempotencyKey.findOne({
+        where: {
+          user_id: req.user.id,
+          operation: 'CREATE_BOOKING',
+          idempotency_key: String(idempotencyKey)
+        }
+      });
+
+      if (existingRecord) {
+        if (existingRecord.request_hash === requestHash) {
+          return res.status(existingRecord.response_status).json(existingRecord.response_body);
+        } else {
+          return res.status(409).json({
+            message: 'Idempotency conflict: The provided idempotency key was previously used with a different request payload.'
+          });
+        }
+      }
     }
 
     // 1. Station code validation & normalization
@@ -401,10 +569,69 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 4. Train number validation
+    // 4. Train number and route validation
     const normalizedTrain = String(train_number || '').trim();
     if (!normalizedTrain) {
       return res.status(400).json({ message: 'Train number is required.' });
+    }
+
+    const isConnectingTrain = normalizedTrain.includes('/');
+    let targetTrainObj = null;
+
+    if (!isConnectingTrain) {
+      targetTrainObj = await Train.findOne({ where: { train_number: normalizedTrain } });
+      
+      // If train is not recognized in official directory
+      if (!targetTrainObj) {
+        if (normalizedTrain !== '99999') {
+          return res.status(400).json({ 
+            message: `Train #${normalizedTrain} is not recognized or does not exist in the official train directory.` 
+          });
+        }
+      } else {
+        // Resolve station clusters to verify train serves both origin and destination
+        const sourceResolved = await resolveStation(sourceCode);
+        const destResolved = await resolveStation(destCode);
+        const srcCodes = sourceResolved?.stationCodes || [sourceCode];
+        const dstCodes = destResolved?.stationCodes || [destCode];
+
+        const [sourceStop, destStop] = await Promise.all([
+          TrainSchedule.findOne({ where: { train_number: normalizedTrain, station_code: srcCodes } }),
+          TrainSchedule.findOne({ where: { train_number: normalizedTrain, station_code: dstCodes } })
+        ]);
+
+        if (!sourceStop) {
+          return res.status(400).json({ 
+            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not serve origin station ${sourceCode}.` 
+          });
+        }
+        if (!destStop) {
+          return res.status(400).json({ 
+            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not serve destination station ${destCode}.` 
+          });
+        }
+
+        // Date verification: check operating days when date is specified
+        if (booking_date && !trainRunsOnDate(targetTrainObj, booking_date)) {
+          const runsOnStr = Array.isArray(targetTrainObj.runs_on) 
+            ? targetTrainObj.runs_on.join(', ') 
+            : (targetTrainObj.runs_on || 'Specific Days');
+          return res.status(400).json({ 
+            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not operate on ${booking_date}. Running days: ${runsOnStr}.` 
+          });
+        }
+      }
+    } else {
+      // Connecting train validation: verify each sub-train exists
+      const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
+      for (const legTrainNo of legs) {
+        const exists = await Train.findOne({ where: { train_number: legTrainNo } });
+        if (!exists) {
+          return res.status(400).json({
+            message: `Connecting train leg #${legTrainNo} does not exist in the official directory.`
+          });
+        }
+      }
     }
 
     // 5. Authoritatively calculate ticket fare from database
@@ -451,81 +678,115 @@ const createBooking = async (req, res) => {
       farePerPassenger = dynamicFare.farePerPassenger;
     }
 
-    const authoritativeFare = farePerPassenger * passengerCount;
+    // Configurable Age-based fare: Infants (<5) travel free; others pay authoritative fare
+    const payablePassengers = Math.max(1, derivedAdults + derivedSeniors + derivedChildren);
+    const authoritativeFare = farePerPassenger * payablePassengers;
+
     if (isNaN(authoritativeFare) || authoritativeFare <= 0) {
       return res.status(400).json({ message: 'Invalid calculated ticket fare.' });
     }
 
     // 6. Atomic database creation within transaction boundaries
-    const { newTrip, booking } = await sequelize.transaction(async (t) => {
+    const result = await sequelize.transaction(async (t) => {
       const trip = await Trip.create({
         user_id: req.user.id,
         source: sourceCode,
         destination: destCode,
-        departure_date: booking_date || new Date(),
+        departure_date: journeyDate,
         travel_mode: 'Train',
         predicted_price: authoritativeFare,
         predicted_time: 12
       }, { transaction: t });
 
-      const newBooking = await Booking.create({
-        user_id: req.user.id,
-        trip_id: trip.id,
-        source_station_code: sourceCode,
-        destination_station_code: destCode,
-        train_number: normalizedTrain,
-        travel_class: normalizedClass,
-        ticket_fare: authoritativeFare,
-        booking_date: booking_date || new Date(),
-        passengers,
-        seat_preference,
-        berth_preference,
-        adult_count: parseInt(adult_count) || passengerCount,
-        child_count: parseInt(child_count) || 0,
-        infant_count: parseInt(infant_count) || 0,
-        senior_count: parseInt(senior_count) || 0,
-        total_passengers: passengerCount,
-        booking_status: 'Pending',
-        payment_status: 'Unpaid'
-      }, { transaction: t });
+      let createdBooking = null;
+      let bookingRef = null;
 
-      return { newTrip: trip, booking: newBooking };
+      // Safely retry on unique reference collision
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          bookingRef = generateBookingReference();
+          createdBooking = await Booking.create({
+            user_id: req.user.id,
+            booking_reference: bookingRef,
+            trip_id: trip.id,
+            source_station_code: sourceCode,
+            destination_station_code: destCode,
+            train_number: normalizedTrain,
+            travel_class: normalizedClass,
+            ticket_fare: authoritativeFare,
+            journey_date: journeyDate,
+            transport_type: 'Train',
+            idempotency_key: idempotencyKey || null,
+            expires_at: new Date(Date.now() + 15 * 60 * 1000), // 15-minute pending hold
+            booking_date: new Date(),
+            passengers: validatedPassengers,
+            seat_preference,
+            berth_preference,
+            adult_count: derivedAdults + derivedSeniors,
+            child_count: derivedChildren,
+            infant_count: derivedInfants,
+            senior_count: derivedSeniors,
+            total_passengers: passengerCount,
+            booking_status: 'Pending',
+            payment_status: 'Unpaid'
+          }, { transaction: t });
+          break;
+        } catch (insertErr) {
+          if (insertErr.name === 'SequelizeUniqueConstraintError' &&
+              insertErr.errors?.some(e => e.path === 'booking_reference')) {
+            continue;
+          }
+          throw insertErr;
+        }
+      }
+
+      if (!createdBooking) {
+        throw new Error('Failed to generate a unique booking reference.');
+      }
+
+      const responseData = {
+        message: 'Booking created successfully.',
+        booking: createdBooking,
+        booking_reference: createdBooking.booking_reference
+      };
+
+      if (idempotencyKey && requestHash) {
+        try {
+          await IdempotencyKey.create({
+            idempotency_key: String(idempotencyKey),
+            user_id: req.user.id,
+            operation: 'CREATE_BOOKING',
+            request_hash: requestHash,
+            response_status: 201,
+            response_body: responseData
+          }, { transaction: t });
+        } catch (idemErr) {
+          if (idemErr.name === 'SequelizeUniqueConstraintError') {
+            throw new Error('IDEMPOTENCY_CONCURRENCY_CONFLICT');
+          }
+          throw idemErr;
+        }
+      }
+
+      return responseData;
     });
 
-    // Update user analytics safely
-    if (Analytics) {
-      try {
-        let userAnalytics = await Analytics.findOne({ where: { user_id: req.user.id } });
-        if (!userAnalytics) {
-          userAnalytics = await Analytics.create({
-            user_id: req.user.id,
-            route_accuracy: null,
-            ai_prediction_score: null,
-            total_saved_money: 0,
-            total_saved_time: 0
-          });
-        }
-        userAnalytics.total_saved_money = parseFloat(userAnalytics.total_saved_money || 0) + Math.round(authoritativeFare * 0.12);
-        userAnalytics.total_saved_time = parseFloat(userAnalytics.total_saved_time || 0) + 1.5;
-        await userAnalytics.save();
-      } catch (err) {
-        console.error('Failed to sync analytics on booking:', err.message);
+    // CRITICAL: No confirmation emails, n8n webhook, or analytics credits occur here.
+    // Side effects only occur after server verifies successful payment.
+    res.status(201).json(result);
+  } catch (error) {
+    if (error.message === 'IDEMPOTENCY_CONCURRENCY_CONFLICT') {
+      const existing = await IdempotencyKey.findOne({
+        where: { user_id: req.user.id, operation: 'CREATE_BOOKING', idempotency_key: String((req.headers && req.headers['idempotency-key']) || req.body?.idempotency_key) }
+      });
+      if (existing) {
+        return res.status(existing.response_status).json(existing.response_body);
       }
     }
-
-    // Dispatch notifications asynchronously
-    sendBookingConfirmation({ user: req.user, booking }).catch(err => {
-      console.error('[ProfileController] Booking confirmation notification error:', err.message);
-    });
-
-    n8nService.triggerBookingWebhook(booking, req.user).catch(err => {
-      console.error('[ProfileController] n8n booking webhook error:', err.message);
-    });
-
-    res.status(201).json({ message: 'Booking created successfully.', booking });
-  } catch (error) {
     console.error('Create booking error:', error.message);
-    res.status(500).json({ message: 'Error processing booking. Please try again later.' });
+    const status = error.statusCode || 500;
+    const msg = error.statusCode ? error.message : 'Error processing booking. Please try again later.';
+    res.status(status).json({ message: msg });
   }
 };
 
@@ -552,11 +813,15 @@ const cancelBooking = async (req, res) => {
     const wasPaid = booking.payment_status === 'Paid';
 
     await sequelize.transaction(async (t) => {
-      booking.booking_status = 'Cancelled';
-
       if (wasPaid) {
-        // Centralized state transition for paid bookings: Initiate refund
-        booking.payment_status = 'Refund Pending';
+        await transitionBookingState({
+          bookingId: booking.id,
+          targetBookingStatus: 'Cancelled',
+          targetPaymentStatus: 'Refund Pending',
+          actor: { id: req.user.id, role: 'USER' },
+          reason: 'User cancelled paid booking',
+          existingTransaction: t
+        });
 
         const txn = await Transaction.findOne({
           where: { booking_id: booking.id, status: 'Success' },
@@ -569,17 +834,20 @@ const cancelBooking = async (req, res) => {
           await txn.save({ transaction: t });
         }
       } else {
-        // Unpaid booking: never label as Refunded!
-        booking.payment_status = 'Unpaid';
+        await transitionBookingState({
+          bookingId: booking.id,
+          targetBookingStatus: 'Cancelled',
+          targetPaymentStatus: 'Unpaid',
+          actor: { id: req.user.id, role: 'USER' },
+          reason: 'User cancelled unpaid booking',
+          existingTransaction: t
+        });
 
-        // Cancel any pending transactions
         await Transaction.update(
           { status: 'Cancelled' },
           { where: { booking_id: booking.id, status: 'Pending' }, transaction: t }
         );
       }
-
-      await booking.save({ transaction: t });
     });
 
     // Trigger dynamic analytics sync for negative revenue / subtraction
@@ -604,7 +872,7 @@ const cancelBooking = async (req, res) => {
     });
   } catch (error) {
     console.error('Cancel booking error:', error.message);
-    res.status(500).json({ message: 'Error cancelling booking' });
+    res.status(error.statusCode || 500).json({ message: error.message || 'Error cancelling booking' });
   }
 };
 

@@ -20,5 +20,9 @@ router.post('/transaction', protect, paymentLimiter, createTransaction);
 router.post('/refund', protect, paymentLimiter, processRefund);
 router.get('/status/:bookingId', protect, paymentLimiter, getPaymentStatus);
 router.get('/ticket/:bookingId/pdf', protect, paymentLimiter, getReceiptPDF);
+router.get('/ticket/:bookingId/html', protect, paymentLimiter, (req, res, next) => {
+  req.query.format = 'html';
+  getReceiptPDF(req, res, next);
+});
 
 module.exports = router;
