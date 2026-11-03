@@ -56,7 +56,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col justify-center items-center relative px-4 font-[Inter]">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] flex flex-col justify-center items-center relative px-4 font-[Inter]">
       <AnimatePresence mode="wait">
         {!twoFactorRequired ? (
           /* STANDARD ADMIN SIGN IN */
@@ -66,14 +66,14 @@ export default function AdminLogin() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
+            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
           >
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center p-3 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] mb-4">
-                <ShieldAlert className="w-8 h-8 text-[#173F3A] dark:text-[#EEF2ED]" />
+              <div className="inline-flex items-center justify-center p-3 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] mb-4">
+                <ShieldAlert className="w-8 h-8 text-[#244C66] dark:text-[#F0F4F7]" />
               </div>
               
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 font-[Manrope]">
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-[Manrope]">
                 TravelIQ Command Center
               </h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Authorized administrative personnel only</p>
@@ -90,7 +90,7 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Admin Email"
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3.5 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-colors font-medium text-sm"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3.5 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-colors font-medium text-sm"
                   />
                 </div>
 
@@ -103,14 +103,14 @@ export default function AdminLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Access Password"
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3.5 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-colors font-medium text-sm"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3.5 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-colors font-medium text-sm"
                   />
                 </div>
               </div>
 
               {/* Security notice */}
-              <div className="bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 flex items-start gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0 mt-0.5" />
+              <div className="bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 flex items-start gap-2.5">
+                <ShieldAlert className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0 mt-0.5" />
                 <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] leading-relaxed font-medium">
                   Direct access mode enabled. All administrative actions are securely logged and monitored.
                 </p>
@@ -135,7 +135,7 @@ export default function AdminLogin() {
               </button>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-[#E3DED2] dark:border-[#2A403A] text-center space-y-3">
+            <div className="mt-8 pt-6 border-t border-[#E3E7EA] dark:border-[#293644] text-center space-y-3">
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">
                 Need an administrator account?{' '}
                 <Link to="/admin/signup" className="text-[#D96C4F] hover:text-[#C75D43] transition-colors font-semibold">
@@ -143,7 +143,7 @@ export default function AdminLogin() {
                 </Link>
               </p>
               <div>
-                <Link to="/login" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-colors text-xs font-semibold inline-flex items-center gap-1.5 group">
+                <Link to="/login" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-colors text-xs font-semibold inline-flex items-center gap-1.5 group">
                   Back to User Portal <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
@@ -157,15 +157,15 @@ export default function AdminLogin() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
+            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
           >
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center p-3.5 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg mb-4 border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED]">
+              <div className="inline-flex items-center justify-center p-3.5 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg mb-4 border border-[#E3E7EA] dark:border-[#293644] text-[#244C66] dark:text-[#F0F4F7]">
                 <KeyRound className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 font-[Manrope]">Admin Security OTP</h2>
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-[Manrope]">Admin Security OTP</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed px-4">
-                Please enter the 6-digit administrative verification code sent to: <span className="text-[#173F3A] dark:text-[#EEF2ED] font-semibold">{twoFactorData.email}</span>
+                Please enter the 6-digit administrative verification code sent to: <span className="text-[#244C66] dark:text-[#F0F4F7] font-semibold">{twoFactorData.email}</span>
               </p>
             </div>
 
@@ -181,7 +181,7 @@ export default function AdminLogin() {
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
                   placeholder="000000"
-                  className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3.5 text-center text-xl font-bold font-mono text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] tracking-[0.25em] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-colors"
+                  className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3.5 text-center text-xl font-bold font-mono text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] tracking-[0.25em] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-colors"
                 />
               </div>
 
@@ -207,7 +207,7 @@ export default function AdminLogin() {
                     setTwoFactorRequired(false);
                     setOtpCode('');
                   }}
-                  className="w-full text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] text-xs font-semibold py-2 transition-colors block text-center"
+                  className="w-full text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] text-xs font-semibold py-2 transition-colors block text-center"
                 >
                   Cancel and Sign In again
                 </button>

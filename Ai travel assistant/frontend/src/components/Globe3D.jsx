@@ -142,7 +142,7 @@ const LatLonRings = () => {
   return (
     <group>
       {lines.map((pts, i) => (
-        <Line key={i} points={pts} color="#E3DED2" lineWidth={1.2} opacity={0.22} transparent />
+        <Line key={i} points={pts} color="#E3E7EA" lineWidth={1.2} opacity={0.22} transparent />
       ))}
     </group>
   );
@@ -217,7 +217,7 @@ const OrbitRings = () => {
       <group ref={ringRef1} rotation={[Math.PI / 3, Math.PI / 6, 0]}>
         <mesh>
           <ringGeometry args={[GLOBE_RADIUS + 0.9, GLOBE_RADIUS + 0.95, 64]} />
-          <meshBasicMaterial color="#E3DED2" transparent opacity={0.35} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#E3E7EA" transparent opacity={0.35} side={THREE.DoubleSide} />
         </mesh>
       </group>
       <group ref={ringRef2} rotation={[-Math.PI / 4, Math.PI / 3, 0]}>
@@ -271,9 +271,9 @@ const HubMarker = ({ position, label, name }) => {
       </group>
 
       <Html center distanceFactor={42} occlude position={[0, 0.25, 0]}>
-        <div className="flex items-center gap-1 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-sm px-1.5 py-0.5 rounded-full select-none whitespace-nowrap pointer-events-none">
+        <div className="flex items-center gap-1 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-sm px-1.5 py-0.5 rounded-full select-none whitespace-nowrap pointer-events-none">
           <span className="w-1.5 h-1.5 rounded-full bg-[#D96C4F]" />
-          <span className="text-[9px] font-bold text-[#173F3A] dark:text-[#EEF2ED] tracking-wider">{label}</span>
+          <span className="text-[9px] font-bold text-[#244C66] dark:text-[#F0F4F7] tracking-wider">{label}</span>
           <span className="text-[8px] text-[#66736F] dark:text-[#A3B0AB] font-medium hidden sm:inline">({name})</span>
         </div>
       </Html>
@@ -296,15 +296,15 @@ const GlobeScene = () => {
   return (
     <group ref={groupRef}>
       <Sphere args={[GLOBE_RADIUS, 64, 64]}>
-        <meshPhongMaterial color="#173F3A" emissive="#0F332F" specular="#E5B85C" shininess={40} />
+        <meshPhongMaterial color="#244C66" emissive="#193B51" specular="#E5B85C" shininess={40} />
       </Sphere>
 
       <Sphere args={[GLOBE_RADIUS + 0.28, 32, 32]}>
-        <meshBasicMaterial color="#EEF2ED" transparent opacity={0.16} side={THREE.BackSide} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color="#F0F4F7" transparent opacity={0.16} side={THREE.BackSide} blending={THREE.AdditiveBlending} />
       </Sphere>
 
       <Sphere args={[GLOBE_RADIUS + 0.65, 32, 32]}>
-        <meshBasicMaterial color="#E3DED2" transparent opacity={0.08} side={THREE.BackSide} blending={THREE.AdditiveBlending} />
+        <meshBasicMaterial color="#E3E7EA" transparent opacity={0.08} side={THREE.BackSide} blending={THREE.AdditiveBlending} />
       </Sphere>
 
       <EarthGrid />
@@ -361,20 +361,20 @@ export default function Globe3D() {
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="hidden sm:block absolute top-2 left-2 sm:left-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-all duration-300 group z-20"
+        className="hidden sm:block absolute top-2 left-2 sm:left-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-all duration-300 group z-20"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0">
             <Cpu className="w-5 h-5" />
           </div>
           <div>
             <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider">AI Route Optimization</p>
-            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-1">
-              99.2% <span className="text-[9px] text-[#173F3A] dark:text-[#EEF2ED] font-normal">Accuracy</span>
+            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-1">
+              99.2% <span className="text-[9px] text-[#244C66] dark:text-[#F0F4F7] font-normal">Accuracy</span>
             </p>
           </div>
         </div>
-        <div className="mt-2 pt-1.5 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
+        <div className="mt-2 pt-1.5 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
           <span>Graph Neural Net</span>
           <span className="text-[#4F7D62] font-bold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[#4F7D62]" /> Active
@@ -387,20 +387,20 @@ export default function Globe3D() {
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="hidden sm:block absolute bottom-4 left-2 sm:left-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-all duration-300 group z-20"
+        className="hidden sm:block absolute bottom-4 left-2 sm:left-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-all duration-300 group z-20"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0">
             <TrendingDown className="w-5 h-5" />
           </div>
           <div>
             <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider">Price Prediction</p>
-            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF]">
+            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA]">
               Drop in 2 Days
             </p>
           </div>
         </div>
-        <div className="mt-2 pt-1.5 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
+        <div className="mt-2 pt-1.5 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
           <span>Fare Trend</span>
           <span className="text-[#D96C4F] font-bold">₹1,240 Saved</span>
         </div>
@@ -411,20 +411,20 @@ export default function Globe3D() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="hidden sm:block absolute top-2 right-2 sm:right-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-all duration-300 group z-20"
+        className="hidden sm:block absolute top-2 right-2 sm:right-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-all duration-300 group z-20"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
             <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider">Delay Forecast</p>
-            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-1">
+            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-1">
               94% <span className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-normal">Confidence</span>
             </p>
           </div>
         </div>
-        <div className="mt-2 pt-1.5 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
+        <div className="mt-2 pt-1.5 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
           <span>LSTM Shield</span>
           <span className="text-[#4F7D62] font-bold">0 Delays</span>
         </div>
@@ -435,22 +435,22 @@ export default function Globe3D() {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
-        className="hidden sm:block absolute bottom-4 right-2 sm:right-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-all duration-300 group z-20"
+        className="hidden sm:block absolute bottom-4 right-2 sm:right-4 p-3 sm:p-3.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm max-w-[190px] sm:max-w-[210px] pointer-events-auto hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-all duration-300 group z-20"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#E5B85C] flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#E5B85C] flex-shrink-0">
             <Sun className="w-5 h-5 animate-spin-slow" />
           </div>
           <div>
             <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider">Weather Intelligence</p>
-            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF]">
+            <p className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA]">
               Live 24°C Sunny
             </p>
           </div>
         </div>
-        <div className="mt-2 pt-1.5 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
+        <div className="mt-2 pt-1.5 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-[9px] text-[#66736F] dark:text-[#A3B0AB]">
           <span>Climate Risk</span>
-          <span className="text-[#173F3A] dark:text-[#EEF2ED] font-bold">Optimal Window</span>
+          <span className="text-[#244C66] dark:text-[#F0F4F7] font-bold">Optimal Window</span>
         </div>
       </motion.div>
 

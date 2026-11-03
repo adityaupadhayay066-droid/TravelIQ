@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
   if (loading) {
     return (
-      <div className="travel-card p-5 animate-pulse space-y-3 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/3" />
-        <div className="h-8 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/2" />
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded w-3/4" />
+      <div className="travel-card p-5 animate-pulse space-y-3 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/3" />
+        <div className="h-8 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/2" />
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded w-3/4" />
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
   
   score = Math.max(30, score);
 
-  let scoreColor = "bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] dark:text-[#68A682] border-[#4F7D62]/20";
+  let scoreColor = "bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] dark:text-[#68A682] border-[#4F7D62]/20";
   if (score < 60) {
     scoreColor = "bg-[#FDF1ED] dark:bg-[#2D1B18] text-[#B94A48] dark:text-[#E0716E] border-[#B94A48]/25";
   } else if (score < 80) {
@@ -45,13 +45,13 @@ export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
     if (riskLevel === 'Medium') {
       return 'bg-[#FBF6E9] dark:bg-[#2C281B] text-[#B88728] dark:text-[#E5B85C] border-[#E5B85C]/30';
     }
-    return 'bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] dark:text-[#68A682] border-[#4F7D62]/20';
+    return 'bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] dark:text-[#68A682] border-[#4F7D62]/20';
   };
 
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="travel-card relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm transition-all"
+      className="travel-card relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm transition-all"
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2.5">
@@ -59,7 +59,7 @@ export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#173F3A] dark:text-[#EEF2ED] font-['Manrope']">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#244C66] dark:text-[#F0F4F7] font-['Manrope']">
               Travel Risk Analysis
             </h4>
             <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium font-['Inter']">
@@ -73,7 +73,7 @@ export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
       </div>
 
       <div className="mt-5 space-y-3">
-        <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2.5">
+        <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2.5">
           <span className="flex items-center gap-1.5 text-[#66736F] dark:text-[#A3B0AB] font-medium font-['Inter']">
             <AlertTriangle className="w-3.5 h-3.5 text-[#E5B85C]" />
             Delay Risk
@@ -83,9 +83,9 @@ export default function RiskAnalysisCard({ delayData, crowdData, loading }) {
           </span>
         </div>
 
-        <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2.5">
+        <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2.5">
           <span className="flex items-center gap-1.5 text-[#66736F] dark:text-[#A3B0AB] font-medium font-['Inter']">
-            <CloudSun className="w-3.5 h-3.5 text-[#173F3A] dark:text-[#EEF2ED]" />
+            <CloudSun className="w-3.5 h-3.5 text-[#244C66] dark:text-[#F0F4F7]" />
             Weather Risk
           </span>
           <span className={`font-semibold uppercase text-[10px] px-2 py-0.5 rounded-full border ${getRiskBadgeClass(weatherRisk)}`}>

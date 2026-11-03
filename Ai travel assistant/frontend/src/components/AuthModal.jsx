@@ -85,21 +85,21 @@ export default function AuthModal() {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Overlay Backdrop */}
       <div 
-        className="absolute inset-0 bg-[#173F3A]/40 backdrop-blur-xs"
+        className="absolute inset-0 bg-[#244C66]/40 backdrop-blur-xs"
         onClick={closeAuthModal}
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#1b2c28] border border-[#E3DED2] dark:border-[#2a403a] p-8 rounded-[16px] shadow-[0_4px_16px_rgba(23,63,58,0.1)]">
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] p-8 rounded-[16px] shadow-[0_4px_16px_rgba(23,63,58,0.1)]">
         <button 
           onClick={closeAuthModal} 
-          className="absolute top-4 right-4 text-[#66736F] hover:text-[#173F3A] dark:hover:text-white p-2 rounded-lg hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors"
+          className="absolute top-4 right-4 text-[#66736F] hover:text-[#244C66] dark:hover:text-white p-2 rounded-lg hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="text-center mb-6 space-y-1">
-          <h2 className="text-2xl font-bold text-[#173F3A] dark:text-white font-heading">
+          <h2 className="text-2xl font-bold text-[#244C66] dark:text-white font-heading">
             {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </h2>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">
@@ -108,16 +108,16 @@ export default function AuthModal() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex p-1 bg-[#EEF2ED] dark:bg-[#12201D] rounded-lg mb-6 border border-[#E3DED2] dark:border-[#2a403a]">
+        <div className="flex p-1 bg-[#F0F4F7] dark:bg-[#121921] rounded-lg mb-6 border border-[#E3E7EA] dark:border-[#293644]">
           <button 
             onClick={() => setMode('login')}
-            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${mode === 'login' ? 'bg-[#173F3A] text-white shadow-xs' : 'text-[#66736F] hover:text-[#173F3A]'}`}
+            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${mode === 'login' ? 'bg-[#244C66] text-white shadow-xs' : 'text-[#66736F] hover:text-[#244C66]'}`}
           >
             Sign In
           </button>
           <button 
             onClick={() => setMode('register')}
-            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${mode === 'register' ? 'bg-[#173F3A] text-white shadow-xs' : 'text-[#66736F] hover:text-[#173F3A]'}`}
+            className={`flex-1 py-2 text-xs font-bold rounded-md transition-colors ${mode === 'register' ? 'bg-[#244C66] text-white shadow-xs' : 'text-[#66736F] hover:text-[#244C66]'}`}
           >
             Register
           </button>

@@ -69,10 +69,10 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
   };
 
   return (
-    <div className="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+    <div className="bg-white dark:bg-[#1B242E] border border-slate-200 dark:border-[#293644] rounded-2xl p-5 sm:p-6 shadow-xs">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200 dark:border-[#293644]">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shrink-0" />
@@ -138,7 +138,7 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
 
       {/* Stacked Progress Bar */}
       <div className="space-y-2">
-        <div className="h-3 w-full rounded-full bg-[#E3DED2] dark:bg-[#273E36] overflow-hidden flex">
+        <div className="h-3 w-full rounded-full bg-[#E3E7EA] dark:bg-[#293644] overflow-hidden flex">
           {categories.map((cat, idx) => (
             <div
               key={idx}
@@ -166,7 +166,7 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
           return (
             <div
               key={idx}
-              className={`p-3 rounded-xl border border-[#E3DED2] dark:border-[#273E36] bg-[#FFFDF7] dark:bg-[#101B17] hover:border-[#14532D]/40 dark:hover:border-[#489A6B]/40 transition-colors ${
+              className={`p-3 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFDF7] dark:bg-[#121921] hover:border-[#14532D]/40 dark:hover:border-[#489A6B]/40 transition-colors ${
                 isLastOdd ? 'sm:col-span-2' : ''
               }`}
             >
@@ -175,11 +175,11 @@ export default function TravelBudgetPlanner({ initialBudget = 15000, destination
                   <div className={`p-1.5 rounded-lg text-white shrink-0 ${cat.bgColor}`}>
                     <Icon className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs font-bold text-[#1F2933] dark:text-[#F7F5EF] truncate">
+                  <span className="text-xs font-bold text-[#1F2933] dark:text-[#F7F8FA] truncate">
                     {cat.name}
                   </span>
                 </div>
-                <span className="text-xs font-black font-mono text-[#14532D] dark:text-[#EEF2ED] shrink-0 bg-[#EEF2ED] dark:bg-[#1D322B] px-2 py-0.5 rounded-md">
+                <span className="text-xs font-black font-mono text-[#14532D] dark:text-[#F0F4F7] shrink-0 bg-[#F0F4F7] dark:bg-[#1D322B] px-2 py-0.5 rounded-md">
                   ₹{cat.amount.toLocaleString('en-IN')}
                 </span>
               </div>

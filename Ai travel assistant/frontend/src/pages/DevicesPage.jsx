@@ -82,18 +82,18 @@ export default function DevicesPage() {
     };
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen relative py-8 px-4 md:px-8 font-['Inter']">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen relative py-8 px-4 md:px-8 font-['Inter']">
             <div className="max-w-4xl mx-auto relative z-10">
                 {/* Top Nav Action */}
                 <div className="flex items-center justify-between mb-8">
-                    <Link to="/dashboard" className="flex items-center gap-2 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-colors text-sm font-medium">
+                    <Link to="/dashboard" className="flex items-center gap-2 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-colors text-sm font-medium">
                         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
                     </Link>
 
                     <button
                         onClick={fetchSessions}
                         disabled={loading}
-                        className="btn-ghost flex items-center justify-center p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-all disabled:opacity-50"
+                        className="btn-ghost flex items-center justify-center p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-all disabled:opacity-50"
                         title="Refresh"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -102,7 +102,7 @@ export default function DevicesPage() {
 
                 {/* Header Title */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 font-['Manrope']">Device Management</h1>
+                    <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-['Manrope']">Device Management</h1>
                     <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">
                         Audit and manage active browsers and devices currently signed in to your TravelIQ account.
                     </p>
@@ -120,12 +120,12 @@ export default function DevicesPage() {
                 </div>
 
                 {/* Session list container */}
-                <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm border border-[#E3DED2] dark:border-[#2A403A] overflow-hidden">
+                <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm border border-[#E3E7EA] dark:border-[#293644] overflow-hidden">
                     {/* Top list header / Bulk actions */}
-                    <div className="border-b border-[#E3DED2] dark:border-[#2A403A] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#F7F5EF]/50 dark:bg-[#12201D]/50">
+                    <div className="border-b border-[#E3E7EA] dark:border-[#293644] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#F7F8FA]/50 dark:bg-[#121921]/50">
                         <div>
-                            <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2 font-['Manrope']">
-                                <Activity className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" /> Active Sessions
+                            <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2 font-['Manrope']">
+                                <Activity className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" /> Active Sessions
                             </h3>
                             <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1">
                                 You are signed in on {sessions.length} authorized devices.
@@ -145,10 +145,10 @@ export default function DevicesPage() {
                     </div>
 
                     {/* Devices list */}
-                    <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                    <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                         {loading ? (
                             <div className="py-20 text-center">
-                                <div className="w-10 h-10 border-4 border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mx-auto mb-4" />
+                                <div className="w-10 h-10 border-4 border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mx-auto mb-4" />
                                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Querying active sessions...</p>
                             </div>
                         ) : sessions.length === 0 ? (
@@ -165,14 +165,14 @@ export default function DevicesPage() {
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0, height: 0 }}
                                         className={`p-6 flex items-center justify-between transition-all ${
-                                            session.is_current ? 'bg-[#EEF2ED]/50 dark:bg-[#213530]/50 border-l-4 border-[#173F3A] dark:border-[#EEF2ED]' : ''
+                                            session.is_current ? 'bg-[#F0F4F7]/50 dark:bg-[#233240]/50 border-l-4 border-[#244C66] dark:border-[#F0F4F7]' : ''
                                         }`}
                                     >
                                         <div className="flex items-start gap-4">
                                             <div className={`p-3 rounded-lg ${
                                                 session.is_current 
-                                                    ? 'bg-[#173F3A]/10 text-[#173F3A] dark:bg-[#EEF2ED]/10 dark:text-[#EEF2ED]' 
-                                                    : 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3DED2] dark:border-[#2A403A]'
+                                                    ? 'bg-[#244C66]/10 text-[#244C66] dark:bg-[#F0F4F7]/10 dark:text-[#F0F4F7]' 
+                                                    : 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3E7EA] dark:border-[#293644]'
                                             }`}>
                                                 {session.device_type === 'mobile' ? (
                                                     <Smartphone className="w-6 h-6" />
@@ -183,11 +183,11 @@ export default function DevicesPage() {
 
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] font-['Manrope']">
+                                                    <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] font-['Manrope']">
                                                         {session.os} ({session.browser})
                                                     </h4>
                                                     {session.is_current && (
-                                                        <span className="flex items-center gap-1.5 travel-badge bg-[#173F3A] text-[#FFFFFF] dark:bg-[#EEF2ED] dark:text-[#173F3A] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                                                        <span className="flex items-center gap-1.5 travel-badge bg-[#244C66] text-[#FFFFFF] dark:bg-[#F0F4F7] dark:text-[#244C66] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                                                             Current Device
                                                         </span>
                                                     )}

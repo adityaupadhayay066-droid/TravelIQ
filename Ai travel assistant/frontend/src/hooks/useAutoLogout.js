@@ -137,8 +137,8 @@ export const useAutoLogout = (customTimeoutMinutes = null) => {
             icon: '⏱️',
             duration: 5000,
             style: {
-              background: '#1B2C28',
-              color: '#F7F5EF',
+              background: '#1B242E',
+              color: '#F7F8FA',
               border: '1px solid #D96C4F',
             }
           });

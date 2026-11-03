@@ -78,14 +78,14 @@ export default function SecurityHubPage() {
     );
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen py-8 px-4 md:px-8 relative text-[#263238] dark:text-[#F7F5EF]">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen py-8 px-4 md:px-8 relative text-[#263238] dark:text-[#F7F8FA]">
             <div className="max-w-6xl mx-auto relative z-10 space-y-8">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-6">
+                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-6">
                     <div>
                         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                            <ShieldCheck className="w-8 h-8 text-[#173F3A] dark:text-[#EEF2ED]" /> Advanced Security & Session Audit
+                            <ShieldCheck className="w-8 h-8 text-[#244C66] dark:text-[#F0F4F7]" /> Advanced Security & Session Audit
                         </h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">
                             Manage authorized browsers, audit location sign-in history, and invalidate active sessions remotely.
@@ -95,7 +95,7 @@ export default function SecurityHubPage() {
                     <button
                         onClick={loadSecurityData}
                         disabled={loading}
-                        className="btn-ghost text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-[#EEF2ED] rounded-lg p-2.5 transition-all bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-sm"
+                        className="btn-ghost text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-[#F0F4F7] rounded-lg p-2.5 transition-all bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-sm"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -103,7 +103,7 @@ export default function SecurityHubPage() {
 
                 {loading ? (
                     <div className="py-40 text-center">
-                        <div className="w-12 h-12 border-3 border-[#EEF2ED] dark:border-[#213530] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mx-auto mb-4" />
+                        <div className="w-12 h-12 border-3 border-[#F0F4F7] dark:border-[#233240] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Querying account safety records...</p>
                     </div>
                 ) : (
@@ -113,14 +113,14 @@ export default function SecurityHubPage() {
                         <div className="lg:col-span-1 space-y-6">
                             
                             {/* Health assessment panel */}
-                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] p-6 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-[0_4px_16px_rgba(23,63,58,0.06)] text-center">
-                                <div className="inline-flex items-center justify-center p-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-xl mb-4 text-[#173F3A] dark:text-[#EEF2ED]">
+                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] p-6 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-[0_4px_16px_rgba(23,63,58,0.06)] text-center">
+                                <div className="inline-flex items-center justify-center p-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-xl mb-4 text-[#244C66] dark:text-[#F0F4F7]">
                                     <Shield className="w-8 h-8" />
                                 </div>
                                 <h3 className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-widest mb-1">
                                     Account Safety Score
                                 </h3>
-                                <h2 className="text-xl font-bold mb-4 text-[#173F3A] dark:text-[#EEF2ED]">
+                                <h2 className="text-xl font-bold mb-4 text-[#244C66] dark:text-[#F0F4F7]">
                                     Excellent Protection
                                 </h2>
                                 
@@ -128,14 +128,14 @@ export default function SecurityHubPage() {
                                     Automatic brute-force lockouts and multi-device limit checks (max 2 mobile, 2 desktop) are actively shielding your profile.
                                 </p>
 
-                                <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg flex items-center gap-2.5 justify-center text-sm text-[#173F3A] dark:text-[#EEF2ED] font-semibold border border-[#E3DED2] dark:border-[#2A403A]">
+                                <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg flex items-center gap-2.5 justify-center text-sm text-[#244C66] dark:text-[#F0F4F7] font-semibold border border-[#E3E7EA] dark:border-[#293644]">
                                     <ShieldCheck className="w-5 h-5" /> No Suspicious Alerts
                                 </div>
                             </div>
 
                             {/* Threat Diagnostics warnings */}
-                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl p-5">
-                                <h4 className="text-[#173F3A] dark:text-[#EEF2ED] font-semibold mb-2 text-sm flex items-center gap-2">
+                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl p-5">
+                                <h4 className="text-[#244C66] dark:text-[#F0F4F7] font-semibold mb-2 text-sm flex items-center gap-2">
                                     <Key className="w-4 h-4" /> Multi-device bounds
                                 </h4>
                                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm leading-relaxed">
@@ -148,10 +148,10 @@ export default function SecurityHubPage() {
                         <div className="lg:col-span-2 space-y-8">
                             
                             {/* ACTIVE DEVICES LISTING */}
-                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl overflow-hidden">
-                                <div className="border-b border-[#E3DED2] dark:border-[#2A403A] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#F7F5EF] dark:bg-[#12201D]">
+                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl overflow-hidden">
+                                <div className="border-b border-[#E3E7EA] dark:border-[#293644] p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#F7F8FA] dark:bg-[#121921]">
                                     <div>
-                                        <h3 className="text-base font-bold flex items-center gap-2 text-[#263238] dark:text-[#F7F5EF]">
+                                        <h3 className="text-base font-bold flex items-center gap-2 text-[#263238] dark:text-[#F7F8FA]">
                                             💻 Active Authorized Browsers
                                         </h3>
                                         <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Currently logged in devices.</p>
@@ -167,17 +167,17 @@ export default function SecurityHubPage() {
                                     )}
                                 </div>
 
-                                <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                                <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                                     {activeSessions.map((session) => (
                                         <div 
                                             key={session.session_id} 
                                             className={`p-6 flex items-center justify-between transition-all ${
-                                                session.is_current ? 'bg-[#EEF2ED] dark:bg-[#213530] border-l-4 border-[#173F3A] dark:border-[#EEF2ED]' : ''
+                                                session.is_current ? 'bg-[#F0F4F7] dark:bg-[#233240] border-l-4 border-[#244C66] dark:border-[#F0F4F7]' : ''
                                             }`}
                                         >
                                             <div className="flex items-start gap-4">
                                                 <div className={`p-3 rounded-lg ${
-                                                    session.is_current ? 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED]' : 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB]'
+                                                    session.is_current ? 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7]' : 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB]'
                                                 }`}>
                                                     {session.device_type === 'mobile' ? (
                                                         <Smartphone className="w-5 h-5" />
@@ -188,11 +188,11 @@ export default function SecurityHubPage() {
 
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F5EF]">
+                                                        <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F8FA]">
                                                             {session.os} ({session.browser})
                                                         </h4>
                                                         {session.is_current && (
-                                                            <span className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                                                            <span className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                                                                 Current device
                                                             </span>
                                                         )}
@@ -218,10 +218,10 @@ export default function SecurityHubPage() {
                             </div>
 
                             {/* SIGN-IN HISTORY LOGS */}
-                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl overflow-hidden">
-                                <div className="p-6 border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-[0_4px_16px_rgba(23,63,58,0.06)] rounded-xl overflow-hidden">
+                                <div className="p-6 border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
-                                        <h3 className="text-base font-bold flex items-center gap-2 text-[#263238] dark:text-[#F7F5EF]">
+                                        <h3 className="text-base font-bold flex items-center gap-2 text-[#263238] dark:text-[#F7F8FA]">
                                             📅 Location & Login Audit History
                                         </h3>
                                         <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Sign-in actions recorded on TravelIQ.</p>
@@ -235,7 +235,7 @@ export default function SecurityHubPage() {
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             placeholder="Search log location, IP..."
-                                            className="travel-input w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 pl-9 pr-3 text-sm text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all"
+                                            className="travel-input w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 pl-9 pr-3 text-sm text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-all"
                                         />
                                     </div>
                                 </div>
@@ -243,14 +243,14 @@ export default function SecurityHubPage() {
                                 <div className="overflow-x-auto">
                                     <table className="travel-table w-full text-left border-collapse text-sm">
                                         <thead>
-                                            <tr className="border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#EEF2ED] dark:bg-[#213530] text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-widest font-bold">
+                                            <tr className="border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F0F4F7] dark:bg-[#233240] text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-widest font-bold">
                                                 <th className="p-4">Login Time / Status</th>
                                                 <th className="p-4">Device OS / Browser</th>
                                                 <th className="p-4">IP Coordinates</th>
                                                 <th className="p-4">Audit Location</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-[#E3DED2] dark:divide-[#2A403A] text-[#263238] dark:text-[#F7F5EF]">
+                                        <tbody className="divide-y divide-[#E3E7EA] dark:divide-[#293644] text-[#263238] dark:text-[#F7F8FA]">
                                             {filteredHistory.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="4" className="p-8 text-center text-[#66736F] dark:text-[#A3B0AB]">
@@ -259,7 +259,7 @@ export default function SecurityHubPage() {
                                                 </tr>
                                             ) : (
                                                 filteredHistory.map((item) => (
-                                                    <tr key={item.id} className="hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-all">
+                                                    <tr key={item.id} className="hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-all">
                                                         <td className="p-4">
                                                             <div className="font-semibold">
                                                                 {new Date(item.login_time).toLocaleString()}
@@ -278,9 +278,9 @@ export default function SecurityHubPage() {
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-2 font-medium">
                                                                 {item.device_type === 'mobile' ? (
-                                                                    <Smartphone className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" />
+                                                                    <Smartphone className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" />
                                                                 ) : (
-                                                                    <Laptop className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" />
+                                                                    <Laptop className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" />
                                                                 )}
                                                                 {item.os} ({item.browser})
                                                             </div>

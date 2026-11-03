@@ -5,18 +5,18 @@ import { motion } from 'framer-motion';
 export default function CrowdPredictionCard({ crowdData, loading }) {
   if (loading) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] animate-pulse space-y-3">
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-md w-1/3" />
-        <div className="h-8 bg-[#EEF2ED] dark:bg-[#213530] rounded-md w-1/2" />
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-md w-3/4" />
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] animate-pulse space-y-3">
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-md w-1/3" />
+        <div className="h-8 bg-[#F0F4F7] dark:bg-[#233240] rounded-md w-1/2" />
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-md w-3/4" />
       </div>
     );
   }
 
   if (!crowdData || (crowdData.crowd_level == null && crowdData.expected_crowd_percent == null)) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] text-center">
-        <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] text-center">
+        <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg w-fit mx-auto mb-2">
           <Users className="w-5 h-5" />
         </div>
         <h4 className="font-['Manrope',sans-serif] text-xs font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">Crowd Prediction</h4>
@@ -42,11 +42,11 @@ export default function CrowdPredictionCard({ crowdData, loading }) {
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all"
+      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all"
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg">
+          <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -62,11 +62,11 @@ export default function CrowdPredictionCard({ crowdData, loading }) {
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div>
           <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Station Crowd</span>
-          <p className="font-['Manrope',sans-serif] text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">{expected_crowd_percent}%</p>
+          <p className="font-['Manrope',sans-serif] text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">{expected_crowd_percent}%</p>
         </div>
         <div>
           <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Platform Congestion</span>
-          <p className="font-['Manrope',sans-serif] text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">{platform_congestion_percent}%</p>
+          <p className="font-['Manrope',sans-serif] text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">{platform_congestion_percent}%</p>
         </div>
       </div>
 

@@ -139,8 +139,8 @@ export default function FoodPage() {
         switch(platform) {
             case 'Zomato': return 'text-[#D96C4F] bg-[#D96C4F]/10 border-[#D96C4F]/20';
             case 'Swiggy': return 'text-[#E5B85C] bg-[#E5B85C]/10 border-[#E5B85C]/20';
-            case 'IRCTC': return 'text-[#173F3A] dark:text-[#EEF2ED] bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 border-[#173F3A]/20 dark:border-[#EEF2ED]/20';
-            default: return 'text-[#173F3A] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] border-[#E3DED2] dark:border-[#2A403A]';
+            case 'IRCTC': return 'text-[#244C66] dark:text-[#F0F4F7] bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 border-[#244C66]/20 dark:border-[#F0F4F7]/20';
+            default: return 'text-[#244C66] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] border-[#E3E7EA] dark:border-[#293644]';
         }
     };
 
@@ -149,13 +149,13 @@ export default function FoodPage() {
     };
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen pb-12 font-['Inter'] text-[#263238] dark:text-[#F7F5EF]">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen pb-12 font-['Inter'] text-[#263238] dark:text-[#F7F8FA]">
             
             {/* Header Area */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border-b border-[#E3DED2] dark:border-[#2A403A] pt-8 pb-6 px-4 md:px-8">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border-b border-[#E3E7EA] dark:border-[#293644] pt-8 pb-6 px-4 md:px-8">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED] mb-2 flex items-center gap-3">
+                        <h1 className="text-3xl font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7] mb-2 flex items-center gap-3">
                             <Utensils className="w-8 h-8 text-[#D96C4F]" /> Professional Food Assistant
                         </h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm max-w-2xl font-normal">
@@ -163,16 +163,16 @@ export default function FoodPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-2.5 min-w-[250px]">
-                        <MapPin className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0" />
+                    <div className="flex items-center gap-3 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-2.5 min-w-[250px]">
+                        <MapPin className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0" />
                         <div className="flex-1">
                             <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider block">Exploring Destination</span>
                             <select
                                 value={selectedCity}
                                 onChange={(e) => setSelectedCity(e.target.value)}
-                                className="bg-transparent text-sm font-semibold text-[#173F3A] dark:text-[#EEF2ED] focus:outline-none cursor-pointer w-full"
+                                className="bg-transparent text-sm font-semibold text-[#244C66] dark:text-[#F0F4F7] focus:outline-none cursor-pointer w-full"
                             >
-                                {CITIES.map(city => <option key={city} value={city} className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">{city}</option>)}
+                                {CITIES.map(city => <option key={city} value={city} className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">{city}</option>)}
                             </select>
                         </div>
                     </div>
@@ -186,8 +186,8 @@ export default function FoodPage() {
                             onClick={() => setActiveTab(tab)}
                             className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                                 activeTab === tab 
-                                    ? 'bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#173F3A] shadow-sm' 
-                                    : 'bg-transparent text-[#66736F] dark:text-[#A3B0AB] border border-[#E3DED2] dark:border-[#2A403A] hover:text-[#173F3A] dark:hover:text-[#FFFFFF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530]'
+                                    ? 'bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#244C66] shadow-sm' 
+                                    : 'bg-transparent text-[#66736F] dark:text-[#A3B0AB] border border-[#E3E7EA] dark:border-[#293644] hover:text-[#244C66] dark:hover:text-[#FFFFFF] hover:bg-[#F0F4F7] dark:hover:bg-[#233240]'
                             }`}
                         >
                             {tab}
@@ -202,19 +202,19 @@ export default function FoodPage() {
                 <div className="space-y-6">
                     
                     {/* AI Recommendation Box */}
-                    <div className="bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 relative overflow-hidden">
+                    <div className="bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-3 opacity-10"><Sparkles className="w-16 h-16 text-[#D96C4F]" /></div>
-                        <h3 className="text-sm font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED] flex items-center gap-2 mb-3">
+                        <h3 className="text-sm font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7] flex items-center gap-2 mb-3">
                             <Sparkles className="w-4 h-4 text-[#D96C4F]" /> AI Travel Sommelier
                         </h3>
                         {aiLoading ? (
-                            <div className="flex space-x-4"><div className="flex-1 space-y-3 py-1"><div className="h-2 bg-[#E3DED2] dark:bg-[#2A403A] rounded w-3/4"></div><div className="h-2 bg-[#E3DED2] dark:bg-[#2A403A] rounded w-full"></div></div></div>
+                            <div className="flex space-x-4"><div className="flex-1 space-y-3 py-1"><div className="h-2 bg-[#E3E7EA] dark:bg-[#293644] rounded w-3/4"></div><div className="h-2 bg-[#E3E7EA] dark:bg-[#293644] rounded w-full"></div></div></div>
                         ) : aiRecommendations ? (
                             <>
-                                <p className="text-xs text-[#263238] dark:text-[#F7F5EF] leading-relaxed mb-4">{aiRecommendations.reasoning}</p>
+                                <p className="text-xs text-[#263238] dark:text-[#F7F8FA] leading-relaxed mb-4">{aiRecommendations.reasoning}</p>
                                 <div className="flex flex-wrap gap-2">
                                     {aiRecommendations.recommended_tags.map((tag, i) => (
-                                        <span key={i} className="text-[10px] font-bold uppercase tracking-wider bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-1 rounded-md border border-[#E3DED2] dark:border-[#2A403A]">{tag}</span>
+                                        <span key={i} className="text-[10px] font-bold uppercase tracking-wider bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] px-2 py-1 rounded-md border border-[#E3E7EA] dark:border-[#293644]">{tag}</span>
                                     ))}
                                 </div>
                             </>
@@ -224,49 +224,49 @@ export default function FoodPage() {
                     </div>
 
                     {/* Health & Diet Filters */}
-                    <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 space-y-5 shadow-sm">
-                        <h3 className="text-sm font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED] uppercase tracking-wider flex items-center gap-2">
+                    <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 space-y-5 shadow-sm">
+                        <h3 className="text-sm font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider flex items-center gap-2">
                             <Filter className="w-4 h-4 text-[#D96C4F]" /> Health & Diet
                         </h3>
                         
                         <div className="space-y-3">
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${vegFilter ? 'bg-[#173F3A] dark:bg-[#EEF2ED] border-[#173F3A] dark:border-[#EEF2ED]' : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
-                                    {vegFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#173F3A]" />}
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${vegFilter ? 'bg-[#244C66] dark:bg-[#F0F4F7] border-[#244C66] dark:border-[#F0F4F7]' : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
+                                    {vegFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#244C66]" />}
                                 </div>
-                                <span className="text-sm text-[#263238] dark:text-[#F7F5EF] font-medium">Pure Vegetarian</span>
+                                <span className="text-sm text-[#263238] dark:text-[#F7F8FA] font-medium">Pure Vegetarian</span>
                             </label>
 
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${jainFilter ? 'bg-[#173F3A] dark:bg-[#EEF2ED] border-[#173F3A] dark:border-[#EEF2ED]' : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
-                                    {jainFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#173F3A]" />}
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${jainFilter ? 'bg-[#244C66] dark:bg-[#F0F4F7] border-[#244C66] dark:border-[#F0F4F7]' : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
+                                    {jainFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#244C66]" />}
                                 </div>
-                                <span className="text-sm text-[#263238] dark:text-[#F7F5EF] font-medium">Jain (No Onion/Garlic)</span>
+                                <span className="text-sm text-[#263238] dark:text-[#F7F8FA] font-medium">Jain (No Onion/Garlic)</span>
                             </label>
 
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${highProteinFilter ? 'bg-[#173F3A] dark:bg-[#EEF2ED] border-[#173F3A] dark:border-[#EEF2ED]' : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
-                                    {highProteinFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#173F3A]" />}
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${highProteinFilter ? 'bg-[#244C66] dark:bg-[#F0F4F7] border-[#244C66] dark:border-[#F0F4F7]' : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
+                                    {highProteinFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#244C66]" />}
                                 </div>
-                                <span className="text-sm text-[#263238] dark:text-[#F7F5EF] font-medium">High Protein</span>
+                                <span className="text-sm text-[#263238] dark:text-[#F7F8FA] font-medium">High Protein</span>
                             </label>
 
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${budgetFilter ? 'bg-[#173F3A] dark:bg-[#EEF2ED] border-[#173F3A] dark:border-[#EEF2ED]' : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
-                                    {budgetFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#173F3A]" />}
+                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${budgetFilter ? 'bg-[#244C66] dark:bg-[#F0F4F7] border-[#244C66] dark:border-[#F0F4F7]' : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] group-hover:border-[#66736F] dark:group-hover:border-[#A3B0AB]'}`}>
+                                    {budgetFilter && <Check className="w-3.5 h-3.5 text-white dark:text-[#244C66]" />}
                                 </div>
-                                <span className="text-sm text-[#263238] dark:text-[#F7F5EF] font-medium">Budget / Student Friendly</span>
+                                <span className="text-sm text-[#263238] dark:text-[#F7F8FA] font-medium">Budget / Student Friendly</span>
                             </label>
                         </div>
 
-                        <div className="pt-4 border-t border-[#E3DED2] dark:border-[#2A403A]">
+                        <div className="pt-4 border-t border-[#E3E7EA] dark:border-[#293644]">
                             <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider block mb-3">Categories</span>
                             <div className="flex flex-wrap gap-2">
                                 {CUISINES.map(c => (
                                     <button 
                                         key={c}
                                         onClick={() => setCuisineFilter(c)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${cuisineFilter === c ? 'bg-[#173F3A] dark:bg-[#EEF2ED] border-[#173F3A] dark:border-[#EEF2ED] text-white dark:text-[#173F3A]' : 'bg-[#F7F5EF] dark:bg-[#12201D] border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-white'}`}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${cuisineFilter === c ? 'bg-[#244C66] dark:bg-[#F0F4F7] border-[#244C66] dark:border-[#F0F4F7] text-white dark:text-[#244C66]' : 'bg-[#F7F8FA] dark:bg-[#121921] border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-white'}`}
                                     >
                                         {c}
                                     </button>
@@ -284,7 +284,7 @@ export default function FoodPage() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED]">Authentic {selectedCity} Foods</h2>
+                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7]">Authentic {selectedCity} Foods</h2>
                                     <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Discover must-try local specialties.</p>
                                 </div>
                             </div>
@@ -299,31 +299,31 @@ export default function FoodPage() {
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         key={cuisine.id} 
-                                        className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col group"
+                                        className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col group"
                                     >
-                                        <div className="h-48 relative overflow-hidden bg-[#F7F5EF] dark:bg-[#12201D]">
+                                        <div className="h-48 relative overflow-hidden bg-[#F7F8FA] dark:bg-[#121921]">
                                             <img src={cuisine.image} alt={cuisine.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             
                                             <div className="absolute top-3 left-3 flex gap-2">
-                                                {cuisine.isVeg && <span className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3DED2] dark:border-[#2A403A]">Veg</span>}
-                                                {cuisine.isJain && <span className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3DED2] dark:border-[#2A403A]">Jain</span>}
-                                                {cuisine.highProtein && <span className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3DED2] dark:border-[#2A403A]">High Protein</span>}
+                                                {cuisine.isVeg && <span className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3E7EA] dark:border-[#293644]">Veg</span>}
+                                                {cuisine.isJain && <span className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3E7EA] dark:border-[#293644]">Jain</span>}
+                                                {cuisine.highProtein && <span className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-[#E3E7EA] dark:border-[#293644]">High Protein</span>}
                                             </div>
-                                            <div className="absolute top-3 right-3 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] px-2 py-1 rounded flex items-center gap-1 text-[10px] font-bold">
+                                            <div className="absolute top-3 right-3 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] px-2 py-1 rounded flex items-center gap-1 text-[10px] font-bold">
                                                 <Star className="w-3 h-3 text-[#E5B85C] fill-[#E5B85C]" /> {cuisine.popularity}% Match
                                             </div>
                                         </div>
 
                                         <div className="p-5 flex-1 flex flex-col">
                                             <div className="flex justify-between items-start mb-2">
-                                                <h3 className="text-xl font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED] leading-tight">{cuisine.name}</h3>
-                                                <span className="text-sm font-bold text-[#173F3A] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] px-2 py-1 rounded border border-[#E3DED2] dark:border-[#2A403A]">{cuisine.price}</span>
+                                                <h3 className="text-xl font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7] leading-tight">{cuisine.name}</h3>
+                                                <span className="text-sm font-bold text-[#244C66] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] px-2 py-1 rounded border border-[#E3E7EA] dark:border-[#293644]">{cuisine.price}</span>
                                             </div>
                                             <span className="text-[10px] text-[#D96C4F] uppercase font-bold tracking-wider mb-3 block">{cuisine.category}</span>
                                             <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] leading-relaxed mb-4 flex-1">{cuisine.description}</p>
                                             <button 
                                                 onClick={() => handleFindNearby(cuisine.name)}
-                                                className="w-full py-2.5 bg-[#173F3A] dark:bg-[#EEF2ED] hover:bg-[#0F332F] dark:hover:bg-[#FFFFFF] active:scale-[0.98] text-white dark:text-[#173F3A] rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                                                className="w-full py-2.5 bg-[#244C66] dark:bg-[#F0F4F7] hover:bg-[#193B51] dark:hover:bg-[#FFFFFF] active:scale-[0.98] text-white dark:text-[#244C66] rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2"
                                             >
                                                 <Search className="w-4 h-4" /> Find Nearby
                                             </button>
@@ -339,14 +339,14 @@ export default function FoodPage() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED]">Aggregated Delivery Options</h2>
+                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7]">Aggregated Delivery Options</h2>
                                     <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Compare Swiggy, Zomato, and IRCTC eCatering.</p>
                                 </div>
                             </div>
                             
                             {loading ? (
                                 <div className="py-20 text-center">
-                                    <div className="w-10 h-10 border-2 border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mx-auto mb-4" />
+                                    <div className="w-10 h-10 border-2 border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mx-auto mb-4" />
                                     <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Aggregating prices across platforms...</p>
                                 </div>
                             ) : (
@@ -359,17 +359,17 @@ export default function FoodPage() {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             key={food.id} 
-                                            className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col group"
+                                            className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col group"
                                         >
                                             {/* Image */}
-                                            <div className="h-36 relative overflow-hidden bg-[#F7F5EF] dark:bg-[#12201D] border-b border-[#E3DED2] dark:border-[#2A403A]">
+                                            <div className="h-36 relative overflow-hidden bg-[#F7F8FA] dark:bg-[#121921] border-b border-[#E3E7EA] dark:border-[#293644]">
                                                 <img src={food.image_url} alt={food.food_name} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
                                             </div>
 
                                             {/* Content */}
                                             <div className="p-4 flex-1 flex flex-col">
                                                 <div className="mb-3">
-                                                    <h3 className="text-base font-['Manrope'] font-bold text-[#263238] dark:text-[#F7F5EF] leading-snug">{food.food_name}</h3>
+                                                    <h3 className="text-base font-['Manrope'] font-bold text-[#263238] dark:text-[#F7F8FA] leading-snug">{food.food_name}</h3>
                                                     <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1 flex items-center gap-1.5"><MapPin className="w-3 h-3 text-[#D96C4F]" /> {food.restaurant}</p>
                                                 </div>
                                                 {/* Dynamic Price Comparison Matrix */}
@@ -383,23 +383,23 @@ export default function FoodPage() {
                                                                 const isCheapest = cheapest && cheapest.platform === p.platform;
                                                                 
                                                                 return (
-                                                                    <div key={idx} className={`flex items-center justify-between p-2 rounded-lg border ${isCheapest ? 'bg-[#EEF2ED] dark:bg-[#213530] border-[#173F3A] dark:border-[#EEF2ED]' : 'bg-[#F7F5EF] dark:bg-[#12201D] border-[#E3DED2] dark:border-[#2A403A]'}`}>
+                                                                    <div key={idx} className={`flex items-center justify-between p-2 rounded-lg border ${isCheapest ? 'bg-[#F0F4F7] dark:bg-[#233240] border-[#244C66] dark:border-[#F0F4F7]' : 'bg-[#F7F8FA] dark:bg-[#121921] border-[#E3E7EA] dark:border-[#293644]'}`}>
                                                                         <div className="flex items-center gap-2">
                                                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPlatformColor(p.platform)}`}>
                                                                                 {p.platform}
                                                                             </span>
-                                                                            {isCheapest && <span className="text-[9px] text-[#173F3A] dark:text-[#EEF2ED] font-bold uppercase tracking-wider flex items-center gap-1"><Check className="w-3 h-3" /> Best</span>}
+                                                                            {isCheapest && <span className="text-[9px] text-[#244C66] dark:text-[#F0F4F7] font-bold uppercase tracking-wider flex items-center gap-1"><Check className="w-3 h-3" /> Best</span>}
                                                                         </div>
                                                                         <div className="flex items-center gap-3">
                                                                             <div className="text-right">
-                                                                                <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] block leading-none">₹{totalCost}</span>
+                                                                                <span className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] block leading-none">₹{totalCost}</span>
                                                                                 <span className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] font-medium">({p.price} + {p.delivery_fee} del)</span>
                                                                             </div>
                                                                             <a 
                                                                                 href={p.order_url || '#'} 
                                                                                 target="_blank" 
                                                                                 rel="noreferrer"
-                                                                                className="p-1.5 rounded-md bg-[#173F3A] dark:bg-[#EEF2ED] hover:bg-[#0F332F] dark:hover:bg-[#FFFFFF] text-white dark:text-[#173F3A] transition-colors"
+                                                                                className="p-1.5 rounded-md bg-[#244C66] dark:bg-[#F0F4F7] hover:bg-[#193B51] dark:hover:bg-[#FFFFFF] text-white dark:text-[#244C66] transition-colors"
                                                                                 title={`Order on ${p.platform}`}
                                                                             >
                                                                                 <ShoppingBag className="w-3.5 h-3.5" />
@@ -410,7 +410,7 @@ export default function FoodPage() {
                                                             })}
                                                         </div>
                                                     ) : (
-                                                        <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 text-center">
+                                                        <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 text-center">
                                                             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium">Price Unavailable</span>
                                                         </div>
                                                     )}
@@ -428,16 +428,16 @@ export default function FoodPage() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#173F3A] dark:text-[#EEF2ED]">Official Station & Train Price Guide</h2>
+                                    <h2 className="text-xl font-['Manrope'] font-bold text-[#244C66] dark:text-[#F0F4F7]">Official Station & Train Price Guide</h2>
                                     <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Avoid overcharging by checking standard railway rates and MRP.</p>
                                 </div>
                             </div>
 
-                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden shadow-sm">
+                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden shadow-sm">
                                 <div className="overflow-x-auto scrollbar-none">
                                     <div className="min-w-[650px]">
                                         {/* Table Header */}
-                                        <div className="grid grid-cols-12 gap-4 p-4 bg-[#EEF2ED] dark:bg-[#213530] border-b border-[#E3DED2] dark:border-[#2A403A] text-xs font-bold text-[#173F3A] dark:text-[#EEF2ED] uppercase tracking-wider">
+                                        <div className="grid grid-cols-12 gap-4 p-4 bg-[#F0F4F7] dark:bg-[#233240] border-b border-[#E3E7EA] dark:border-[#293644] text-xs font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider">
                                             <div className="col-span-4">Item Description</div>
                                             <div className="col-span-2 text-center">Station Stall</div>
                                             <div className="col-span-2 text-center">Train Pantry</div>
@@ -446,30 +446,30 @@ export default function FoodPage() {
                                         </div>
 
                                         {/* Table Body */}
-                                        <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                                        <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                                             {mockStationPrices.map((item, idx) => (
-                                                <div key={item.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-colors">
+                                                <div key={item.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-colors">
                                                     <div className="col-span-4 flex items-center gap-3">
-                                                        <div className="p-2 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg">
+                                                        <div className="p-2 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg">
                                                             <item.icon className="w-4 h-4 text-[#D96C4F]" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">{item.item}</p>
+                                                            <p className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">{item.item}</p>
                                                             <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">{item.type}</span>
                                                         </div>
                                                     </div>
                                                     
                                                     <div className="col-span-2 text-center">
-                                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F5EF]">{item.platform}</span>
+                                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F8FA]">{item.platform}</span>
                                                     </div>
                                                     
                                                     <div className="col-span-2 text-center">
-                                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F5EF]">{item.train}</span>
+                                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F8FA]">{item.train}</span>
                                                     </div>
 
                                                     <div className="col-span-2 text-center flex justify-center">
                                                         {item.mrp ? (
-                                                            <div className="flex items-center gap-1.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-1 rounded text-xs font-bold">
+                                                            <div className="flex items-center gap-1.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#244C66] dark:text-[#F0F4F7] px-2 py-1 rounded text-xs font-bold">
                                                                 <span>₹{item.mrp}</span>
                                                                 <span className="text-[9px] text-[#4F7D62]">(Fixed)</span>
                                                             </div>
@@ -493,10 +493,10 @@ export default function FoodPage() {
                                 </div>
                             </div>
                             
-                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E5B85C] rounded-xl p-4 flex gap-4 items-start shadow-sm">
+                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E5B85C] rounded-xl p-4 flex gap-4 items-start shadow-sm">
                                 <AlertTriangle className="w-6 h-6 text-[#E5B85C] flex-shrink-0" />
                                 <div>
-                                    <h4 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] mb-1">Know Your Rights</h4>
+                                    <h4 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] mb-1">Know Your Rights</h4>
                                     <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
                                         Vendors are strictly prohibited from charging above MRP for packaged items like Rail Neer. For non-packaged items, check the official IRCTC rate list above. If you are overcharged, you can use the "Report Issue" button to file a grievance via RailMadad.
                                     </p>

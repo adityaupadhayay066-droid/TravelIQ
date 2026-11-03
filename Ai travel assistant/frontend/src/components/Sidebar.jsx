@@ -76,15 +76,15 @@ export default function Sidebar() {
           item.isAdmin
             ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 font-bold'
             : isActive 
-            ? 'bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#FFFFFF]' 
-            : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530]'
+            ? 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#FFFFFF]' 
+            : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240]'
         }`}
       >
         {/* Active Left Accent Line */}
         {isActive && (
           <motion.div 
             layoutId={`activeTab-${isMobile ? 'mobile' : 'desktop'}`}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 ${item.isAdmin ? 'bg-sky-500' : 'bg-[#173F3A] dark:bg-[#EEF2ED]'} rounded-r-full`}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 ${item.isAdmin ? 'bg-sky-500' : 'bg-[#244C66] dark:bg-[#F0F4F7]'} rounded-r-full`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -92,7 +92,7 @@ export default function Sidebar() {
         )}
 
         <div className="relative z-10 flex items-center w-full">
-          <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${item.isAdmin ? 'text-sky-500' : isActive ? 'text-[#173F3A] dark:text-[#EEF2ED]' : 'group-hover:scale-110'}`} />
+          <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${item.isAdmin ? 'text-sky-500' : isActive ? 'text-[#244C66] dark:text-[#F0F4F7]' : 'group-hover:scale-110'}`} />
           <AnimatePresence>
             {!collapsed && (
               <motion.span
@@ -114,7 +114,7 @@ export default function Sidebar() {
 
         {/* Tooltip for collapsed state */}
         {collapsed && (
-          <div className="absolute left-full ml-4 px-2.5 py-1.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] text-xs font-semibold rounded-lg shadow-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+          <div className="absolute left-full ml-4 px-2.5 py-1.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] text-xs font-semibold rounded-lg shadow-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
             {item.name}
           </div>
         )}
@@ -126,8 +126,8 @@ export default function Sidebar() {
     <>
       <div className="p-5 flex items-center justify-between">
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="bg-[#EEF2ED] dark:bg-[#213530] p-2 rounded-lg flex-shrink-0">
-            <Globe className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+          <div className="bg-[#F0F4F7] dark:bg-[#233240] p-2 rounded-lg flex-shrink-0">
+            <Globe className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -135,7 +135,7 @@ export default function Sidebar() {
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
-                className="font-bold text-lg tracking-tight text-[#263238] dark:text-[#F7F5EF] whitespace-nowrap ml-1 font-heading"
+                className="font-bold text-lg tracking-tight text-[#263238] dark:text-[#F7F8FA] whitespace-nowrap ml-1 font-heading"
               >
                 TravelIQ
               </motion.span>
@@ -147,7 +147,7 @@ export default function Sidebar() {
         {!isMobile && (
           <button 
             onClick={() => setIsCollapsed(!collapsed)}
-            className="hidden md:flex p-1.5 rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors absolute -right-3 top-6 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] z-10"
+            className="hidden md:flex p-1.5 rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors absolute -right-3 top-6 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] z-10"
           >
             {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
@@ -155,7 +155,7 @@ export default function Sidebar() {
 
         {/* Mobile Close Toggle */}
         {isMobile && (
-          <button onClick={() => setIsMobileOpen(false)} className="p-2 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]">
+          <button onClick={() => setIsMobileOpen(false)} className="p-2 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -196,17 +196,17 @@ export default function Sidebar() {
       </div>
 
       {/* Profile Section */}
-      <div className="p-4 border-t border-[#E3DED2] dark:border-[#2A403A] relative">
+      <div className="p-4 border-t border-[#E3E7EA] dark:border-[#293644] relative">
         <button 
           onClick={() => setShowProfileMenu(!showProfileMenu)}
-          className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors cursor-pointer group"
+          className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors cursor-pointer group"
         >
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E3DED2] dark:border-[#2A403A] flex-shrink-0 group-hover:border-[#173F3A] dark:group-hover:border-[#EEF2ED] transition-colors">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E3E7EA] dark:border-[#293644] flex-shrink-0 group-hover:border-[#244C66] dark:group-hover:border-[#F0F4F7] transition-colors">
               {user?.profile_image ? (
                 <img src={getAvatarUrl(user?.profile_image)} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#EEF2ED] dark:bg-[#213530] flex items-center justify-center">
+                <div className="w-full h-full bg-[#F0F4F7] dark:bg-[#233240] flex items-center justify-center">
                   <User className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
                 </div>
               )}
@@ -217,13 +217,13 @@ export default function Sidebar() {
                   initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                   className="flex flex-col items-start"
                 >
-                  <span className="text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] whitespace-nowrap">{user?.name || 'Guest'}</span>
+                  <span className="text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] whitespace-nowrap">{user?.name || 'Guest'}</span>
                   <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] capitalize">{user?.role || 'User'}</span>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          {!collapsed && <MoreVertical className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB] group-hover:text-[#263238] dark:group-hover:text-[#F7F5EF] transition-colors" />}
+          {!collapsed && <MoreVertical className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB] group-hover:text-[#263238] dark:group-hover:text-[#F7F8FA] transition-colors" />}
         </button>
 
         {/* Profile Popover */}
@@ -233,15 +233,15 @@ export default function Sidebar() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className={`absolute bottom-full mb-2 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] shadow-sm rounded-lg py-1 z-50 ${collapsed ? 'left-full ml-4 w-48' : 'left-4 right-4'}`}
+              className={`absolute bottom-full mb-2 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] shadow-sm rounded-lg py-1 z-50 ${collapsed ? 'left-full ml-4 w-48' : 'left-4 right-4'}`}
             >
-              <Link to="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors" onClick={() => setShowProfileMenu(false)}>
+              <Link to="/dashboard/profile" className="flex items-center gap-3 px-4 py-2 text-sm text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors" onClick={() => setShowProfileMenu(false)}>
                 <User className="w-4 h-4" /> Profile
               </Link>
-              <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors" onClick={() => setShowProfileMenu(false)}>
+              <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors" onClick={() => setShowProfileMenu(false)}>
                 <Settings className="w-4 h-4" /> Settings
               </Link>
-              <div className="my-1 border-t border-[#E3DED2] dark:border-[#2A403A]" />
+              <div className="my-1 border-t border-[#E3E7EA] dark:border-[#293644]" />
               <button onClick={() => { setShowProfileMenu(false); logout(); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-[#B94A48] hover:bg-[#B94A48]/10 transition-colors cursor-pointer">
                 <LogOut className="w-4 h-4" /> Logout
               </button>
@@ -257,7 +257,7 @@ export default function Sidebar() {
       {/* Mobile Floating Button */}
       <button 
         onClick={() => setIsMobileOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 z-40 p-3 bg-[#173F3A] text-[#F7F5EF] rounded-full shadow-sm hover:bg-[#0F332F] transition-colors"
+        className="md:hidden fixed bottom-6 right-6 z-40 p-3 bg-[#244C66] text-[#F7F8FA] rounded-full shadow-sm hover:bg-[#193B51] transition-colors"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -277,7 +277,7 @@ export default function Sidebar() {
               animate="open"
               exit="closed"
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="md:hidden fixed top-0 left-0 h-full w-72 bg-[#F7F5EF] dark:bg-[#12201D] border-r border-[#E3DED2] dark:border-[#2A403A] z-[60] flex flex-col"
+              className="md:hidden fixed top-0 left-0 h-full w-72 bg-[#F7F8FA] dark:bg-[#121921] border-r border-[#E3E7EA] dark:border-[#293644] z-[60] flex flex-col"
             >
               <SidebarContent collapsed={false} isMobile={true} />
             </motion.aside>
@@ -291,7 +291,7 @@ export default function Sidebar() {
         initial={false}
         animate={isCollapsed ? 'collapsed' : 'expanded'}
         transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-        className="hidden md:flex flex-col bg-[#F7F5EF] dark:bg-[#12201D] border-r border-[#E3DED2] dark:border-[#2A403A] h-screen relative z-30"
+        className="hidden md:flex flex-col bg-[#F7F8FA] dark:bg-[#121921] border-r border-[#E3E7EA] dark:border-[#293644] h-screen relative z-30"
       >
         <SidebarContent collapsed={isCollapsed} isMobile={false} />
       </motion.aside>

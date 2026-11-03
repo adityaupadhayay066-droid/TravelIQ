@@ -70,7 +70,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
       QRCode.toDataURL(upiPayload, {
         width: 200,
         margin: 1,
-        color: { dark: '#173F3A', light: '#FFFFFF' }
+        color: { dark: '#244C66', light: '#FFFFFF' }
       }).then(url => setQrCodeUrl(url)).catch(console.error);
     }
   }, [isOpen, activeTab, item, inrEquivalent]);
@@ -336,7 +336,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; background: #fff; line-height: 1.5; }
           .header { display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 24px; margin-bottom: 30px; }
-          .logo { font-size: 24px; font-weight: 800; color: #173F3A; }
+          .logo { font-size: 24px; font-weight: 800; color: #244C66; }
           .badge { display: inline-block; background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #86efac; }
           .table { width: 100%; border-collapse: collapse; margin: 30px 0; }
           .table th { background: #f8fafc; text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; }
@@ -442,7 +442,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-md overflow-y-auto">
       
       {/* Dev Controller Toggle Banner */}
-      <div className="fixed top-4 left-4 z-50 bg-white/95 dark:bg-[#1B2C28]/95 backdrop-blur-md border border-[#E3DED2] dark:border-[#2A403A] px-3.5 py-1.5 rounded-full flex items-center gap-2.5 shadow-lg">
+      <div className="fixed top-4 left-4 z-50 bg-white/95 dark:bg-[#1B242E]/95 backdrop-blur-md border border-[#E3E7EA] dark:border-[#293644] px-3.5 py-1.5 rounded-full flex items-center gap-2.5 shadow-lg">
         <span className="text-[10px] uppercase font-bold tracking-wider text-[#66736F] dark:text-[#A3B0AB]">
           🛠️ Verification Mode:
         </span>
@@ -463,7 +463,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
-        className="relative w-full max-w-4xl bg-white dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row my-auto"
+        className="relative w-full max-w-4xl bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row my-auto"
       >
         {/* Canvas Confetti */}
         {modalStage === 'success' && (
@@ -471,55 +471,55 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         )}
 
         {/* LEFT PANE: Plan Summary & Pricing Breakdown */}
-        <div className="w-full md:w-5/12 bg-[#F7F5EF] dark:bg-[#12201D] p-6 sm:p-7 border-b md:border-b-0 md:border-r border-[#E3DED2] dark:border-[#2A403A] flex flex-col justify-between">
+        <div className="w-full md:w-5/12 bg-[#F7F8FA] dark:bg-[#121921] p-6 sm:p-7 border-b md:border-b-0 md:border-r border-[#E3E7EA] dark:border-[#293644] flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 rounded-xl bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#173F3A] flex items-center justify-center font-bold text-sm shadow">
+              <div className="w-8 h-8 rounded-xl bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#244C66] flex items-center justify-center font-bold text-sm shadow">
                 TIQ
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#173F3A] dark:text-[#EEF2ED] leading-none">TravelIQ Developer Checkout</h4>
+                <h4 className="text-sm font-bold text-[#244C66] dark:text-[#F0F4F7] leading-none">TravelIQ Developer Checkout</h4>
                 <span className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">2FA Payment Verification</span>
               </div>
             </div>
 
             {/* Selected Product Card */}
-            <div className="bg-white dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-4 sm:p-5 shadow-sm space-y-3 mb-5">
+            <div className="bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-4 sm:p-5 shadow-sm space-y-3 mb-5">
               <div className="flex justify-between items-start">
                 <div>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
                     {isTopUp ? 'Quota Booster Pack' : 'Monthly Subscription'}
                   </span>
-                  <h3 className="font-bold text-base mt-1.5 text-[#173F3A] dark:text-[#EEF2ED]">{item.name}</h3>
+                  <h3 className="font-bold text-base mt-1.5 text-[#244C66] dark:text-[#F0F4F7]">{item.name}</h3>
                 </div>
                 <div className="text-right font-mono">
-                  <div className="text-xl font-black text-[#173F3A] dark:text-[#EEF2ED]">${priceNum}</div>
+                  <div className="text-xl font-black text-[#244C66] dark:text-[#F0F4F7]">${priceNum}</div>
                   <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">/{item.period || 'pack'}</div>
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-[#E3DED2] dark:border-[#2A403A] text-xs text-[#66736F] dark:text-[#A3B0AB]">
+              <div className="space-y-1.5 pt-2 border-t border-[#E3E7EA] dark:border-[#293644] text-xs text-[#66736F] dark:text-[#A3B0AB]">
                 {item.quota && (
                   <div className="flex justify-between">
                     <span>⚡ API Quota:</span>
-                    <span className="font-semibold text-[#173F3A] dark:text-[#EEF2ED]">{item.quota}</span>
+                    <span className="font-semibold text-[#244C66] dark:text-[#F0F4F7]">{item.quota}</span>
                   </div>
                 )}
                 {item.rateLimit && (
                   <div className="flex justify-between">
                     <span>⏱️ Rate Limit:</span>
-                    <span className="font-semibold text-[#173F3A] dark:text-[#EEF2ED]">{item.rateLimit}</span>
+                    <span className="font-semibold text-[#244C66] dark:text-[#F0F4F7]">{item.rateLimit}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>🏢 Organization:</span>
-                  <span className="font-semibold truncate max-w-[150px] text-[#173F3A] dark:text-[#EEF2ED]">{org?.name || 'Workspace'}</span>
+                  <span className="font-semibold truncate max-w-[150px] text-[#244C66] dark:text-[#F0F4F7]">{org?.name || 'Workspace'}</span>
                 </div>
               </div>
             </div>
 
             {/* Price breakdown */}
-            <div className="bg-white/60 dark:bg-[#1B2C28]/60 border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-4 space-y-2 text-xs">
+            <div className="bg-white/60 dark:bg-[#1B242E]/60 border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-4 space-y-2 text-xs">
               <div className="flex justify-between text-[#66736F] dark:text-[#A3B0AB]">
                 <span>Base Tier Price</span>
                 <span className="font-mono">${priceNum.toFixed(2)}</span>
@@ -528,7 +528,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <span>Estimated Tax (18% GST/VAT)</span>
                 <span className="font-mono">${taxAmount.toFixed(2)}</span>
               </div>
-              <div className="pt-2 border-t border-[#E3DED2] dark:border-[#2A403A] flex justify-between items-center text-sm font-bold text-[#173F3A] dark:text-[#EEF2ED]">
+              <div className="pt-2 border-t border-[#E3E7EA] dark:border-[#293644] flex justify-between items-center text-sm font-bold text-[#244C66] dark:text-[#F0F4F7]">
                 <span>Total Due Now</span>
                 <div className="text-right">
                   <span className="font-mono text-base">${totalAmount.toFixed(2)}</span>
@@ -538,7 +538,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center gap-2 text-[11px] text-[#66736F] dark:text-[#A3B0AB]">
+          <div className="mt-6 pt-4 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center gap-2 text-[11px] text-[#66736F] dark:text-[#A3B0AB]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span>3D-Secure 2.0 & RBI Verified Two-Factor Authentication Gateway</span>
           </div>
@@ -551,7 +551,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
           {modalStage !== 'processing' && modalStage !== 'initiating' && (
             <button
               onClick={onClose}
-              className="absolute top-5 right-5 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-white p-1.5 rounded-full hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-colors z-20"
+              className="absolute top-5 right-5 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-white p-1.5 rounded-full hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-colors z-20"
             >
               ✕
             </button>
@@ -561,12 +561,12 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
           {modalStage === 'selection' && (
             <div className="space-y-5">
               <div>
-                <h3 className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED]">Choose Payment Channel</h3>
+                <h3 className="text-lg font-bold text-[#244C66] dark:text-[#F0F4F7]">Choose Payment Channel</h3>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">Enter your payment details. You will be prompted for 3D Secure / 2FA verification on the next step.</p>
               </div>
 
               {/* Payment Tabs */}
-              <div className="grid grid-cols-4 gap-1.5 bg-[#F7F5EF] dark:bg-[#12201D] p-1 rounded-2xl border border-[#E3DED2] dark:border-[#2A403A]">
+              <div className="grid grid-cols-4 gap-1.5 bg-[#F7F8FA] dark:bg-[#121921] p-1 rounded-2xl border border-[#E3E7EA] dark:border-[#293644]">
                 {[
                   { id: 'card', label: '💳 Card' },
                   { id: 'upi', label: '📱 UPI / QR' },
@@ -578,8 +578,8 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-2 px-1 text-xs font-semibold rounded-xl transition-all ${
                       activeTab === tab.id
-                        ? 'bg-white dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] shadow-sm font-bold'
-                        : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A]'
+                        ? 'bg-white dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] shadow-sm font-bold'
+                        : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66]'
                     }`}
                   >
                     {tab.label}
@@ -591,7 +591,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
               {activeTab === 'card' && (
                 <div className="space-y-4">
                   {/* Card graphic preview */}
-                  <div className="bg-gradient-to-tr from-[#173F3A] via-[#1E4D47] to-[#2E6B63] p-4 rounded-2xl text-white shadow-md relative overflow-hidden text-xs font-mono">
+                  <div className="bg-gradient-to-tr from-[#244C66] via-[#1E4D47] to-[#2E6B63] p-4 rounded-2xl text-white shadow-md relative overflow-hidden text-xs font-mono">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-[10px] tracking-widest uppercase font-bold text-white/70">3D Secure Verified Card</span>
                       <CreditCard className="w-5 h-5 text-emerald-300" />
@@ -625,7 +625,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                           setCardNumber(formatted);
                         }}
                         placeholder="4242 4242 4242 4242"
-                        className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] focus:outline-none focus:ring-2 focus:ring-[#173F3A]"
+                        className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] focus:outline-none focus:ring-2 focus:ring-[#244C66]"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -641,7 +641,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                             setCardExpiry(input);
                           }}
                           placeholder="MM/YY"
-                          className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] focus:outline-none focus:ring-2 focus:ring-[#173F3A]"
+                          className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] focus:outline-none focus:ring-2 focus:ring-[#244C66]"
                         />
                       </div>
                       <div>
@@ -652,7 +652,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                           maxLength="4"
                           onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
                           placeholder="123"
-                          className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] focus:outline-none focus:ring-2 focus:ring-[#173F3A]"
+                          className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] focus:outline-none focus:ring-2 focus:ring-[#244C66]"
                         />
                       </div>
                     </div>
@@ -663,11 +663,11 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
               {/* TAB 2: UPI */}
               {activeTab === 'upi' && (
                 <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#F7F5EF] dark:bg-[#12201D] p-4 rounded-2xl border border-[#E3DED2] dark:border-[#2A403A]">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#F7F8FA] dark:bg-[#121921] p-4 rounded-2xl border border-[#E3E7EA] dark:border-[#293644]">
                     {qrCodeUrl ? (
-                      <div className="relative bg-white p-2 rounded-xl shadow-sm border border-[#E3DED2] flex-shrink-0">
+                      <div className="relative bg-white p-2 rounded-xl shadow-sm border border-[#E3E7EA] flex-shrink-0">
                         <img src={qrCodeUrl} alt="UPI QR" className="w-24 h-24 object-contain" />
-                        <div className="text-[9px] text-center font-bold text-[#173F3A] mt-1 font-mono">
+                        <div className="text-[9px] text-center font-bold text-[#244C66] mt-1 font-mono">
                           ⏱️ {Math.floor(qrCountdown / 60)}:{(qrCountdown % 60).toString().padStart(2, '0')}
                         </div>
                       </div>
@@ -675,7 +675,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                       <div className="w-24 h-24 bg-gray-200 animate-pulse rounded-xl" />
                     )}
                     <div className="space-y-1 text-center sm:text-left">
-                      <span className="text-xs font-bold text-[#173F3A] dark:text-[#EEF2ED] block">Scan & Authenticate UPI</span>
+                      <span className="text-xs font-bold text-[#244C66] dark:text-[#F0F4F7] block">Scan & Authenticate UPI</span>
                       <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">
                         After clicking proceed, enter your 6-digit UPI MPIN on the verification challenge screen.
                       </p>
@@ -689,7 +689,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                       value={upiId}
                       onChange={(e) => setUpiId(e.target.value)}
                       placeholder="developer@okaxis"
-                      className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] focus:outline-none focus:ring-2 focus:ring-[#173F3A]"
+                      className="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] focus:outline-none focus:ring-2 focus:ring-[#244C66]"
                     />
                   </div>
                 </div>
@@ -707,8 +707,8 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                         onClick={() => setSelectedBank(bank)}
                         className={`p-2 rounded-xl border text-center transition-all text-xs font-bold ${
                           selectedBank === bank
-                            ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED]'
-                            : 'border-[#E3DED2] dark:border-[#2A403A] bg-white dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB]'
+                            ? 'border-[#244C66] dark:border-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7]'
+                            : 'border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB]'
                         }`}
                       >
                         {bank} Bank
@@ -720,15 +720,15 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
 
               {/* TAB 4: SANDBOX BYPASS */}
               {activeTab === 'sandbox' && (
-                <div className="space-y-3 bg-[#F7F5EF] dark:bg-[#12201D] p-4 rounded-2xl border border-[#E3DED2] dark:border-[#2A403A]">
-                  <div className="flex items-center gap-2 text-[#173F3A] dark:text-[#EEF2ED] font-bold text-xs">
+                <div className="space-y-3 bg-[#F7F8FA] dark:bg-[#121921] p-4 rounded-2xl border border-[#E3E7EA] dark:border-[#293644]">
+                  <div className="flex items-center gap-2 text-[#244C66] dark:text-[#F0F4F7] font-bold text-xs">
                     <Terminal className="w-4 h-4 text-emerald-500" />
                     <span>Instant Direct Mock Webhook Token</span>
                   </div>
                   <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">
                     Directly bypass verification prompt and execute immediate webhook payment elevation.
                   </p>
-                  <div className="bg-[#12201D] text-emerald-400 p-2 rounded-xl font-mono text-xs break-all">
+                  <div className="bg-[#121921] text-emerald-400 p-2 rounded-xl font-mono text-xs break-all">
                     {sandboxToken}
                   </div>
                 </div>
@@ -739,7 +739,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <button
                   type="button"
                   onClick={handleInitiatePayment}
-                  className="w-full bg-[#173F3A] hover:bg-[#214F49] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] dark:hover:bg-white py-3 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+                  className="w-full bg-[#244C66] hover:bg-[#214F49] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] dark:hover:bg-white py-3 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
                 >
                   <ShieldCheck className="w-4 h-4" /> Proceed to 2FA Verification (${totalAmount.toFixed(2)})
                 </button>
@@ -750,8 +750,8 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
           {/* STAGE 2: INITIATING */}
           {modalStage === 'initiating' && (
             <div className="flex flex-col items-center justify-center flex-1 py-12 text-center space-y-4 animate-fade-in">
-              <div className="w-12 h-12 border-4 border-[#173F3A]/20 dark:border-white/20 border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin" />
-              <h4 className="text-sm font-bold text-[#173F3A] dark:text-[#EEF2ED]">Contacting Issuing Bank Gateway...</h4>
+              <div className="w-12 h-12 border-4 border-[#244C66]/20 dark:border-white/20 border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin" />
+              <h4 className="text-sm font-bold text-[#244C66] dark:text-[#F0F4F7]">Contacting Issuing Bank Gateway...</h4>
               <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">{processingStep}</p>
             </div>
           )}
@@ -760,19 +760,19 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
           {modalStage === 'verification' && (
             <div className="space-y-4 animate-fade-in">
               {/* Bank Gateway Header */}
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] p-3.5 rounded-2xl border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] p-3.5 rounded-2xl border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                     3DS
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-[#173F3A] dark:text-[#EEF2ED]">Verified by Visa / Mastercard ID Check</h4>
+                    <h4 className="text-xs font-bold text-[#244C66] dark:text-[#F0F4F7]">Verified by Visa / Mastercard ID Check</h4>
                     <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">RBI & PCI-DSS Compliant Gateway</span>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] uppercase font-bold text-[#66736F] dark:text-[#A3B0AB] block">Amount</span>
-                  <span className="text-sm font-mono font-bold text-[#173F3A] dark:text-[#EEF2ED]">${totalAmount.toFixed(2)}</span>
+                  <span className="text-sm font-mono font-bold text-[#244C66] dark:text-[#F0F4F7]">${totalAmount.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -781,9 +781,9 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2">
                   <SmartphoneNfc className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-base text-[#173F3A] dark:text-[#EEF2ED]">Enter One-Time Password (OTP)</h3>
+                <h3 className="font-bold text-base text-[#244C66] dark:text-[#F0F4F7]">Enter One-Time Password (OTP)</h3>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] max-w-sm mx-auto">
-                  A high-security 6-digit OTP has been sent to your registered mobile number <strong className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">{orderData?.phone_hint || '+91 ••••••' + String(org?.id ? org.id * 739 + 1000 : 9402).slice(-4)}</strong> and email <strong className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">{orderData?.email_hint || 'developer•••@platform.com'}</strong>.
+                  A high-security 6-digit OTP has been sent to your registered mobile number <strong className="text-[#244C66] dark:text-[#F0F4F7] font-mono">{orderData?.phone_hint || '+91 ••••••' + String(org?.id ? org.id * 739 + 1000 : 9402).slice(-4)}</strong> and email <strong className="text-[#244C66] dark:text-[#F0F4F7] font-mono">{orderData?.email_hint || 'developer•••@platform.com'}</strong>.
                 </p>
               </div>
 
@@ -798,7 +798,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e.target)}
-                    className="w-10 h-12 text-center text-lg font-mono font-bold rounded-xl border border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] text-[#173F3A] dark:text-[#EEF2ED] focus:outline-none focus:ring-2 focus:ring-[#173F3A] shadow-sm"
+                    className="w-10 h-12 text-center text-lg font-mono font-bold rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] text-[#244C66] dark:text-[#F0F4F7] focus:outline-none focus:ring-2 focus:ring-[#244C66] shadow-sm"
                   />
                 ))}
               </div>
@@ -844,7 +844,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                   type="button"
                   disabled={isVerifying}
                   onClick={(e) => executeVerification(e)}
-                  className="w-full bg-[#173F3A] hover:bg-[#214F49] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] dark:hover:bg-white py-3 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+                  className="w-full bg-[#244C66] hover:bg-[#214F49] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] dark:hover:bg-white py-3 px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
                 >
                   <KeyRound className="w-4 h-4" /> Verify & Settle Payment
                 </button>
@@ -852,7 +852,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <button
                   type="button"
                   onClick={() => setModalStage('selection')}
-                  className="w-full text-center text-xs text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-white py-1.5 font-semibold flex items-center justify-center gap-1"
+                  className="w-full text-center text-xs text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-white py-1.5 font-semibold flex items-center justify-center gap-1"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Change Payment Method
                 </button>
@@ -864,12 +864,12 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
           {modalStage === 'processing' && (
             <div className="flex flex-col items-center justify-center flex-1 py-8 text-center space-y-5 animate-fade-in">
               <div className="relative w-16 h-16">
-                <div className="w-16 h-16 border-4 border-[#173F3A]/20 dark:border-white/20 border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin" />
+                <div className="w-16 h-16 border-4 border-[#244C66]/20 dark:border-white/20 border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin" />
                 <Sparkles className="w-6 h-6 text-emerald-500 absolute inset-0 m-auto animate-pulse" />
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-[#173F3A] dark:text-[#EEF2ED]">Verifying Two-Factor Authentication...</h3>
+                <h3 className="text-base font-bold text-[#244C66] dark:text-[#F0F4F7]">Verifying Two-Factor Authentication...</h3>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-mono mt-1">{processingStep}</p>
               </div>
 
@@ -895,17 +895,17 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 mb-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> 2FA Bank Authentication Verified
                 </div>
-                <h3 className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED]">Payment Settled & Plan Active!</h3>
+                <h3 className="text-lg font-bold text-[#244C66] dark:text-[#F0F4F7]">Payment Settled & Plan Active!</h3>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-0.5">
                   Your developer license and quota tier have been elevated and provisioned.
                 </p>
               </div>
 
               {/* Transaction receipt badge */}
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-4 w-full text-left space-y-2 text-xs">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-4 w-full text-left space-y-2 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Transaction Ref:</span>
-                  <div className="flex items-center gap-1 font-mono font-bold text-[#173F3A] dark:text-[#EEF2ED]">
+                  <div className="flex items-center gap-1 font-mono font-bold text-[#244C66] dark:text-[#F0F4F7]">
                     <span>{transactionResult?.transactionId}</span>
                     <button onClick={() => copyTxn(transactionResult?.transactionId)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-800 rounded">
                       {copiedTxn ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -918,7 +918,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Activated Item:</span>
-                  <span className="font-bold text-[#173F3A] dark:text-[#EEF2ED]">{item.name}</span>
+                  <span className="font-bold text-[#244C66] dark:text-[#F0F4F7]">{item.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Total Settled:</span>
@@ -930,14 +930,14 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <button
                   type="button"
                   onClick={handleDownloadInvoice}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-semibold border border-[#E3DED2] dark:border-[#2A403A] bg-white dark:bg-[#1B2C28] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-colors"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-semibold border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-colors"
                 >
                   <FileText className="w-3.5 h-3.5" /> Download Tax Invoice
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] hover:opacity-90 shadow transition-all"
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] hover:opacity-90 shadow transition-all"
                 >
                   Return to Console <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -963,14 +963,14 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
                 <button
                   type="button"
                   onClick={() => setModalStage('selection')}
-                  className="bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] px-5 py-2 rounded-xl text-xs font-bold shadow hover:opacity-90"
+                  className="bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] px-5 py-2 rounded-xl text-xs font-bold shadow hover:opacity-90"
                 >
                   🔄 Try Again
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold border border-[#E3DED2] dark:border-[#2A403A] hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold border border-[#E3E7EA] dark:border-[#293644] hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </button>

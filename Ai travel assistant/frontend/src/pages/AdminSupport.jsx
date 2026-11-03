@@ -13,10 +13,10 @@ export default function AdminSupport() {
 
     // Metrics
     const metrics = [
-        { label: 'Total Tickets', value: 142, icon: Activity, color: 'text-[#173F3A] dark:text-[#EEF2ED]' },
+        { label: 'Total Tickets', value: 142, icon: Activity, color: 'text-[#244C66] dark:text-[#F0F4F7]' },
         { label: 'Open', value: 24, icon: AlertCircle, color: 'text-[#E5B85C]' },
         { label: 'Resolved', value: 110, icon: CheckCircle, color: 'text-[#4F7D62]' },
-        { label: 'Avg Resolution', value: '4.2h', icon: Clock, color: 'text-[#173F3A] dark:text-[#EEF2ED]' },
+        { label: 'Avg Resolution', value: '4.2h', icon: Clock, color: 'text-[#244C66] dark:text-[#F0F4F7]' },
     ];
 
     const fetchTickets = async () => {
@@ -68,21 +68,21 @@ export default function AdminSupport() {
 
     const getStatusColor = (status) => {
         switch(status) {
-            case 'Open': return 'bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border-[#E3DED2] dark:border-[#2A403A]';
-            case 'In Progress': return 'bg-[#EEF2ED] dark:bg-[#213530] text-[#E5B85C] border-[#E5B85C]/20';
-            case 'Resolved': return 'bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] border-[#4F7D62]/20';
-            case 'Closed': return 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] border-[#E3DED2] dark:border-[#2A403A]';
-            default: return 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] border-[#E3DED2] dark:border-[#2A403A]';
+            case 'Open': return 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border-[#E3E7EA] dark:border-[#293644]';
+            case 'In Progress': return 'bg-[#F0F4F7] dark:bg-[#233240] text-[#E5B85C] border-[#E5B85C]/20';
+            case 'Resolved': return 'bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] border-[#4F7D62]/20';
+            case 'Closed': return 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] border-[#E3E7EA] dark:border-[#293644]';
+            default: return 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] border-[#E3E7EA] dark:border-[#293644]';
         }
     };
 
     const getPriorityColor = (priority) => {
         switch(priority) {
-            case 'Low': return 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB]';
-            case 'Medium': return 'bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED]';
+            case 'Low': return 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB]';
+            case 'Medium': return 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7]';
             case 'High': return 'bg-[#E5B85C]/10 text-[#E5B85C]';
             case 'Critical': return 'bg-[#B94A48]/10 text-[#B94A48] border border-[#B94A48]/20';
-            default: return 'bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB]';
+            default: return 'bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB]';
         }
     };
 
@@ -99,13 +99,13 @@ export default function AdminSupport() {
     const filteredTickets = tickets;
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen p-8 text-[#263238] dark:text-[#F7F5EF] font-sans">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen p-8 text-[#263238] dark:text-[#F7F8FA] font-sans">
             <div className="max-w-7xl mx-auto space-y-8">
                 
-                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-6">
+                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-6">
                     <div>
-                        <h1 className="text-3xl font-bold flex items-center gap-3 text-[#173F3A] dark:text-[#EEF2ED] font-['Manrope']">
-                            <ShieldCheck className="w-8 h-8 text-[#173F3A] dark:text-[#EEF2ED]" /> Support Desk Admin
+                        <h1 className="text-3xl font-bold flex items-center gap-3 text-[#244C66] dark:text-[#F0F4F7] font-['Manrope']">
+                            <ShieldCheck className="w-8 h-8 text-[#244C66] dark:text-[#F0F4F7]" /> Support Desk Admin
                         </h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] mt-2">Manage user tickets, assign priorities, and resolve issues.</p>
                     </div>
@@ -114,12 +114,12 @@ export default function AdminSupport() {
                 {/* Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {metrics.map((m, idx) => (
-                        <div key={idx} className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 flex items-center justify-between shadow-sm">
+                        <div key={idx} className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-6 flex items-center justify-between shadow-sm">
                             <div>
                                 <p className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider mb-1">{m.label}</p>
-                                <p className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF]">{m.value}</p>
+                                <p className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA]">{m.value}</p>
                             </div>
-                            <div className={`p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A] ${m.color}`}>
+                            <div className={`p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644] ${m.color}`}>
                                 <m.icon className="w-6 h-6" />
                             </div>
                         </div>
@@ -127,15 +127,15 @@ export default function AdminSupport() {
                 </div>
 
                 {/* n8n AI Automation Engine Hub */}
-                <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 shadow-sm">
+                <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-6 shadow-sm">
                     
                     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                         <div className="space-y-2">
                             <div className="flex items-center gap-2.5">
-                                <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                                <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                                     <Zap className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED] flex items-center gap-2 font-['Manrope']">
+                                <h3 className="text-lg font-bold text-[#244C66] dark:text-[#F0F4F7] flex items-center gap-2 font-['Manrope']">
                                     n8n AI Workflow Automation Engine
                                     {n8nTelemetry?.lastStatus === 'Connected' || n8nTelemetry?.lastStatus === 'Success' ? (
                                         <span className="text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full bg-[#4F7D62]/10 text-[#4F7D62] border border-[#4F7D62]/30 flex items-center gap-1.5">
@@ -154,22 +154,22 @@ export default function AdminSupport() {
                                 Automatically triggers AI-generated resolution replies when users request support, and personalized journey briefings when tickets are booked. Ready for self-hosted or cloud n8n instances.
                             </p>
                             <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#66736F] dark:text-[#A3B0AB] font-mono">
-                                <span>Support Webhook: <code className="text-[#173F3A] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] px-2 py-0.5 rounded border border-[#E3DED2] dark:border-[#2A403A]">/webhook/traveliq-support</code></span>
-                                <span>Booking Webhook: <code className="text-[#173F3A] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] px-2 py-0.5 rounded border border-[#E3DED2] dark:border-[#2A403A]">/webhook/traveliq-booking</code></span>
+                                <span>Support Webhook: <code className="text-[#244C66] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] px-2 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">/webhook/traveliq-support</code></span>
+                                <span>Booking Webhook: <code className="text-[#244C66] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] px-2 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">/webhook/traveliq-booking</code></span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block pr-2">
                                 <p className="text-[10px] uppercase font-semibold text-[#66736F] dark:text-[#A3B0AB]">Total Triggered</p>
-                                <p className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">
+                                <p className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">
                                     {n8nTelemetry?.totalDispatched || 0} Events
                                 </p>
                             </div>
                             <button
                                 onClick={handleTestN8n}
                                 disabled={isTestingN8n}
-                                className="px-5 py-2.5 rounded-lg bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#173F3A] text-white font-medium text-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="px-5 py-2.5 rounded-lg bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#244C66] text-white font-medium text-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 <Sparkles className={`w-4 h-4 ${isTestingN8n ? 'animate-spin' : ''}`} />
                                 <span>{isTestingN8n ? 'Testing...' : 'Test n8n Webhook'}</span>
@@ -179,20 +179,20 @@ export default function AdminSupport() {
                 </div>
 
                 {/* Tickets Table Area */}
-                <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden shadow-sm">
                     
                     {/* Controls */}
-                    <div className="p-4 border-b border-[#E3DED2] dark:border-[#2A403A] flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-3 py-2 w-full md:w-96">
+                    <div className="p-4 border-b border-[#E3E7EA] dark:border-[#293644] flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 w-full md:w-96">
                             <Search className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
-                            <input type="text" placeholder="Search ticket ID or user..." className="bg-transparent border-none outline-none text-sm text-[#263238] dark:text-[#F7F5EF] w-full placeholder-[#66736F] dark:placeholder-[#A3B0AB]" />
+                            <input type="text" placeholder="Search ticket ID or user..." className="bg-transparent border-none outline-none text-sm text-[#263238] dark:text-[#F7F8FA] w-full placeholder-[#66736F] dark:placeholder-[#A3B0AB]" />
                         </div>
                         <div className="flex items-center gap-2">
                             <Filter className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
                             <select 
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] text-sm text-[#263238] dark:text-[#F7F5EF] rounded-lg p-2 outline-none"
+                                className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] text-sm text-[#263238] dark:text-[#F7F8FA] rounded-lg p-2 outline-none"
                             >
                                 <option value="All">All Statuses</option>
                                 <option value="Open">Open</option>
@@ -204,7 +204,7 @@ export default function AdminSupport() {
                     </div>
 
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-4 p-4 bg-[#F7F5EF] dark:bg-[#12201D] border-b border-[#E3DED2] dark:border-[#2A403A] text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">
+                    <div className="grid grid-cols-12 gap-4 p-4 bg-[#F7F8FA] dark:bg-[#121921] border-b border-[#E3E7EA] dark:border-[#293644] text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">
                         <div className="col-span-1">Ticket ID</div>
                         <div className="col-span-2">User</div>
                         <div className="col-span-3">Subject</div>
@@ -217,20 +217,20 @@ export default function AdminSupport() {
                     {/* Table Body */}
                     {loading ? (
                         <div className="p-12 text-center">
-                            <div className="w-8 h-8 border-3 border-[#173F3A]/30 dark:border-[#EEF2ED]/30 border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mx-auto mb-4" />
+                            <div className="w-8 h-8 border-3 border-[#244C66]/30 dark:border-[#F0F4F7]/30 border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mx-auto mb-4" />
                         </div>
                     ) : (
-                        <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                        <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                             {filteredTickets.map(ticket => (
-                                <div key={ticket.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F5EF]/50 dark:hover:bg-[#12201D]/50 transition-colors">
+                                <div key={ticket.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F8FA]/50 dark:hover:bg-[#121921]/50 transition-colors">
                                     <div className="col-span-1">
                                         <span className="text-[10px] font-mono text-[#66736F] dark:text-[#A3B0AB]">#{ticket.id}</span>
                                     </div>
                                     <div className="col-span-2">
-                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F5EF] block">{ticket.User?.name || 'User'}</span>
+                                        <span className="text-sm font-medium text-[#263238] dark:text-[#F7F8FA] block">{ticket.User?.name || 'User'}</span>
                                     </div>
                                     <div className="col-span-3">
-                                        <p className="text-sm text-[#263238] dark:text-[#F7F5EF] truncate" title={ticket.subject}>{ticket.subject}</p>
+                                        <p className="text-sm text-[#263238] dark:text-[#F7F8FA] truncate" title={ticket.subject}>{ticket.subject}</p>
                                         <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold tracking-wider">{ticket.category}</span>
                                     </div>
                                     <div className="col-span-2 text-center">
@@ -239,11 +239,11 @@ export default function AdminSupport() {
                                             onChange={(e) => handleStatusChange(ticket.id, e.target.value)}
                                             className={`text-[10px] font-semibold uppercase tracking-wider border rounded-md px-2 py-1 outline-none appearance-none text-center cursor-pointer ${getStatusColor(ticket.status)}`}
                                         >
-                                            <option value="Open" className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">Open</option>
-                                            <option value="In Progress" className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">In Progress</option>
-                                            <option value="Resolved" className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">Resolved</option>
-                                            <option value="Closed" className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">Closed</option>
-                                            <option value="Rejected" className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">Rejected</option>
+                                            <option value="Open" className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">Open</option>
+                                            <option value="In Progress" className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">In Progress</option>
+                                            <option value="Resolved" className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">Resolved</option>
+                                            <option value="Closed" className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">Closed</option>
+                                            <option value="Rejected" className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">Rejected</option>
                                         </select>
                                     </div>
                                     <div className="col-span-1 text-center flex justify-center">
@@ -257,7 +257,7 @@ export default function AdminSupport() {
                                     <div className="col-span-1 flex justify-center gap-2">
                                         <Link 
                                             to={`/support/ticket/${ticket.id}`}
-                                            className="p-1.5 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded text-[#173F3A] dark:text-[#EEF2ED] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors"
+                                            className="p-1.5 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded text-[#244C66] dark:text-[#F0F4F7] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors"
                                             title="Open Ticket / Reply"
                                         >
                                             <MessageSquare className="w-4 h-4" />

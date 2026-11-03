@@ -24,14 +24,14 @@ const riskData = [
 
 function PredictionCard({ icon: Icon, color, title, children, onSubmit, submitLabel, submitColor }) {
   return (
-    <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm space-y-4">
+    <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm space-y-4">
       <div className="flex items-center gap-2">
         <Icon className={`w-5 h-5 ${color}`} />
-        <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope">{title}</h3>
+        <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope">{title}</h3>
       </div>
       <form onSubmit={onSubmit} className="space-y-3">
         {children}
-        <button type="submit" className={`w-full py-2.5 ${submitColor || 'bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-white dark:text-[#12201D]'} font-bold text-sm rounded-lg cursor-pointer transition-colors`}>
+        <button type="submit" className={`w-full py-2.5 ${submitColor || 'bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-white dark:text-[#121921]'} font-bold text-sm rounded-lg cursor-pointer transition-colors`}>
           {submitLabel || 'Predict'}
         </button>
       </form>
@@ -42,11 +42,11 @@ function PredictionCard({ icon: Icon, color, title, children, onSubmit, submitLa
 function ResultPanel({ result, fields }) {
   if (!result) return null;
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl space-y-2 text-xs mt-3">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl space-y-2 text-xs mt-3">
       {fields.map((f, i) => (
         <div key={i} className="flex justify-between">
           <span className="text-[#66736F] dark:text-[#A3B0AB]">{f.label}</span>
-          <span className={`font-bold ${f.color || 'text-[#263238] dark:text-[#F7F5EF]'}`}>{f.value(result)}</span>
+          <span className={`font-bold ${f.color || 'text-[#263238] dark:text-[#F7F8FA]'}`}>{f.value(result)}</span>
         </div>
       ))}
     </motion.div>
@@ -71,21 +71,21 @@ export default function AIPredictionsPage() {
     <div>
       <label className="text-xs text-[#66736F] dark:text-[#A3B0AB] block mb-1">{label}</label>
       <input type={type} value={val[field]} onChange={e => setter(p => ({ ...p, [field]: type === 'number' ? Number(e.target.value) : e.target.value }))}
-        className="w-full px-3 py-2 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg text-[#263238] dark:text-[#F7F5EF] text-sm focus:outline-none focus:ring-2 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED]" />
+        className="w-full px-3 py-2 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg text-[#263238] dark:text-[#F7F8FA] text-sm focus:outline-none focus:ring-2 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7]" />
     </div>
   );
 
   return (
     <div className="flex-1 w-full p-4 lg:p-8 space-y-6 max-w-7xl mx-auto font-inter">
       <div className="flex items-center gap-3 mb-2">
-        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3DED2]/50 dark:hover:bg-[#2A403A]/50 rounded-xl transition-colors">
+        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3E7EA]/50 dark:hover:bg-[#293644]/50 rounded-xl transition-colors">
           <ArrowLeft className="w-5 h-5 text-[#66736F] dark:text-[#A3B0AB]" />
         </Link>
-        <div className="p-2.5 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
-          <BarChart3 className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+        <div className="p-2.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
+          <BarChart3 className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope">AI Travel Predictions</h1>
+          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope">AI Travel Predictions</h1>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">LSTM neural network predictions for delays, fares, crowd density, and coach occupancy.</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function AIPredictionsPage() {
               {inp(delayIn, setDelayIn, 'day_of_week', 'Day (1-7)', 'number')}
               <div>
                 <label className="text-xs text-[#66736F] dark:text-[#A3B0AB] block mb-1">Weather</label>
-                <select value={delayIn.weather} onChange={e => setDelayIn(p => ({ ...p, weather: e.target.value }))} className="w-full px-3 py-2 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg text-[#263238] dark:text-[#F7F5EF] text-sm focus:outline-none focus:ring-2 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED]">
+                <select value={delayIn.weather} onChange={e => setDelayIn(p => ({ ...p, weather: e.target.value }))} className="w-full px-3 py-2 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg text-[#263238] dark:text-[#F7F8FA] text-sm focus:outline-none focus:ring-2 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7]">
                   <option value="Clear">Clear</option><option value="Foggy">Foggy</option><option value="Heavy Rain">Heavy Rain</option>
                 </select>
               </div>
@@ -112,13 +112,13 @@ export default function AIPredictionsPage() {
             { label: 'Delay Probability', value: r => `${r.delay_probability}%`, color: 'text-[#D96C4F]' },
             { label: 'Arrival Delay', value: r => `${r.expected_arrival_delay_mins} mins` },
             { label: 'Departure Delay', value: r => `${r.expected_departure_delay_mins} mins` },
-            { label: 'Confidence', value: r => `${r.confidence}%`, color: 'text-[#173F3A] dark:text-[#EEF2ED]' }
+            { label: 'Confidence', value: r => `${r.confidence}%`, color: 'text-[#244C66] dark:text-[#F0F4F7]' }
           ]} />
         </div>
 
         {/* Fare */}
         <div>
-          <PredictionCard icon={DollarSign} color="text-[#173F3A] dark:text-[#EEF2ED]" title="Fare Trend Forecaster" submitLabel="Forecast 7-Day Fare" submitColor="bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-white dark:text-[#12201D]"
+          <PredictionCard icon={DollarSign} color="text-[#244C66] dark:text-[#F0F4F7]" title="Fare Trend Forecaster" submitLabel="Forecast 7-Day Fare" submitColor="bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-white dark:text-[#121921]"
             onSubmit={e => { e.preventDefault(); submit('predict-fare', fareIn, setFareOut); }}>
             <div className="grid grid-cols-2 gap-3 text-xs">
               {inp(fareIn, setFareIn, 'source', 'Source')}
@@ -129,8 +129,8 @@ export default function AIPredictionsPage() {
           </PredictionCard>
           <ResultPanel result={fareOut} fields={[
             { label: 'Current Fare', value: r => `₹${r.current_fare}` },
-            { label: 'Predicted 7d Fare', value: r => `₹${r.forecasted_fare_7d}`, color: 'text-[#173F3A] dark:text-[#EEF2ED]' },
-            { label: 'Action', value: r => r.recommendation, color: r => r?.recommendation === 'Book Now' ? 'text-[#173F3A] dark:text-[#EEF2ED]' : 'text-[#E5B85C]' },
+            { label: 'Predicted 7d Fare', value: r => `₹${r.forecasted_fare_7d}`, color: 'text-[#244C66] dark:text-[#F0F4F7]' },
+            { label: 'Action', value: r => r.recommendation, color: r => r?.recommendation === 'Book Now' ? 'text-[#244C66] dark:text-[#F0F4F7]' : 'text-[#E5B85C]' },
             { label: 'Demand', value: r => r.demand_level }
           ]} />
         </div>
@@ -154,7 +154,7 @@ export default function AIPredictionsPage() {
 
         {/* Occupancy */}
         <div>
-          <PredictionCard icon={Heart} color="text-[#66736F] dark:text-[#A3B0AB]" title="Coach Occupancy Estimator" submitLabel="Analyze Seats" submitColor="bg-[#263238] hover:bg-[#1A2327] dark:bg-[#A3B0AB] dark:hover:bg-[#F7F5EF] text-white dark:text-[#12201D]"
+          <PredictionCard icon={Heart} color="text-[#66736F] dark:text-[#A3B0AB]" title="Coach Occupancy Estimator" submitLabel="Analyze Seats" submitColor="bg-[#263238] hover:bg-[#1A2327] dark:bg-[#A3B0AB] dark:hover:bg-[#F7F8FA] text-white dark:text-[#121921]"
             onSubmit={e => { e.preventDefault(); submit('predict-occupancy', occIn, setOccOut); }}>
             <div className="grid grid-cols-3 gap-3 text-xs">
               {inp(occIn, setOccIn, 'train_number', 'Train No.')}
@@ -164,7 +164,7 @@ export default function AIPredictionsPage() {
           </PredictionCard>
           <ResultPanel result={occOut} fields={[
             { label: 'Occupancy', value: r => `${r.coach_occupancy_percent}%` },
-            { label: 'Confirmation Prob', value: r => `${r.availability_probability}%`, color: 'text-[#173F3A] dark:text-[#EEF2ED]' },
+            { label: 'Confirmation Prob', value: r => `${r.availability_probability}%`, color: 'text-[#244C66] dark:text-[#F0F4F7]' },
             { label: 'Waiting List', value: r => `${r.expected_waiting_list} count` }
           ]} />
         </div>
@@ -172,32 +172,32 @@ export default function AIPredictionsPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm">
-          <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" /> LSTM Demand Index Forecast</h3>
+        <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm">
+          <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" /> LSTM Demand Index Forecast</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={demandData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #E3DED2)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #E3E7EA)" />
                 <XAxis dataKey="day" stroke="var(--color-text-muted, #66736F)" fontSize={10} /><YAxis stroke="var(--color-text-muted, #66736F)" fontSize={10} />
-                <Tooltip contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3DED2)', borderRadius: '8px', color: 'var(--color-text, #263238)' }} itemStyle={{ color: 'var(--color-text, #263238)' }} />
-                <Area type="monotone" dataKey="NDLS_BBS" stroke="#173F3A" fill="#EEF2ED" name="NDLS-BBS" />
-                <Area type="monotone" dataKey="CSMT_NDLS" stroke="#D96C4F" fill="#F7F5EF" name="CSMT-NDLS" />
+                <Tooltip contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3E7EA)', borderRadius: '8px', color: 'var(--color-text, #263238)' }} itemStyle={{ color: 'var(--color-text, #263238)' }} />
+                <Area type="monotone" dataKey="NDLS_BBS" stroke="#244C66" fill="#F0F4F7" name="NDLS-BBS" />
+                <Area type="monotone" dataKey="CSMT_NDLS" stroke="#D96C4F" fill="#F7F8FA" name="CSMT-NDLS" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm">
-          <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope mb-4 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-[#D96C4F]" /> Route Risk Comparison</h3>
+        <div className="p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm">
+          <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope mb-4 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-[#D96C4F]" /> Route Risk Comparison</h3>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={riskData} margin={{ top: 5, right: 20, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #E3DED2)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #E3E7EA)" />
                 <XAxis dataKey="route" stroke="var(--color-text-muted, #66736F)" fontSize={10} /><YAxis stroke="var(--color-text-muted, #66736F)" fontSize={10} />
-                <Tooltip contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3DED2)', borderRadius: '8px', color: 'var(--color-text, #263238)' }} itemStyle={{ color: 'var(--color-text, #263238)' }} />
+                <Tooltip contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3E7EA)', borderRadius: '8px', color: 'var(--color-text, #263238)' }} itemStyle={{ color: 'var(--color-text, #263238)' }} />
                 <Bar dataKey="delay" fill="#D96C4F" radius={[4,4,0,0]} name="Delay Risk" />
                 <Bar dataKey="crowd" fill="#E5B85C" radius={[4,4,0,0]} name="Crowd %" />
-                <Bar dataKey="safety" fill="#173F3A" radius={[4,4,0,0]} name="Safety Score" />
+                <Bar dataKey="safety" fill="#244C66" radius={[4,4,0,0]} name="Safety Score" />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -339,7 +339,7 @@ export default function BookingModal({ train, onClose }) {
         width: 480,
         margin: 2,
         color: {
-          dark: '#12201D',
+          dark: '#121921',
           light: '#FFFFFF'
         },
         errorCorrectionLevel: 'H'
@@ -538,21 +538,21 @@ export default function BookingModal({ train, onClose }) {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl w-full max-w-5xl my-auto max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+        className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl w-full max-w-5xl my-auto max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4 border-b border-[#E3DED2] dark:border-[#2A403A] flex justify-between items-center bg-[#F7F5EF] dark:bg-[#12201D] shrink-0">
+        <div className="px-5 sm:px-6 py-4 border-b border-[#E3E7EA] dark:border-[#293644] flex justify-between items-center bg-[#F7F8FA] dark:bg-[#121921] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-xl border border-[#E3DED2] dark:border-[#2A403A]">
+            <div className="p-2.5 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
               {transportIcon()}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED]">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7]">
                   {transportType} Booking
                 </span>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F5EF] mt-0.5">
+              <h2 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] mt-0.5">
                 {train?.train_name || train?.name || 'Express Service'} 
                 <span className="font-mono text-xs text-[#66736F] dark:text-[#A3B0AB] ml-2">
                   (#{train?.train_number || train?.number || '12301'})
@@ -562,7 +562,7 @@ export default function BookingModal({ train, onClose }) {
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 bg-[#E3DED2]/60 hover:bg-[#E3DED2] dark:bg-[#2A403A]/60 dark:hover:bg-[#2A403A] rounded-full transition-colors text-[#263238] dark:text-[#F7F5EF] cursor-pointer"
+            className="p-2 bg-[#E3E7EA]/60 hover:bg-[#E3E7EA] dark:bg-[#293644]/60 dark:hover:bg-[#293644] rounded-full transition-colors text-[#263238] dark:text-[#F7F8FA] cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -572,7 +572,7 @@ export default function BookingModal({ train, onClose }) {
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           
           {/* Left: Interactive Form Area */}
-          <div className="w-full lg:w-2/3 overflow-y-auto p-5 sm:p-6 space-y-6 bg-[#FFFFFF] dark:bg-[#1B2C28]">
+          <div className="w-full lg:w-2/3 overflow-y-auto p-5 sm:p-6 space-y-6 bg-[#FFFFFF] dark:bg-[#1B242E]">
             
             {bookingComplete ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-8 sm:py-12">
@@ -581,7 +581,7 @@ export default function BookingModal({ train, onClose }) {
                     <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12" />
                   </div>
                 </motion.div>
-                <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">
+                <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">
                   {confirmedBookingData?.booking_status === 'Confirmed' ? 'Booking Confirmed!' : 'Booking Created (Pending Payment)'}
                 </h3>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mb-6 max-w-md">
@@ -593,18 +593,18 @@ export default function BookingModal({ train, onClose }) {
                 </p>
                 
                 {confirmedBookingData && (
-                  <div className="w-full max-w-md bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 sm:p-5 text-left space-y-3 shadow-sm">
-                    <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
+                  <div className="w-full max-w-md bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 sm:p-5 text-left space-y-3 shadow-sm">
+                    <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">TravelIQ Reference</span>
-                      <span className="font-bold text-[#263238] dark:text-[#F7F5EF] font-mono text-sm">{confirmedBookingData.booking_reference || `TIQ-${confirmedBookingData.id}`}</span>
+                      <span className="font-bold text-[#263238] dark:text-[#F7F8FA] font-mono text-sm">{confirmedBookingData.booking_reference || `TIQ-${confirmedBookingData.id}`}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
+                    <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Booking Status</span>
-                      <span className="font-bold text-xs uppercase text-[#263238] dark:text-[#F7F5EF]">
+                      <span className="font-bold text-xs uppercase text-[#263238] dark:text-[#F7F8FA]">
                         {confirmedBookingData.booking_status || 'Pending'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-xs border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
+                    <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Payment Status</span>
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase flex items-center gap-1 ${
                         confirmedBookingData.payment_status === 'Paid'
@@ -616,7 +616,7 @@ export default function BookingModal({ train, onClose }) {
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Allocated Class</span>
-                      <span className="text-[#263238] dark:text-[#F7F5EF] font-bold">
+                      <span className="text-[#263238] dark:text-[#F7F8FA] font-bold">
                         {confirmedBookingData.travel_class} ({classDisplayNames[confirmedBookingData.travel_class] || confirmedBookingData.travel_class})
                       </span>
                     </div>
@@ -637,7 +637,7 @@ export default function BookingModal({ train, onClose }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full max-w-md mt-3.5 p-3 bg-[#FFFDF7] dark:bg-[#101B17] border border-[#E58A3A]/40 rounded-xl text-left flex items-center justify-between gap-3 shadow-xs">
+                  <div className="w-full max-w-md mt-3.5 p-3 bg-[#FFFDF7] dark:bg-[#121921] border border-[#E58A3A]/40 rounded-xl text-left flex items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-2.5">
                       <span className="text-xl">🏨</span>
                       <div>
@@ -653,10 +653,10 @@ export default function BookingModal({ train, onClose }) {
                 )}
 
                 {/* n8n AI Briefing Card */}
-                <div className="w-full max-w-md mt-3.5 p-3.5 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl text-left flex items-start gap-3 shadow-sm">
-                  <div className="p-2 bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED] rounded-lg text-lg">🤖</div>
+                <div className="w-full max-w-md mt-3.5 p-3.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl text-left flex items-start gap-3 shadow-sm">
+                  <div className="p-2 bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] rounded-lg text-lg">🤖</div>
                   <div className="space-y-1 text-xs">
-                    <p className="font-semibold text-[#173F3A] dark:text-[#F7F5EF] flex items-center gap-2">
+                    <p className="font-semibold text-[#244C66] dark:text-[#F7F8FA] flex items-center gap-2">
                       <span>AI Journey Briefing Dispatched</span>
                       <span className="text-[9px] bg-[#4F7D62]/15 text-[#4F7D62] border border-[#4F7D62]/30 px-1.5 py-0.5 rounded font-mono font-semibold">
                         ⚡ automated
@@ -675,13 +675,13 @@ export default function BookingModal({ train, onClose }) {
                         window.open(`/api/payment/ticket/${confirmedBookingData.id}/pdf`, '_blank');
                       }
                     }}
-                    className="flex-1 px-4 py-2.5 bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#12201D] text-white font-semibold text-xs rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 px-4 py-2.5 bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#121921] text-white font-semibold text-xs rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                   >
                     📄 View E-Ticket
                   </button>
                   <button 
                     onClick={onClose}
-                    className="flex-1 px-4 py-2.5 border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] font-semibold text-xs rounded-lg hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-colors cursor-pointer"
+                    className="flex-1 px-4 py-2.5 border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] font-semibold text-xs rounded-lg hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-colors cursor-pointer"
                   >
                     Done
                   </button>
@@ -699,8 +699,8 @@ export default function BookingModal({ train, onClose }) {
                     className="space-y-6"
                   >
                     <div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                        <span className="bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#12201D] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                      <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                        <span className="bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#121921] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                         Select Travel Class
                       </h3>
                       <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1">
@@ -731,8 +731,8 @@ export default function BookingModal({ train, onClose }) {
                               onClick={() => setSelectedClass(cls)}
                               className={`relative cursor-pointer border rounded-xl p-4 transition-all duration-200 ${
                                 isSelected 
-                                  ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] ring-2 ring-[#173F3A]/30 dark:ring-[#EEF2ED]/30 shadow-sm' 
-                                  : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] hover:border-[#173F3A]/60 dark:hover:border-[#EEF2ED]/60'
+                                  ? 'border-[#244C66] dark:border-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] ring-2 ring-[#244C66]/30 dark:ring-[#F0F4F7]/30 shadow-sm' 
+                                  : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] hover:border-[#244C66]/60 dark:hover:border-[#F0F4F7]/60'
                               }`}
                             >
                               {isAiRecommended && (
@@ -742,9 +742,9 @@ export default function BookingModal({ train, onClose }) {
                               )}
                               
                               <div className="flex justify-between items-start mb-1">
-                                <span className="font-bold text-lg text-[#263238] dark:text-[#F7F5EF]">{cls}</span>
+                                <span className="font-bold text-lg text-[#263238] dark:text-[#F7F8FA]">{cls}</span>
                                 {isSelected && (
-                                  <span className="w-5 h-5 rounded-full bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#12201D] flex items-center justify-center text-xs">
+                                  <span className="w-5 h-5 rounded-full bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#121921] flex items-center justify-center text-xs">
                                     ✓
                                   </span>
                                 )}
@@ -752,9 +752,9 @@ export default function BookingModal({ train, onClose }) {
                               <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mb-3 leading-snug">
                                 {classDisplayNames[cls] || cls}
                               </p>
-                              <div className="flex items-baseline justify-between pt-2 border-t border-[#E3DED2]/50 dark:border-[#2A403A]/50">
+                              <div className="flex items-baseline justify-between pt-2 border-t border-[#E3E7EA]/50 dark:border-[#293644]/50">
                                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Base Fare</span>
-                                <span className="font-bold text-[#173F3A] dark:text-[#EEF2ED] text-lg">
+                                <span className="font-bold text-[#244C66] dark:text-[#F0F4F7] text-lg">
                                   ₹{classPrice.toLocaleString()}
                                 </span>
                               </div>
@@ -796,12 +796,12 @@ export default function BookingModal({ train, onClose }) {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                          <span className="bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#12201D] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                        <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                          <span className="bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#121921] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
                           Passenger Details
                         </h3>
                         <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-0.5">
-                          Selected Class: <strong className="text-[#173F3A] dark:text-[#EEF2ED]">{selectedClass} ({classDisplayNames[selectedClass] || selectedClass})</strong>
+                          Selected Class: <strong className="text-[#244C66] dark:text-[#F0F4F7]">{selectedClass} ({classDisplayNames[selectedClass] || selectedClass})</strong>
                         </p>
                       </div>
                       <button 
@@ -813,28 +813,28 @@ export default function BookingModal({ train, onClose }) {
                     </div>
 
                     {/* Passenger Count Configurator */}
-                    <div className="flex items-center justify-between p-3.5 sm:p-4 bg-[#F7F5EF] dark:bg-[#12201D] rounded-xl border border-[#E3DED2] dark:border-[#2A403A]">
+                    <div className="flex items-center justify-between p-3.5 sm:p-4 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg text-[#173F3A] dark:text-[#EEF2ED]">
+                        <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg text-[#244C66] dark:text-[#F0F4F7]">
                           <Users className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-xs sm:text-sm font-semibold text-[#263238] dark:text-[#F7F5EF]">Total Travelers</h4>
+                          <h4 className="text-xs sm:text-sm font-semibold text-[#263238] dark:text-[#F7F8FA]">Total Travelers</h4>
                           <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Up to 6 passengers per ticket</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={() => handleRemovePassenger(passengers.length - 1)} 
-                          className="w-8 h-8 rounded-full border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer" 
+                          className="w-8 h-8 rounded-full border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer" 
                           disabled={passengerCount <= 1}
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className="text-base font-bold font-mono text-[#263238] dark:text-[#F7F5EF] w-4 text-center">{passengerCount}</span>
+                        <span className="text-base font-bold font-mono text-[#263238] dark:text-[#F7F8FA] w-4 text-center">{passengerCount}</span>
                         <button 
                           onClick={handleAddPassenger} 
-                          className="w-8 h-8 rounded-full border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer" 
+                          className="w-8 h-8 rounded-full border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer" 
                           disabled={passengerCount >= 6}
                         >
                           <Plus className="w-4 h-4" />
@@ -845,9 +845,9 @@ export default function BookingModal({ train, onClose }) {
                     {/* Passenger Forms */}
                     <div className="space-y-4">
                       {passengers.map((p, idx) => (
-                        <div key={idx} className="relative border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 sm:p-5 bg-[#FFFFFF] dark:bg-[#1B2C28] shadow-sm">
+                        <div key={idx} className="relative border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 sm:p-5 bg-[#FFFFFF] dark:bg-[#1B242E] shadow-sm">
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-[#173F3A] dark:text-[#EEF2ED] uppercase tracking-wider bg-[#EEF2ED] dark:bg-[#213530] px-2.5 py-0.5 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                            <span className="text-xs font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider bg-[#F0F4F7] dark:bg-[#233240] px-2.5 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">
                               Passenger {idx + 1}
                             </span>
                             {passengers.length > 1 && (
@@ -868,7 +868,7 @@ export default function BookingModal({ train, onClose }) {
                                 value={p.name} 
                                 onChange={(e) => updatePassenger(idx, 'name', e.target.value)} 
                                 placeholder="As per Govt. ID" 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]" 
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]" 
                               />
                             </div>
                             <div className="sm:col-span-3 space-y-1">
@@ -880,7 +880,7 @@ export default function BookingModal({ train, onClose }) {
                                 placeholder="Years" 
                                 min="1" 
                                 max="120" 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]" 
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]" 
                               />
                             </div>
                             <div className="sm:col-span-4 space-y-1">
@@ -888,7 +888,7 @@ export default function BookingModal({ train, onClose }) {
                               <select 
                                 value={p.gender} 
                                 onChange={(e) => updatePassenger(idx, 'gender', e.target.value)} 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]"
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]"
                               >
                                 <option value="">Select Gender</option>
                                 <option value="Male">Male</option>
@@ -904,7 +904,7 @@ export default function BookingModal({ train, onClose }) {
                                 value={p.nationality} 
                                 onChange={(e) => updatePassenger(idx, 'nationality', e.target.value)} 
                                 placeholder="e.g. Indian" 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]" 
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]" 
                               />
                             </div>
 
@@ -915,7 +915,7 @@ export default function BookingModal({ train, onClose }) {
                               <select 
                                 value={p.seatPref} 
                                 onChange={(e) => updatePassenger(idx, 'seatPref', e.target.value)} 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]"
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]"
                               >
                                 <option value="No Preference">No Preference</option>
                                 {transportType === 'Flight' ? (
@@ -948,7 +948,7 @@ export default function BookingModal({ train, onClose }) {
                               <select 
                                 value={p.mealPref} 
                                 onChange={(e) => updatePassenger(idx, 'mealPref', e.target.value)} 
-                                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none text-[#263238] dark:text-[#F7F5EF]"
+                                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-xs sm:text-sm focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none text-[#263238] dark:text-[#F7F8FA]"
                               >
                                 <option value="No Preference">No Preference</option>
                                 <option value="Veg">Vegetarian</option>
@@ -957,24 +957,24 @@ export default function BookingModal({ train, onClose }) {
                               </select>
                             </div>
 
-                            <div className="sm:col-span-12 flex items-center gap-6 pt-2 border-t border-[#E3DED2]/50 dark:border-[#2A403A]/50 mt-1">
+                            <div className="sm:col-span-12 flex items-center gap-6 pt-2 border-t border-[#E3E7EA]/50 dark:border-[#293644]/50 mt-1">
                               <label className="flex items-center gap-2 cursor-pointer text-xs">
                                 <input 
                                   type="checkbox" 
                                   checked={p.isSenior} 
                                   onChange={(e) => updatePassenger(idx, 'isSenior', e.target.checked)} 
-                                  className="w-4 h-4 rounded border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] focus:ring-[#173F3A]" 
+                                  className="w-4 h-4 rounded border-[#E3E7EA] dark:border-[#293644] text-[#244C66] focus:ring-[#244C66]" 
                                 />
-                                <span className="text-[#263238] dark:text-[#F7F5EF]">Senior Citizen</span>
+                                <span className="text-[#263238] dark:text-[#F7F8FA]">Senior Citizen</span>
                               </label>
                               <label className="flex items-center gap-2 cursor-pointer text-xs">
                                 <input 
                                   type="checkbox" 
                                   checked={p.isChild} 
                                   onChange={(e) => updatePassenger(idx, 'isChild', e.target.checked)} 
-                                  className="w-4 h-4 rounded border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] focus:ring-[#173F3A]" 
+                                  className="w-4 h-4 rounded border-[#E3E7EA] dark:border-[#293644] text-[#244C66] focus:ring-[#244C66]" 
                                 />
-                                <span className="text-[#263238] dark:text-[#F7F5EF]">Child (0-11 Yrs, 50% fare)</span>
+                                <span className="text-[#263238] dark:text-[#F7F8FA]">Child (0-11 Yrs, 50% fare)</span>
                               </label>
                             </div>
                           </div>
@@ -1004,12 +1004,12 @@ export default function BookingModal({ train, onClose }) {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                          <span className="bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#12201D] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                        <h3 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                          <span className="bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#121921] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
                           Payment Gateway
                         </h3>
                         <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-0.5">
-                          Total Payable: <strong className="text-[#173F3A] dark:text-[#EEF2ED]">₹{totalFare.toLocaleString()}</strong>
+                          Total Payable: <strong className="text-[#244C66] dark:text-[#F0F4F7]">₹{totalFare.toLocaleString()}</strong>
                         </p>
                       </div>
                       <button 
@@ -1021,7 +1021,7 @@ export default function BookingModal({ train, onClose }) {
                     </div>
 
                     {/* Pay Options Tabs */}
-                    <div className="flex border-b border-[#E3DED2] dark:border-[#2A403A] gap-2 pb-1 overflow-x-auto">
+                    <div className="flex border-b border-[#E3E7EA] dark:border-[#293644] gap-2 pb-1 overflow-x-auto">
                       {[
                         { id: 'qr', label: '📷 Scan & Pay QR' },
                         { id: 'upi', label: '📱 Instant UPI' },
@@ -1033,8 +1033,8 @@ export default function BookingModal({ train, onClose }) {
                           onClick={() => setPaymentTab(tab.id)}
                           className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                             paymentTab === tab.id
-                              ? 'bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border border-[#173F3A]/30 dark:border-[#EEF2ED]/30'
-                              : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'
+                              ? 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#244C66]/30 dark:border-[#F0F4F7]/30'
+                              : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
                           }`}
                         >
                           {tab.label}
@@ -1044,16 +1044,16 @@ export default function BookingModal({ train, onClose }) {
 
                     {/* Tab Content */}
                     {paymentTab === 'qr' && (
-                      <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm text-center">
+                      <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm text-center">
                         {/* Gateway Header */}
-                        <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-3 text-left">
+                        <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-3 text-left">
                           <div className="flex items-center gap-2.5">
-                            <div className="p-2 rounded-xl bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#12201D] shadow-sm">
+                            <div className="p-2 rounded-xl bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#121921] shadow-sm">
                               <QrCode className="w-4 h-4" />
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <h4 className="text-xs sm:text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">TravelIQ Smart UPI QR</h4>
+                                <h4 className="text-xs sm:text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">TravelIQ Smart UPI QR</h4>
                                 <span className="bg-[#4F7D62]/15 text-[#4F7D62] text-[9px] font-bold px-1.5 py-0.5 rounded border border-[#4F7D62]/30 uppercase tracking-wider">
                                   ⚡ Demo Sandbox
                                 </span>
@@ -1063,12 +1063,12 @@ export default function BookingModal({ train, onClose }) {
                           </div>
                           <div className="text-right">
                             <span className="text-[10px] uppercase font-semibold text-[#66736F] dark:text-[#A3B0AB] block">Pay Exact</span>
-                            <span className="text-sm sm:text-base font-bold text-[#173F3A] dark:text-[#EEF2ED]">₹{totalFare.toLocaleString()}</span>
+                            <span className="text-sm sm:text-base font-bold text-[#244C66] dark:text-[#F0F4F7]">₹{totalFare.toLocaleString()}</span>
                           </div>
                         </div>
 
                         {/* Interactive Clear Dynamic QR Box */}
-                        <div className="relative inline-block mx-auto bg-white p-3.5 rounded-2xl border-2 border-[#173F3A]/20 dark:border-[#EEF2ED]/20 shadow-md">
+                        <div className="relative inline-block mx-auto bg-white p-3.5 rounded-2xl border-2 border-[#244C66]/20 dark:border-[#F0F4F7]/20 shadow-md">
                           {qrCodeUrl ? (
                             <div className="relative">
                               <img 
@@ -1085,15 +1085,15 @@ export default function BookingModal({ train, onClose }) {
                               />
 
                               {/* Center Brand Badge */}
-                              <div className="absolute inset-0 m-auto w-10 h-10 bg-white rounded-xl shadow-md border border-[#E3DED2] flex items-center justify-center p-1.5 pointer-events-none">
-                                <div className="w-full h-full bg-[#173F3A] rounded-lg flex items-center justify-center text-white">
-                                  <ShieldCheck className="w-5 h-5 text-[#EEF2ED]" />
+                              <div className="absolute inset-0 m-auto w-10 h-10 bg-white rounded-xl shadow-md border border-[#E3E7EA] flex items-center justify-center p-1.5 pointer-events-none">
+                                <div className="w-full h-full bg-[#244C66] rounded-lg flex items-center justify-center text-white">
+                                  <ShieldCheck className="w-5 h-5 text-[#F0F4F7]" />
                                 </div>
                               </div>
                             </div>
                           ) : (
                             <div className="w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
-                              <div className="w-6 h-6 border-2 border-[#173F3A] border-t-transparent rounded-full animate-spin" />
+                              <div className="w-6 h-6 border-2 border-[#244C66] border-t-transparent rounded-full animate-spin" />
                             </div>
                           )}
 
@@ -1106,7 +1106,7 @@ export default function BookingModal({ train, onClose }) {
                               <button 
                                 type="button" 
                                 onClick={handleResetQr}
-                                className="text-[10px] text-[#173F3A] hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
+                                className="text-[10px] text-[#244C66] hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
                               >
                                 <RefreshCw className="w-3 h-3" /> Refresh
                               </button>
@@ -1120,7 +1120,7 @@ export default function BookingModal({ train, onClose }) {
                             type="button"
                             onClick={handleSimulateScanAndPay}
                             disabled={isProcessing || isSimulatingScan}
-                            className="w-full py-2.5 px-4 bg-gradient-to-r from-[#173F3A] to-[#2B5A53] hover:from-[#0F332F] hover:to-[#214741] text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                            className="w-full py-2.5 px-4 bg-gradient-to-r from-[#244C66] to-[#356280] hover:from-[#193B51] hover:to-[#244C66] text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                           >
                             <Zap className="w-3.5 h-3.5 text-[#E5B85C]" />
                             <span>{isSimulatingScan ? "Simulating App Approval..." : "⚡ Fast Test: Simulate QR Scan & Confirm Ticket"}</span>
@@ -1128,15 +1128,15 @@ export default function BookingModal({ train, onClose }) {
                         </div>
 
                         {/* Copyable Sandbox UPI ID Strip */}
-                        <div className="flex items-center justify-between bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] p-2.5 rounded-xl">
+                        <div className="flex items-center justify-between bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] p-2.5 rounded-xl">
                           <div className="text-left">
                             <span className="text-[9px] uppercase tracking-wider font-semibold text-[#66736F] dark:text-[#A3B0AB] block">Sandbox VPA / UPI ID</span>
-                            <span className="text-xs sm:text-sm font-mono font-bold text-[#263238] dark:text-[#F7F5EF]">{DUMMY_UPI_ID}</span>
+                            <span className="text-xs sm:text-sm font-mono font-bold text-[#263238] dark:text-[#F7F8FA]">{DUMMY_UPI_ID}</span>
                           </div>
                           <button
                             type="button"
                             onClick={handleCopyDummyUpi}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] text-xs font-semibold transition-colors cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] hover:bg-[#E3E7EA] dark:hover:bg-[#293644] text-[#244C66] dark:text-[#F0F4F7] text-xs font-semibold transition-colors cursor-pointer"
                           >
                             {qrCopied ? (
                               <>
@@ -1156,7 +1156,7 @@ export default function BookingModal({ train, onClose }) {
                         <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-[10px] text-[#66736F] dark:text-[#A3B0AB]">
                           <span className="font-semibold">Compatible with:</span>
                           {['GPay', 'PhonePe', 'Paytm', 'BHIM', 'AmazonPay', 'Cred'].map((app) => (
-                            <span key={app} className="px-2 py-0.5 rounded bg-white dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] font-medium">
+                            <span key={app} className="px-2 py-0.5 rounded bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] font-medium">
                               {app}
                             </span>
                           ))}
@@ -1174,7 +1174,7 @@ export default function BookingModal({ train, onClose }) {
                               placeholder="e.g. username@okhdfcbank or 9876543210@paytm"
                               value={upiId}
                               onChange={(e) => setUpiId(e.target.value)}
-                              className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-3 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] font-mono"
+                              className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-3 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] font-mono"
                             />
                             <Smartphone className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                           </div>
@@ -1191,14 +1191,14 @@ export default function BookingModal({ train, onClose }) {
                                 const prefix = upiId.includes('@') ? upiId.split('@')[0] : upiId;
                                 setUpiId((prefix || 'user') + handle);
                               }}
-                              className="text-[10px] px-2 py-0.5 rounded-md bg-[#F7F5EF] dark:bg-[#12201D] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A] transition-colors cursor-pointer"
+                              className="text-[10px] px-2 py-0.5 rounded-md bg-[#F7F8FA] dark:bg-[#121921] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644] transition-colors cursor-pointer"
                             >
                               {handle}
                             </button>
                           ))}
                         </div>
 
-                        <div className="p-3.5 bg-[#F7F5EF] dark:bg-[#12201D] rounded-xl border border-[#E3DED2] dark:border-[#2A403A] text-xs text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-2.5">
+                        <div className="p-3.5 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644] text-xs text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-2.5">
                           <div className="w-2 h-2 rounded-full bg-[#4F7D62] animate-pulse shrink-0" />
                           <span>A secure instant payment collect request of <strong>₹{totalFare.toLocaleString()}</strong> will be dispatched to your UPI app.</span>
                         </div>
@@ -1218,7 +1218,7 @@ export default function BookingModal({ train, onClose }) {
                               if (val.length > 19) val = val.substring(0, 19);
                               setCardNumber(val);
                             }}
-                            className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] font-mono"
+                            className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] font-mono"
                           />
                         </div>
                         <div className="space-y-1">
@@ -1228,7 +1228,7 @@ export default function BookingModal({ train, onClose }) {
                             placeholder="Name as printed on card"
                             value={cardHolder}
                             onChange={(e) => setCardHolder(e.target.value)}
-                            className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED]"
+                            className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7]"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-left">
@@ -1243,7 +1243,7 @@ export default function BookingModal({ train, onClose }) {
                                 if (val.length > 2) val = val.substring(0, 2) + '/' + val.substring(2, 4);
                                 setCardExpiry(val);
                               }}
-                              className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] font-mono"
+                              className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] font-mono"
                             />
                           </div>
                           <div className="space-y-1">
@@ -1254,7 +1254,7 @@ export default function BookingModal({ train, onClose }) {
                               maxLength="3"
                               value={cardCvv}
                               onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                              className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] font-mono"
+                              className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] font-mono"
                             />
                           </div>
                         </div>
@@ -1262,7 +1262,7 @@ export default function BookingModal({ train, onClose }) {
                     )}
 
                     {paymentTab === 'wallet' && (
-                      <div className="p-4 rounded-xl bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] space-y-2 text-left">
+                      <div className="p-4 rounded-xl bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] space-y-2 text-left">
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-[#66736F] dark:text-[#A3B0AB]">Available TravelIQ Wallet Balance</span>
                           <span className="font-bold text-[#4F7D62]">₹8,450.00</span>
@@ -1304,21 +1304,21 @@ export default function BookingModal({ train, onClose }) {
           </div>
 
           {/* Right: Booking Summary Sidebar OR Destination Stays Explorer */}
-          <div className="w-full lg:w-1/3 bg-[#F7F5EF] dark:bg-[#12201D] border-t lg:border-t-0 lg:border-l border-[#E3DED2] dark:border-[#2A403A] overflow-y-auto max-h-[85vh] flex flex-col">
+          <div className="w-full lg:w-1/3 bg-[#F7F8FA] dark:bg-[#121921] border-t lg:border-t-0 lg:border-l border-[#E3E7EA] dark:border-[#293644] overflow-y-auto max-h-[85vh] flex flex-col">
             {bookingComplete ? (
               /* =======================================================
                  POST-BOOKING: DESTINATION STAYS EXPLORER (HOTELS / DORMS / HOMESTAYS)
                  ======================================================= */
               <div className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col">
                 {/* Header */}
-                <div className="pb-3 border-b border-[#E3DED2] dark:border-[#2A403A]">
+                <div className="pb-3 border-b border-[#E3E7EA] dark:border-[#293644]">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 rounded-lg bg-[#14532D] text-white">
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-heading">
+                        <h4 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] font-heading">
                           Stays in {destinationCity}
                         </h4>
                         <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">
@@ -1346,7 +1346,7 @@ export default function BookingModal({ train, onClose }) {
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer border ${
                           stayCategory === tab.id
                             ? 'bg-[#14532D] text-white border-[#14532D] shadow-xs'
-                            : 'bg-white dark:bg-[#1B2C28] text-[#64748B] dark:text-[#A3B0AB] border-[#E3DED2] dark:border-[#2A403A] hover:border-[#14532D]'
+                            : 'bg-white dark:bg-[#1B242E] text-[#64748B] dark:text-[#A3B0AB] border-[#E3E7EA] dark:border-[#293644] hover:border-[#14532D]'
                         }`}
                       >
                         {tab.label}
@@ -1373,7 +1373,7 @@ export default function BookingModal({ train, onClose }) {
                       return (
                         <div
                           key={hotel.id}
-                          className="p-3 bg-white dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl hover:border-[#14532D] dark:hover:border-[#4ADE80] transition-all shadow-xs space-y-2 text-left"
+                          className="p-3 bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl hover:border-[#14532D] dark:hover:border-[#4ADE80] transition-all shadow-xs space-y-2 text-left"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
@@ -1402,14 +1402,14 @@ export default function BookingModal({ train, onClose }) {
                           {/* Amenities pills */}
                           <div className="flex flex-wrap gap-1">
                             {(hotel.features || []).slice(0, 3).map((feat, idx) => (
-                              <span key={idx} className="text-[9px] bg-[#F7F5EF] dark:bg-[#101B17] text-[#64748B] dark:text-[#94A3B8] px-1.5 py-0.5 rounded border border-[#E3DED2] dark:border-[#273E36]">
+                              <span key={idx} className="text-[9px] bg-[#F7F8FA] dark:bg-[#121921] text-[#64748B] dark:text-[#94A3B8] px-1.5 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">
                                 {feat}
                               </span>
                             ))}
                           </div>
 
                           {/* Price & Action */}
-                          <div className="flex items-center justify-between pt-1.5 border-t border-[#E3DED2]/50 dark:border-[#2A403A]/50">
+                          <div className="flex items-center justify-between pt-1.5 border-t border-[#E3E7EA]/50 dark:border-[#293644]/50">
                             <div>
                               <div className="flex items-baseline gap-0.5">
                                 <span className="text-xs font-black font-mono text-[#14532D] dark:text-[#4ADE80]">
@@ -1437,7 +1437,7 @@ export default function BookingModal({ train, onClose }) {
                       );
                     })
                   ) : (
-                    <div className="p-4 bg-white dark:bg-[#1B2C28] rounded-xl text-center text-xs text-[#64748B] border border-[#E3DED2] dark:border-[#2A403A]">
+                    <div className="p-4 bg-white dark:bg-[#1B242E] rounded-xl text-center text-xs text-[#64748B] border border-[#E3E7EA] dark:border-[#293644]">
                       No stays matched this category in {destinationCity}.
                     </div>
                   )}
@@ -1448,58 +1448,58 @@ export default function BookingModal({ train, onClose }) {
                  PRE-BOOKING: STANDARD BOOKING SUMMARY & FARE BREAKDOWN
                  ======================================================= */
               <div className="p-5 sm:p-6 space-y-5">
-                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" />
+                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" />
                   Booking Summary
                 </h3>
 
                 {/* Service Info Box */}
-                <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm text-left">
-                  <div className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] mb-0.5">
+                <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm text-left">
+                  <div className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] mb-0.5">
                     {train?.train_name || train?.name}
                   </div>
-                  <div className="text-xs text-[#66736F] dark:text-[#A3B0AB] mb-3 border-b border-[#E3DED2] dark:border-[#2A403A] pb-3">
+                  <div className="text-xs text-[#66736F] dark:text-[#A3B0AB] mb-3 border-b border-[#E3E7EA] dark:border-[#293644] pb-3">
                     Service #{train?.train_number || train?.number} • {transportType}
                   </div>
                   
                   <div className="flex justify-between items-center text-xs mb-2">
                     <span className="text-[#66736F] dark:text-[#A3B0AB]">Travel Class</span>
-                    <span className="font-bold text-[#263238] dark:text-[#F7F5EF]">
+                    <span className="font-bold text-[#263238] dark:text-[#F7F8FA]">
                       {selectedClass ? `${selectedClass} (${classDisplayNames[selectedClass] || selectedClass})` : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[#66736F] dark:text-[#A3B0AB]">Passengers</span>
-                    <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">
+                    <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">
                       {adultCount} Adult{adultCount !== 1 ? 's' : ''} {childCount > 0 && `, ${childCount} Child${childCount !== 1 ? 'ren' : ''}`}
                     </span>
                   </div>
                 </div>
 
                 {/* AI Recommendation Box */}
-                <div className="bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 text-left space-y-3 relative overflow-hidden">
+                <div className="bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 text-left space-y-3 relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-bold text-[#173F3A] dark:text-[#EEF2ED] uppercase tracking-wider flex items-center gap-1.5">
+                    <h4 className="text-[11px] font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider flex items-center gap-1.5">
                       🤖 AI Journey Insights
                     </h4>
-                    <span className="text-[9px] bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED] font-mono px-1.5 py-0.5 rounded font-bold">
+                    <span className="text-[9px] bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] font-mono px-1.5 py-0.5 rounded font-bold">
                       V2.5 Model
                     </span>
                   </div>
 
                   {loadingAi ? (
-                    <div className="animate-spin w-4 h-4 border-2 border-[#173F3A] dark:border-[#EEF2ED] border-t-transparent rounded-full my-2" />
+                    <div className="animate-spin w-4 h-4 border-2 border-[#244C66] dark:border-[#F0F4F7] border-t-transparent rounded-full my-2" />
                   ) : (
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="text-[#66736F] dark:text-[#A3B0AB]">Recommended Class</span>
-                        <span className="font-bold text-[#263238] dark:text-[#F7F5EF] bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] px-2 py-0.5 rounded font-mono text-[11px]">
+                        <span className="font-bold text-[#263238] dark:text-[#F7F8FA] bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] px-2 py-0.5 rounded font-mono text-[11px]">
                           {aiRec.recommendedClass}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[#66736F] dark:text-[#A3B0AB]">Predicted Occupancy</span>
-                        <span className="font-bold text-[#263238] dark:text-[#F7F5EF]">{aiRec.predictedOccupancy}%</span>
+                        <span className="font-bold text-[#263238] dark:text-[#F7F8FA]">{aiRec.predictedOccupancy}%</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-[#66736F] dark:text-[#A3B0AB]">Predicted Delay</span>
@@ -1511,14 +1511,14 @@ export default function BookingModal({ train, onClose }) {
 
                 {/* Price Breakdown */}
                 {selectedClass && (
-                  <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm space-y-2.5 text-left">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#263238] dark:text-[#F7F5EF] border-b border-[#E3DED2] dark:border-[#2A403A] pb-2">
+                  <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm space-y-2.5 text-left">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#263238] dark:text-[#F7F8FA] border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
                       Fare Breakdown
                     </h4>
                     
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-[#66736F] dark:text-[#A3B0AB]">{isTrain ? 'Official IRCTC Tariff' : 'Base Fare'} ({adultCount}A{childCount > 0 ? `, ${childCount}C` : ''})</span>
-                      <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{totalBaseFare.toLocaleString()}</span>
+                      <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">₹{totalBaseFare.toLocaleString()}</span>
                     </div>
                     
                     {isTrain ? (
@@ -1529,19 +1529,19 @@ export default function BookingModal({ train, onClose }) {
                       <>
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-[#66736F] dark:text-[#A3B0AB]">Reservation Charge</span>
-                          <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{reservationCharge}</span>
+                          <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">₹{reservationCharge}</span>
                         </div>
                         
                         <div className="flex justify-between items-center text-xs">
                           <span className="text-[#66736F] dark:text-[#A3B0AB]">Surcharge</span>
-                          <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">₹{superfastCharge}</span>
+                          <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">₹{superfastCharge}</span>
                         </div>
                       </>
                     )}
                     
-                    <div className="flex justify-between items-center pt-2.5 border-t border-[#E3DED2] dark:border-[#2A403A]">
-                      <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">Total Fare</span>
-                      <span className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED]">₹{totalFare.toLocaleString()}</span>
+                    <div className="flex justify-between items-center pt-2.5 border-t border-[#E3E7EA] dark:border-[#293644]">
+                      <span className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">Total Fare</span>
+                      <span className="text-lg font-bold text-[#244C66] dark:text-[#F0F4F7]">₹{totalFare.toLocaleString()}</span>
                     </div>
                   </div>
                 )}

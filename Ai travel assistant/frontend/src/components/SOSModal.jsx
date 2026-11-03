@@ -52,7 +52,7 @@ export default function SOSModal({ isOpen, onClose }) {
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl w-full max-w-md overflow-hidden relative shadow-sm"
+          className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl w-full max-w-md overflow-hidden relative shadow-sm"
         >
           {status === 'idle' && (
             <div className="p-6">
@@ -60,12 +60,12 @@ export default function SOSModal({ isOpen, onClose }) {
                 <div className="w-14 h-14 rounded-full bg-[#B94A48]/10 flex items-center justify-center border border-[#B94A48]/20">
                   <AlertTriangle className="w-8 h-8 text-[#B94A48]" />
                 </div>
-                <button onClick={resetAndClose} className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-colors">
+                <button onClick={resetAndClose} className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>
               
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Emergency SOS</h2>
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">Emergency SOS</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mb-6">
                 Are you sure you want to send an emergency alert? This will immediately notify the administrative team and send an alert to your registered email with your current location.
               </p>
@@ -79,7 +79,7 @@ export default function SOSModal({ isOpen, onClose }) {
                 </button>
                 <button 
                   onClick={resetAndClose}
-                  className="w-full bg-transparent hover:bg-[#F7F5EF] dark:hover:bg-[#213530] text-[#263238] dark:text-[#F7F5EF] font-semibold py-3 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] transition-colors"
+                  className="w-full bg-transparent hover:bg-[#F7F8FA] dark:hover:bg-[#233240] text-[#263238] dark:text-[#F7F8FA] font-semibold py-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] transition-colors"
                 >
                   Cancel
                 </button>
@@ -90,7 +90,7 @@ export default function SOSModal({ isOpen, onClose }) {
           {status === 'loading' && (
             <div className="p-12 flex flex-col items-center justify-center text-center">
               <Loader2 className="w-12 h-12 text-[#B94A48] animate-spin mb-4" />
-              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Broadcasting Alert...</h2>
+              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">Broadcasting Alert...</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Transmitting location and device telemetry</p>
             </div>
           )}
@@ -105,29 +105,29 @@ export default function SOSModal({ isOpen, onClose }) {
                 <ShieldCheck className="w-10 h-10 text-[#4F7D62]" />
               </motion.div>
               
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Emergency Alert Sent</h2>
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">Emergency Alert Sent</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mb-6">
                 Your SOS has been successfully broadcasted. Please stay safe.
               </p>
 
-              <div className="bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-4 w-full mb-6 text-left">
+              <div className="bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-4 w-full mb-6 text-left">
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Status</span>
                   <span className="text-[#4F7D62] font-bold uppercase">Dispatched</span>
                 </div>
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Time Sent</span>
-                  <span className="text-[#263238] dark:text-[#F7F5EF]">{new Date(alertData?.timestamp || Date.now()).toLocaleTimeString()}</span>
+                  <span className="text-[#263238] dark:text-[#F7F8FA]">{new Date(alertData?.timestamp || Date.now()).toLocaleTimeString()}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-[#66736F] dark:text-[#A3B0AB]">Reference ID</span>
-                  <span className="text-[#263238] dark:text-[#F7F5EF] font-mono">SOS-{alertData?.alertId || 'UNKNOWN'}</span>
+                  <span className="text-[#263238] dark:text-[#F7F8FA] font-mono">SOS-{alertData?.alertId || 'UNKNOWN'}</span>
                 </div>
               </div>
 
               <button 
                 onClick={resetAndClose}
-                className="w-full bg-transparent hover:bg-[#F7F5EF] dark:hover:bg-[#213530] text-[#263238] dark:text-[#F7F5EF] font-semibold py-3 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] transition-colors"
+                className="w-full bg-transparent hover:bg-[#F7F8FA] dark:hover:bg-[#233240] text-[#263238] dark:text-[#F7F8FA] font-semibold py-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] transition-colors"
               >
                 Dismiss
               </button>

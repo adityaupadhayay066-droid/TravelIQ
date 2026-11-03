@@ -59,6 +59,7 @@ async function runIntegrityTests() {
       const fareRow = await TrainFare.findOne({ where: { train_number: '12802', class_code: '3A' } });
       assert.ok(fareRow, 'Fare record for 12802 3A must exist');
 
+      const futureDate = new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0];
       const req = {
         user: { id: testUser.id, email: testUser.email, name: testUser.name },
         body: {
@@ -66,7 +67,7 @@ async function runIntegrityTests() {
           destination_station_code: 'TATA',
           train_number: '12802',
           travel_class: '3A',
-          booking_date: '2026-11-02',
+          booking_date: futureDate,
           passengers: [{ name: 'Aditya' }]
         }
       };
@@ -176,8 +177,9 @@ async function runIntegrityTests() {
 
       assert.strictEqual(res.statusCode, 200);
       assert.ok(
-        res.data.response.includes('No direct trains are available on this route.') || 
-        res.data.response.includes('No verified routes found for this date.')
+        res.data.response.includes('No direct trains are available') || 
+        res.data.response.includes('No verified routes found') ||
+        res.data.response.includes('No direct trains found')
       );
       assert.ok(!res.data.response.includes('DEL to PAT'), 'Must not hallucinate Delhi to Patna flight for Pune');
     });

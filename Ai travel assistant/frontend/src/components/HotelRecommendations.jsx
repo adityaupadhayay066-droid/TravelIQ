@@ -50,7 +50,7 @@ function RatingStars({ rating }) {
                 ? 'text-[#E5B85C] fill-[#E5B85C]'
                 : i === fullStars && hasHalf
                 ? 'text-[#E5B85C] fill-[#E5B85C]/50'
-                : 'text-[#E3DED2] dark:text-[#2A403A]'
+                : 'text-[#E3E7EA] dark:text-[#293644]'
             }`}
           />
         ))}
@@ -67,18 +67,18 @@ function HotelShimmer() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((n) => (
-        <div key={n} className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 space-y-3 animate-pulse">
+        <div key={n} className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 space-y-3 animate-pulse">
           <div className="flex justify-between items-start">
             <div className="space-y-2 flex-1">
-              <div className="w-56 h-5 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
-              <div className="w-36 h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
+              <div className="w-56 h-5 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
+              <div className="w-36 h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
             </div>
-            <div className="w-20 h-6 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
+            <div className="w-20 h-6 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
           </div>
           <div className="flex gap-2 pt-2">
-            <div className="w-20 h-6 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
-            <div className="w-20 h-6 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
-            <div className="w-20 h-6 bg-[#EEF2ED] dark:bg-[#213530] rounded shimmer" />
+            <div className="w-20 h-6 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
+            <div className="w-20 h-6 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
+            <div className="w-20 h-6 bg-[#F0F4F7] dark:bg-[#233240] rounded shimmer" />
           </div>
         </div>
       ))}
@@ -104,8 +104,8 @@ function HotelCard({ hotel, index, onBook }) {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.25 }}
-      className={`bg-[#FFFFFF] dark:bg-[#1B2C28] border rounded-2xl p-5 hover:border-[#14532D]/50 dark:hover:border-[#EEF2ED]/50 transition-all duration-300 shadow-sm group relative ${
-        isHostel ? 'border-[#E58A3A]/30 dark:border-[#E58A3A]/20 bg-gradient-to-br from-white to-[#FFFDF7] dark:from-[#1B2C28] dark:to-[#172722]' : 'border-[#E3DED2] dark:border-[#2A403A]'
+      className={`bg-[#FFFFFF] dark:bg-[#1B242E] border rounded-2xl p-5 hover:border-[#14532D]/50 dark:hover:border-[#F0F4F7]/50 transition-all duration-300 shadow-sm group relative ${
+        isHostel ? 'border-[#E58A3A]/30 dark:border-[#E58A3A]/20 bg-gradient-to-br from-white to-[#FFFDF7] dark:from-[#1B242E] dark:to-[#172722]' : 'border-[#E3E7EA] dark:border-[#293644]'
       }`}
     >
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -115,14 +115,14 @@ function HotelCard({ hotel, index, onBook }) {
             <div className={`p-3 rounded-2xl flex-shrink-0 mt-0.5 border shadow-xs ${
               isHostel 
                 ? 'bg-[#E58A3A]/10 text-[#E58A3A] border-[#E58A3A]/20' 
-                : 'bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-[#EEF2ED] border-[#E3DED2] dark:border-[#2A403A]'
+                : 'bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] border-[#E3E7EA] dark:border-[#293644]'
             }`}>
               {isHostel ? <Bed className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <h4 className="font-bold text-base text-[#263238] dark:text-[#F7F5EF] truncate group-hover:text-[#14532D] dark:group-hover:text-white transition-colors">
+                <h4 className="font-bold text-base text-[#263238] dark:text-[#F7F8FA] truncate group-hover:text-[#14532D] dark:group-hover:text-white transition-colors">
                   {hotel.name}
                 </h4>
 
@@ -131,13 +131,13 @@ function HotelCard({ hotel, index, onBook }) {
                     <Bed className="w-2.5 h-2.5" /> Backpacker Hostel & Pods
                   </span>
                 ) : hotel.type ? (
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-[#EEF2ED] px-2 py-0.5 rounded-full border border-[#E3DED2] dark:border-[#2A403A] shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] px-2 py-0.5 rounded-full border border-[#E3E7EA] dark:border-[#293644] shrink-0">
                     {hotel.type}
                   </span>
                 ) : null}
 
                 {hotel.hasRestaurant && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] dark:text-[#4F7D62] px-2 py-0.5 rounded-full border border-[#4F7D62]/20 flex items-center gap-1 shrink-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] dark:text-[#4F7D62] px-2 py-0.5 rounded-full border border-[#4F7D62]/20 flex items-center gap-1 shrink-0">
                     <UtensilsCrossed className="w-2.5 h-2.5" /> In-House Dining
                   </span>
                 )}
@@ -161,7 +161,7 @@ function HotelCard({ hotel, index, onBook }) {
                 <div className="mt-2.5 flex items-center gap-2 text-xs text-[#66736F] dark:text-[#94A3B8] font-medium flex-wrap">
                   <span className="text-[#14532D] dark:text-[#A7D7C5] font-bold">Room Options:</span>
                   {hotel.roomTypes.slice(0, 3).map((r, i) => (
-                    <span key={i} className="bg-[#F7F5EF] dark:bg-[#12201D] px-2 py-0.5 rounded border border-[#E3DED2] dark:border-[#273E36] text-[11px]">
+                    <span key={i} className="bg-[#F7F8FA] dark:bg-[#121921] px-2 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644] text-[11px]">
                       {r.name}
                     </span>
                   ))}
@@ -179,9 +179,9 @@ function HotelCard({ hotel, index, onBook }) {
                     return (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-medium bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] px-2.5 py-1 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] px-2.5 py-1 rounded-lg border border-[#E3E7EA] dark:border-[#293644]"
                       >
-                        {Icon && <Icon className="w-3 h-3 text-[#14532D] dark:text-[#EEF2ED]" />}
+                        {Icon && <Icon className="w-3 h-3 text-[#14532D] dark:text-[#F0F4F7]" />}
                         {amenity}
                       </span>
                     );
@@ -193,12 +193,12 @@ function HotelCard({ hotel, index, onBook }) {
         </div>
 
         {/* Right: Pricing & Reserve Action */}
-        <div className="flex items-center lg:flex-col lg:items-end justify-between border-t lg:border-t-0 border-[#E3DED2] dark:border-[#2A403A] pt-3 lg:pt-0 gap-3 min-w-[160px] sm:min-w-[190px]">
+        <div className="flex items-center lg:flex-col lg:items-end justify-between border-t lg:border-t-0 border-[#E3E7EA] dark:border-[#293644] pt-3 lg:pt-0 gap-3 min-w-[160px] sm:min-w-[190px]">
           <div className="text-left lg:text-right">
             {lowestRoomPrice ? (
               <>
                 <div className="flex items-baseline gap-1 lg:justify-end">
-                  <span className="text-xl sm:text-2xl font-black text-[#14532D] dark:text-[#F7F5EF] font-heading">
+                  <span className="text-xl sm:text-2xl font-black text-[#14532D] dark:text-[#F7F8FA] font-heading">
                     ₹{lowestRoomPrice.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium">
@@ -318,11 +318,11 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
   // If no destination set yet, show an elegant city selection card
   if (!activeDest) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-8 text-center space-y-4 shadow-sm">
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-8 text-center space-y-4 shadow-sm">
         <div className="w-14 h-14 bg-[#14532D]/10 text-[#14532D] dark:text-[#A7D7C5] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
           <Building2 className="w-7 h-7" />
         </div>
-        <h3 className="text-xl font-bold font-heading text-[#14532D] dark:text-[#F7F5EF]">
+        <h3 className="text-xl font-bold font-heading text-[#14532D] dark:text-[#F7F8FA]">
           Explore Verified Hostels, Pods & Hotels
         </h3>
         <p className="text-xs sm:text-sm text-[#66736F] dark:text-[#A3B0AB] max-w-lg mx-auto leading-relaxed">
@@ -333,7 +333,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
             <button
               key={city}
               onClick={() => onSelectCity && onSelectCity(city)}
-              className="px-4 py-2 bg-[#F7F5EF] dark:bg-[#12201D] hover:bg-[#14532D] hover:text-white dark:hover:bg-[#EEF2ED] dark:hover:text-[#12201D] text-[#263238] dark:text-[#F7F5EF] text-xs font-bold rounded-xl transition-all border border-[#E3DED2] dark:border-[#2A403A] cursor-pointer shadow-xs"
+              className="px-4 py-2 bg-[#F7F8FA] dark:bg-[#121921] hover:bg-[#14532D] hover:text-white dark:hover:bg-[#F0F4F7] dark:hover:text-[#121921] text-[#263238] dark:text-[#F7F8FA] text-xs font-bold rounded-xl transition-all border border-[#E3E7EA] dark:border-[#293644] cursor-pointer shadow-xs"
             >
               📍 {city}
             </button>
@@ -361,7 +361,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               categoryTab === tab.id
                 ? 'bg-[#14532D] text-white border-[#14532D] shadow-md'
-                : 'bg-white dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB] border-[#E3DED2] dark:border-[#2A403A] hover:border-[#14532D]/40'
+                : 'bg-white dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB] border-[#E3E7EA] dark:border-[#293644] hover:border-[#14532D]/40'
             }`}
           >
             {tab.label}
@@ -370,7 +370,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
       </div>
 
       {/* Search & Filter Header Toolbar */}
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-4 rounded-2xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-4 rounded-2xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 flex-1 max-w-md">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -379,7 +379,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
               placeholder="Search by hotel / hostel name..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full h-10 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] text-xs font-medium rounded-xl pl-9 pr-3 focus:outline-none focus:border-[#14532D] transition-all placeholder:text-[#66736F] dark:placeholder:text-[#A3B0AB]"
+              className="w-full h-10 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] text-xs font-medium rounded-xl pl-9 pr-3 focus:outline-none focus:border-[#14532D] transition-all placeholder:text-[#66736F] dark:placeholder:text-[#A3B0AB]"
             />
           </div>
         </div>
@@ -390,7 +390,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none h-10 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] text-xs font-semibold rounded-xl pl-3 pr-8 cursor-pointer hover:border-[#14532D]/50 transition-colors focus:outline-none"
+              className="appearance-none h-10 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] text-xs font-semibold rounded-xl pl-3 pr-8 cursor-pointer hover:border-[#14532D]/50 transition-colors focus:outline-none"
             >
               <option value="rating">Highest Rated</option>
               <option value="price_low">Price: Low to High</option>
@@ -405,8 +405,8 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
       {(viewMode === 'all' || viewMode === 'hotels') && (
         <div id="hotels-section" className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2.5 font-heading">
-              <span className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-[#EEF2ED] rounded-xl border border-[#E3DED2] dark:border-[#2A403A]">
+            <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2.5 font-heading">
+              <span className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                 {categoryTab === 'hostel' ? <Bed className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
               </span>
               {categoryTab === 'hostel' ? `Hostels & Dormitories in ${displayCity}` : `Verified Stays in ${displayCity}`}
@@ -421,17 +421,17 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
           {loading && <HotelShimmer />}
 
           {!loading && error && (
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#D96C4F]/50 rounded-xl p-5 flex items-center gap-3 text-[#D96C4F]">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#D96C4F]/50 rounded-xl p-5 flex items-center gap-3 text-[#D96C4F]">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <p className="text-sm font-medium">{error}</p>
             </div>
           )}
 
           {!loading && !error && filteredHotels.length === 0 && (
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-8 text-center space-y-3">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-8 text-center space-y-3">
               <Building2 className="w-8 h-8 text-[#66736F] dark:text-[#A3B0AB] mx-auto" />
               <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">
-                No matching stays found in this category for <span className="font-bold text-[#263238] dark:text-[#F7F5EF]">{displayCity}</span>.
+                No matching stays found in this category for <span className="font-bold text-[#263238] dark:text-[#F7F8FA]">{displayCity}</span>.
               </p>
               <button
                 onClick={() => setCategoryTab('all')}
@@ -451,7 +451,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
               {filteredHotels.length > INITIAL_HOTEL_COUNT && (
                 <button
                   onClick={() => setShowAllHotels(!showAllHotels)}
-                  className="w-full py-3.5 text-xs font-bold tracking-wide uppercase text-[#14532D] dark:text-white bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors shadow-sm cursor-pointer"
+                  className="w-full py-3.5 text-xs font-bold tracking-wide uppercase text-[#14532D] dark:text-white bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors shadow-sm cursor-pointer"
                 >
                   {showAllHotels ? 'Show Less' : `Show All ${filteredHotels.length} Stays in ${displayCity}`}
                 </button>
@@ -466,8 +466,8 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
         <div id="dining-section" className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2.5 font-heading">
-                <span className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] rounded-xl border border-[#E3DED2] dark:border-[#2A403A]">
+              <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2.5 font-heading">
+                <span className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                   <UtensilsCrossed className="w-5 h-5" />
                 </span>
                 In-House Dining & Restaurants in {displayCity}
@@ -491,7 +491,7 @@ export default function HotelRecommendations({ destination, viewMode = 'all', on
               {filteredDining.length > INITIAL_DINING_COUNT && (
                 <button
                   onClick={() => setShowAllDining(!showAllDining)}
-                  className="w-full py-3 text-xs font-bold tracking-wide uppercase text-[#4F7D62] dark:text-[#4F7D62] bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors shadow-sm cursor-pointer"
+                  className="w-full py-3 text-xs font-bold tracking-wide uppercase text-[#4F7D62] dark:text-[#4F7D62] bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors shadow-sm cursor-pointer"
                 >
                   {showAllDining ? 'Show Less' : `Show All ${filteredDining.length} Dining Venues in ${displayCity}`}
                 </button>

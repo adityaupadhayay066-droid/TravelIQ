@@ -21,13 +21,13 @@ export default function SessionTimeoutModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-2xl p-6 shadow-2xl overflow-hidden text-[#263238] dark:text-[#F7F5EF]"
+          className="relative w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-6 shadow-2xl overflow-hidden text-[#263238] dark:text-[#F7F8FA]"
           role="alertdialog"
           aria-labelledby="timeout-title"
           aria-describedby="timeout-desc"
         >
           {/* Subtle top indicator line */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#E3DED2] dark:bg-[#2A403A]">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#E3E7EA] dark:bg-[#293644]">
             <div
               className="h-full bg-[#D96C4F] transition-all duration-1000 ease-linear"
               style={{ width: `${progressPercent}%` }}
@@ -47,7 +47,7 @@ export default function SessionTimeoutModal() {
 
             {/* Title & Description */}
             <div className="space-y-1.5">
-              <h2 id="timeout-title" className="text-xl font-bold font-heading text-[#173F3A] dark:text-[#EEF2ED]">
+              <h2 id="timeout-title" className="text-xl font-bold font-heading text-[#244C66] dark:text-[#F0F4F7]">
                 Session Expiring Soon
               </h2>
               <p id="timeout-desc" className="text-xs sm:text-sm text-[#66736F] dark:text-[#A3B0AB] max-w-xs">
@@ -56,7 +56,7 @@ export default function SessionTimeoutModal() {
             </div>
 
             {/* Countdown Badge */}
-            <div className="py-2 px-6 rounded-xl bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] flex items-center gap-2">
+            <div className="py-2 px-6 rounded-xl bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] flex items-center gap-2">
               <span className="text-3xl font-extrabold font-mono text-[#D96C4F] tracking-tight">
                 {secondsRemaining}
               </span>
@@ -70,7 +70,7 @@ export default function SessionTimeoutModal() {
               <button
                 type="button"
                 onClick={extendSession}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#173F3A] dark:bg-[#EEF2ED] text-white dark:text-[#173F3A] font-semibold text-sm hover:bg-[#0F332F] dark:hover:bg-[#FFFFFF] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#244C66] font-semibold text-sm hover:bg-[#193B51] dark:hover:bg-[#FFFFFF] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4" />
                 Stay Logged In

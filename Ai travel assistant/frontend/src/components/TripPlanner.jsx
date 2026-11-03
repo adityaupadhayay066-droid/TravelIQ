@@ -78,7 +78,7 @@ export default function TripPlanner() {
       if (mode === 'flight') return <Plane className="w-3.5 h-3.5 text-[#2F80A8]" />;
       if (mode === 'bus') return <Bus className="w-3.5 h-3.5 text-[#E58A3A]" />;
       if (mode === 'train') return <Train className="w-3.5 h-3.5 text-[#14532D]" />;
-      return <MapPin className="w-3.5 h-3.5 text-[#14532D] dark:text-[#EEF2ED]" />;
+      return <MapPin className="w-3.5 h-3.5 text-[#14532D] dark:text-[#F0F4F7]" />;
     }
     if (type === 'food') return <Utensils className="w-3.5 h-3.5 text-[#E58A3A]" />;
     if (type === 'hotel') return <Hotel className="w-3.5 h-3.5 text-[#2F80A8]" />;
@@ -88,7 +88,7 @@ export default function TripPlanner() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl p-5 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl p-5 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#14532D] dark:bg-[#2F7D32]" />
@@ -101,7 +101,7 @@ export default function TripPlanner() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#14532D] dark:text-[#EEF2ED] bg-[#F7F5EF] dark:bg-[#101B17] px-3.5 py-1.5 rounded-xl border border-[#E3DED2] dark:border-[#273E36]">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#14532D] dark:text-[#F0F4F7] bg-[#F7F8FA] dark:bg-[#121921] px-3.5 py-1.5 rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
           <CheckCircle2 className="w-4 h-4 text-[#2F7D32]" />
           <span>Verified Multi-Modal Plan</span>
         </div>
@@ -114,13 +114,13 @@ export default function TripPlanner() {
           return (
             <div 
               key={dayData.day} 
-              className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-xl overflow-hidden shadow-xs transition-all"
+              className="bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden shadow-xs transition-all"
             >
               {/* Day Header */}
               <div 
                 onClick={() => setExpandedDay(isExpanded ? null : dayIdx)}
                 className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
-                  isExpanded ? 'bg-[#F7F5EF] dark:bg-[#1D322B]' : 'hover:bg-[#FFFDF7] dark:hover:bg-[#1C2F29]'
+                  isExpanded ? 'bg-[#F7F8FA] dark:bg-[#1D322B]' : 'hover:bg-[#FFFDF7] dark:hover:bg-[#1C2F29]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -141,7 +141,7 @@ export default function TripPlanner() {
                   <span className="text-xs font-semibold text-[#64748B] dark:text-[#94A3B8] hidden sm:inline">
                     {dayData.items.length} stops
                   </span>
-                  <div className="w-7 h-7 rounded-lg border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-lg border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center">
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-[#14532D] dark:text-white" /> : <ChevronDown className="w-4 h-4 text-[#64748B]" />}
                   </div>
                 </div>
@@ -149,8 +149,8 @@ export default function TripPlanner() {
 
               {/* Timeline Items */}
               {isExpanded && (
-                <div className="p-5 border-t border-[#E3DED2] dark:border-[#273E36] bg-[#FFFDF7]/60 dark:bg-[#101B17]/60">
-                  <div className="relative pl-7 border-l-2 border-[#E3DED2] dark:border-[#273E36] space-y-4 ml-2">
+                <div className="p-5 border-t border-[#E3E7EA] dark:border-[#293644] bg-[#FFFDF7]/60 dark:bg-[#121921]/60">
+                  <div className="relative pl-7 border-l-2 border-[#E3E7EA] dark:border-[#293644] space-y-4 ml-2">
                     {dayData.items.map((item) => (
                       <div key={item.id} className="relative group">
                         {/* Dot / Icon Node on Timeline Line */}
@@ -158,9 +158,9 @@ export default function TripPlanner() {
                           {getTypeIcon(item.type, item.mode)}
                         </div>
 
-                        <div className="bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-xl p-3.5 hover:border-[#14532D]/40 dark:hover:border-[#EEF2ED]/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-3.5 hover:border-[#14532D]/40 dark:hover:border-[#F0F4F7]/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                           <div className="flex items-start sm:items-center gap-3.5">
-                            <span className="font-mono text-xs font-black text-[#14532D] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#1D322B] px-2 py-1 rounded-md shrink-0">
+                            <span className="font-mono text-xs font-black text-[#14532D] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#1D322B] px-2 py-1 rounded-md shrink-0">
                               {item.time}
                             </span>
                             <div>
@@ -173,7 +173,7 @@ export default function TripPlanner() {
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md self-start sm:self-center border border-[#E3DED2] dark:border-[#273E36] bg-[#F7F5EF] dark:bg-[#101B17] text-[#64748B] dark:text-[#94A3B8] shrink-0">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md self-start sm:self-center border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] text-[#64748B] dark:text-[#94A3B8] shrink-0">
                             {item.type}
                           </span>
                         </div>

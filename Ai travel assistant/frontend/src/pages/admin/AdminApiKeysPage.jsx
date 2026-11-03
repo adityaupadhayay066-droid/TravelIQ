@@ -98,7 +98,7 @@ export default function AdminApiKeysPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 min-h-[50vh]">
-        <div className="w-9 h-9 border-[3px] border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mb-3" />
+        <div className="w-9 h-9 border-[3px] border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mb-3" />
         <p className="text-xs font-medium text-[#66736F] dark:text-[#A3B0AB]">Loading Admin API Governance...</p>
       </div>
     );
@@ -164,7 +164,7 @@ export default function AdminApiKeysPage() {
             onClick={() => setActiveTab('keys')}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
               activeTab === 'keys'
-                ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] shadow-sm'
+                ? 'bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] shadow-sm'
                 : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[#66736F] dark:text-[#A3B0AB] hover:text-[var(--color-text)]'
             }`}
           >
@@ -174,7 +174,7 @@ export default function AdminApiKeysPage() {
             onClick={() => setActiveTab('organizations')}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
               activeTab === 'organizations'
-                ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] shadow-sm'
+                ? 'bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] shadow-sm'
                 : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[#66736F] dark:text-[#A3B0AB] hover:text-[var(--color-text)]'
             }`}
           >
@@ -189,7 +189,7 @@ export default function AdminApiKeysPage() {
             placeholder={`Search ${activeTab === 'keys' ? 'keys, owner, org...' : 'organizations, user, tier...'}`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#173F3A]"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#244C66]"
           />
         </div>
       </div>
@@ -309,7 +309,7 @@ export default function AdminApiKeysPage() {
                     <tr key={o.id} className="hover:bg-[var(--color-soft)]/50 transition">
                       <td className="py-3.5 px-5 font-semibold text-sm">
                         <div className="flex items-center gap-2 text-[var(--color-text)]">
-                          <Building2 className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED] opacity-70 shrink-0" />
+                          <Building2 className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7] opacity-70 shrink-0" />
                           <span>{o.name}</span>
                         </div>
                       </td>
@@ -321,7 +321,7 @@ export default function AdminApiKeysPage() {
                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-wide border ${
                           o.plan_tier === 'enterprise' 
                             ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
-                            : 'bg-[#EEF2ED] dark:bg-[#12201D] text-[var(--color-text)] border-[var(--color-border)]'
+                            : 'bg-[#F0F4F7] dark:bg-[#121921] text-[var(--color-text)] border-[var(--color-border)]'
                         }`}>
                           {o.plan_tier}
                         </span>
@@ -400,7 +400,7 @@ export default function AdminApiKeysPage() {
                     required
                     value={keyFormData.name}
                     onChange={(e) => setKeyFormData({ ...keyFormData, name: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#173F3A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#244C66]"
                   />
                 </div>
 
@@ -413,7 +413,7 @@ export default function AdminApiKeysPage() {
                     required
                     value={keyFormData.rate_limit_per_minute}
                     onChange={(e) => setKeyFormData({ ...keyFormData, rate_limit_per_minute: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#173F3A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#244C66]"
                   />
                 </div>
 
@@ -423,7 +423,7 @@ export default function AdminApiKeysPage() {
                     id="is_revoked_check"
                     checked={keyFormData.is_revoked}
                     onChange={(e) => setKeyFormData({ ...keyFormData, is_revoked: e.target.checked })}
-                    className="rounded border-[var(--color-border)] text-[#173F3A]"
+                    className="rounded border-[var(--color-border)] text-[#244C66]"
                   />
                   <label htmlFor="is_revoked_check" className="text-xs font-medium cursor-pointer text-[var(--color-text)]">
                     Revoke / Deactivate this API Key
@@ -441,7 +441,7 @@ export default function AdminApiKeysPage() {
                   <button
                     type="submit"
                     disabled={savingKey}
-                    className="bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] px-4 py-2 text-xs font-semibold rounded-xl shadow"
+                    className="bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] px-4 py-2 text-xs font-semibold rounded-xl shadow"
                   >
                     {savingKey ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -486,7 +486,7 @@ export default function AdminApiKeysPage() {
                         monthly_quota: quotaMap[tier] || orgFormData.monthly_quota
                       });
                     }}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#173F3A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#244C66]"
                   >
                     <option value="free">Free Starter (100 req/mo)</option>
                     <option value="starter">Developer Starter (2,500 req/mo)</option>
@@ -503,7 +503,7 @@ export default function AdminApiKeysPage() {
                     required
                     value={orgFormData.monthly_quota}
                     onChange={(e) => setOrgFormData({ ...orgFormData, monthly_quota: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#173F3A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[#244C66]"
                   />
                 </div>
 
@@ -513,7 +513,7 @@ export default function AdminApiKeysPage() {
                     id="org_active_check"
                     checked={orgFormData.is_active}
                     onChange={(e) => setOrgFormData({ ...orgFormData, is_active: e.target.checked })}
-                    className="rounded border-[var(--color-border)] text-[#173F3A]"
+                    className="rounded border-[var(--color-border)] text-[#244C66]"
                   />
                   <label htmlFor="org_active_check" className="text-xs font-medium cursor-pointer text-[var(--color-text)]">
                     Organization Workspace is Active
@@ -531,7 +531,7 @@ export default function AdminApiKeysPage() {
                   <button
                     type="submit"
                     disabled={savingOrg}
-                    className="bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] px-4 py-2 text-xs font-semibold rounded-xl shadow"
+                    className="bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] px-4 py-2 text-xs font-semibold rounded-xl shadow"
                   >
                     {savingOrg ? 'Saving...' : 'Apply Tier'}
                   </button>

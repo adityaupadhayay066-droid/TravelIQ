@@ -578,7 +578,7 @@ export default function Dashboard() {
                     return (
                       <div 
                         key={item.id}
-                        className="bg-white dark:bg-[#0E1726] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden"
+                        className="bg-white dark:bg-[#1B242E] rounded-2xl border border-slate-200 dark:border-[#293644] p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden"
                       >
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                           
@@ -625,28 +625,28 @@ export default function Dashboard() {
                           </div>
 
                           {/* Timings, Route Line & Duration */}
-                          <div className="flex items-center justify-between sm:justify-center gap-6 sm:gap-10 flex-1 min-w-0">
+                          <div className="flex items-center justify-between sm:justify-center gap-2 sm:gap-6 md:gap-10 flex-1 min-w-0">
                             
                             {/* Origin */}
-                            <div className="text-left sm:text-right min-w-[90px]">
-                              <p className="font-extrabold text-lg text-slate-900 dark:text-white font-heading">{dep}</p>
-                              <p className="text-xs text-slate-500 truncate max-w-[140px]" title={depStn}>{depStn}</p>
+                            <div className="text-left sm:text-right min-w-[70px] sm:min-w-[90px] shrink-0">
+                              <p className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white font-heading">{dep}</p>
+                              <p className="text-xs text-slate-500 truncate max-w-[100px] sm:max-w-[140px]" title={depStn}>{depStn}</p>
                             </div>
 
                             {/* Middle Route Diagram */}
                             <div className="flex flex-col items-center shrink-0">
-                              <span className="text-xs text-slate-500 font-semibold">{dur}</span>
-                              <div className="w-20 sm:w-28 h-px bg-slate-300 dark:bg-slate-700 my-1 relative">
+                              <span className="text-[11px] sm:text-xs text-slate-500 font-semibold">{dur}</span>
+                              <div className="w-14 sm:w-24 md:w-28 h-px bg-slate-300 dark:bg-slate-700 my-1 relative">
                                 <div className="w-1.5 h-1.5 rounded-full bg-teal-600 absolute -top-0.5 left-0" />
                                 <div className="w-1.5 h-1.5 rounded-full bg-teal-600 absolute -top-0.5 right-0" />
                               </div>
-                              <span className="text-[10px] text-teal-600 font-bold">Non-stop Direct</span>
+                              <span className="text-[9px] sm:text-[10px] text-teal-600 font-bold whitespace-nowrap">Non-stop Direct</span>
                             </div>
 
                             {/* Destination */}
-                            <div className="text-right sm:text-left min-w-[90px]">
-                              <p className="font-extrabold text-lg text-slate-900 dark:text-white font-heading">{arr}</p>
-                              <p className="text-xs text-slate-500 truncate max-w-[140px]" title={arrStn}>{arrStn}</p>
+                            <div className="text-right sm:text-left min-w-[70px] sm:min-w-[90px] shrink-0">
+                              <p className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white font-heading">{arr}</p>
+                              <p className="text-xs text-slate-500 truncate max-w-[100px] sm:max-w-[140px]" title={arrStn}>{arrStn}</p>
                             </div>
 
                           </div>
@@ -750,7 +750,7 @@ export default function Dashboard() {
                       return (
                         <div 
                           key={conn.id}
-                          className="bg-white dark:bg-[#0E1726] rounded-2xl border-2 border-teal-500/40 p-5 shadow-sm space-y-4"
+                          className="bg-white dark:bg-[#1B242E] rounded-2xl border-2 border-teal-500/40 p-5 shadow-sm space-y-4"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                             <div>
@@ -802,26 +802,26 @@ export default function Dashboard() {
                               const serviceNo = leg.service_number || leg.train_number || leg.number;
 
                               return (
-                                <div key={legIdx} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between text-xs">
-                                  <div className="flex items-center gap-3">
+                                <div key={legIdx} className="p-3 rounded-xl border border-slate-200 dark:border-[#293644] bg-slate-50 dark:bg-[#121921]/60 flex items-center justify-between gap-3 text-xs">
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 text-teal-600 flex items-center justify-center font-bold text-xs shrink-0">
                                       {legIdx === 0 ? '1' : (leg.leg_number || legIdx + 1)}
                                     </div>
-                                    <div>
-                                      <div className="flex items-center gap-2">
-                                        <p className="font-bold text-slate-900 dark:text-white">{serviceTitle}</p>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-bold text-slate-900 dark:text-white truncate">{serviceTitle}</p>
                                         {serviceNo && (
-                                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-mono font-semibold">
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-mono font-semibold shrink-0">
                                             #{serviceNo}
                                           </span>
                                         )}
                                       </div>
-                                      <p className="text-[11px] text-slate-500 font-medium">{originStn} → {destStn}</p>
+                                      <p className="text-[11px] text-slate-500 font-medium truncate">{originStn} → {destStn}</p>
                                     </div>
                                   </div>
 
-                                  <div className="text-right">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">{depTime} – {arrTime}</span>
+                                  <div className="text-right shrink-0">
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 block whitespace-nowrap">{depTime} – {arrTime}</span>
                                     <span className="text-[10px] text-emerald-600 block font-semibold">Seats Available</span>
                                   </div>
                                 </div>
@@ -882,7 +882,7 @@ export default function Dashboard() {
 
         {/* MAP VIEW TAB */}
         {activeTab === 'map' && (
-          <div className="bg-white dark:bg-[#0E1726] rounded-2xl border border-slate-200 dark:border-slate-800 p-4 h-[550px] shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-[#1B242E] rounded-2xl border border-slate-200 dark:border-[#293644] p-4 h-[550px] shadow-sm overflow-hidden">
             <GoogleMapComponent source={source} dest={dest} />
           </div>
         )}
@@ -894,7 +894,7 @@ export default function Dashboard() {
           ==================================================================== */}
       {detailModalItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-2xs">
-          <div className="bg-white dark:bg-[#0E1726] rounded-2xl max-w-xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#1B242E] rounded-2xl max-w-xl w-full border border-slate-200 dark:border-[#293644] shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <span className="text-[10px] font-bold uppercase text-teal-600">{detailModalItem.type || 'Train'}</span>

@@ -138,7 +138,7 @@ export default function SecurityDashboard() {
   };
 
   const getPwStrength = () => {
-    if (!pwData.new) return { level: 0, color: 'bg-[#E3DED2] dark:bg-[#2A403A]', label: 'Empty' };
+    if (!pwData.new) return { level: 0, color: 'bg-[#E3E7EA] dark:bg-[#293644]', label: 'Empty' };
     const res = zxcvbn(pwData.new);
     const score = res.score;
     if (score <= 1) return { level: 1, color: 'bg-[#B94A48]', label: 'Weak' };
@@ -259,21 +259,21 @@ export default function SecurityDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] pt-24 px-4 flex justify-center items-center">
-        <div className="w-10 h-10 border-4 border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] pt-24 px-4 flex justify-center items-center">
+        <div className="w-10 h-10 border-4 border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] pt-24 px-4 pb-16">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] pt-24 px-4 pb-16">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-[#E3DED2] dark:border-[#2A403A] pb-6">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-[#E3E7EA] dark:border-[#293644] pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-[#173F3A] dark:text-[#EEF2ED]" />
+            <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-[#244C66] dark:text-[#F0F4F7]" />
               Account Security Center
             </h1>
             <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mt-1.5">
@@ -282,7 +282,7 @@ export default function SecurityDashboard() {
           </div>
           <button 
             onClick={fetchSecurityData} 
-            className="flex items-center justify-center gap-2 bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#263238] dark:text-[#F7F5EF] rounded-lg px-4 py-2 text-sm font-semibold border border-[#E3DED2] dark:border-[#2A403A] transition-all shadow-sm w-fit"
+            className="flex items-center justify-center gap-2 bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#263238] dark:text-[#F7F8FA] rounded-lg px-4 py-2 text-sm font-semibold border border-[#E3E7EA] dark:border-[#293644] transition-all shadow-sm w-fit"
           >
             <RefreshCw className="w-4 h-4" /> Refresh Center
           </button>
@@ -297,7 +297,7 @@ export default function SecurityDashboard() {
             </h2>
             <div className="space-y-3">
               {alerts.map(alert => (
-                <div key={alert.id} className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#B94A48]/20 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={alert.id} className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#B94A48]/20 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-[#B94A48] font-semibold capitalize text-sm">{alert.alert_type.replace('_', ' ')} Registered</h3>
                     <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1">
@@ -322,46 +322,46 @@ export default function SecurityDashboard() {
           <div className="space-y-8 lg:col-span-1">
             
             {/* ACCOUNT SECURITY SCORE */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] text-center shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] mb-4 text-[#173F3A] dark:text-[#F7F5EF] font-bold text-2xl">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] text-center shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] mb-4 text-[#244C66] dark:text-[#F7F8FA] font-bold text-2xl">
                 {score}
               </div>
               <h3 className="text-sm text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-wider mb-1">
                 Account Safety Level
               </h3>
-              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-6">
+              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-6">
                 {score >= 80 ? '🔒 Excellent Protection' : (score >= 50 ? '⚠️ Moderate Protection' : '❌ Critical Risk')}
               </h2>
 
               {/* Score checklist */}
               <div className="text-left space-y-3 mb-2">
-                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
-                  <span className="text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2"><Lock className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Strong Password</span>
+                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+                  <span className="text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2"><Lock className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Strong Password</span>
                   {checklist.strong_password ? <CheckCircle2 className="w-5 h-5 text-[#4F7D62]" /> : <AlertTriangle className="w-5 h-5 text-[#E5B85C]" />}
                 </div>
 
-                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
-                  <span className="text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2"><Mail className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Email OTP 2FA</span>
+                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+                  <span className="text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2"><Mail className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Email OTP 2FA</span>
                   {checklist.two_factor ? <CheckCircle2 className="w-5 h-5 text-[#4F7D62]" /> : <AlertTriangle className="w-5 h-5 text-[#E5B85C]" />}
                 </div>
 
-                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
-                  <span className="text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2"><Fingerprint className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Passkey Biometrics</span>
+                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+                  <span className="text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2"><Fingerprint className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Passkey Biometrics</span>
                   {checklist.passkey ? <CheckCircle2 className="w-5 h-5 text-[#4F7D62]" /> : <AlertTriangle className="w-5 h-5 text-[#E5B85C]" />}
                 </div>
 
-                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
-                  <span className="text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2"><Phone className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Recovery Parameters</span>
+                <div className="flex items-center justify-between text-sm p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+                  <span className="text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2"><Phone className="w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" /> Recovery Parameters</span>
                   {checklist.recovery_options ? <CheckCircle2 className="w-5 h-5 text-[#4F7D62]" /> : <AlertTriangle className="w-5 h-5 text-[#E5B85C]" />}
                 </div>
               </div>
             </div>
 
             {/* TWO FACTOR AUTHENTICATION CARD */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                   Two-Factor Authentication
                 </h3>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -371,7 +371,7 @@ export default function SecurityDashboard() {
                     onChange={handleToggle2FA}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-[#E3DED2] dark:bg-[#2A403A] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#E3DED2] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#173F3A] dark:peer-checked:bg-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A]"></div>
+                  <div className="w-11 h-6 bg-[#E3E7EA] dark:bg-[#293644] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#E3E7EA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#244C66] dark:peer-checked:bg-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644]"></div>
                 </label>
               </div>
               <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
@@ -380,9 +380,9 @@ export default function SecurityDashboard() {
             </div>
 
             {/* BIOMETRIC PASSKEYS CARD */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-              <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                <Fingerprint className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+              <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                 Biometric Passkeys
               </h3>
               <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
@@ -391,12 +391,12 @@ export default function SecurityDashboard() {
 
               {checklist.passkey ? (
                 <div className="space-y-3">
-                  <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg flex items-center gap-2 text-sm text-[#173F3A] dark:text-[#F7F5EF] font-semibold justify-center">
+                  <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg flex items-center gap-2 text-sm text-[#244C66] dark:text-[#F7F8FA] font-semibold justify-center">
                     <ShieldCheck className="w-5 h-5" /> Biometrics Enrolled & Enabled
                   </div>
                   <button 
                     onClick={handleRemovePasskeys} 
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#B94A48]/10 text-[#B94A48] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 text-sm font-semibold transition-all"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#B94A48]/10 text-[#B94A48] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 text-sm font-semibold transition-all"
                   >
                     Deactivate Passkeys
                   </button>
@@ -405,7 +405,7 @@ export default function SecurityDashboard() {
                 <button 
                   onClick={handleRegisterPasskey}
                   disabled={registeringPasskey}
-                  className="w-full bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#12201D] text-white rounded-lg py-2.5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#121921] text-white rounded-lg py-2.5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   {registeringPasskey ? (
                     <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -423,11 +423,11 @@ export default function SecurityDashboard() {
           <div className="space-y-8 lg:col-span-2">
             
             {/* DEVICE & ACTIVE SESSION MANAGEMENT */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl border border-[#E3DED2] dark:border-[#2A403A] overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-              <div className="p-6 border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl border border-[#E3E7EA] dark:border-[#293644] overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+              <div className="p-6 border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                    <Laptop className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                    <Laptop className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                     Active Sessions & Devices
                   </h3>
                   <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Remotely monitor and revoke signed-in browser instances.</p>
@@ -435,25 +435,25 @@ export default function SecurityDashboard() {
                 {sessions.length > 1 && (
                   <button 
                     onClick={handleRevokeAllOthers} 
-                    className="bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#B94A48]/10 text-[#B94A48] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-4 py-2 text-sm font-semibold transition-all self-start sm:self-center flex items-center gap-2"
+                    className="bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#B94A48]/10 text-[#B94A48] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-4 py-2 text-sm font-semibold transition-all self-start sm:self-center flex items-center gap-2"
                   >
                     <LogOut className="w-4 h-4" /> Invalidate Others
                   </button>
                 )}
               </div>
 
-              <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+              <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                 {sessions.map(sess => (
-                  <div key={sess.session_id} className={`p-5 flex items-center justify-between gap-4 transition-all ${sess.is_current ? 'bg-[#EEF2ED]/50 dark:bg-[#213530]/50' : ''}`}>
+                  <div key={sess.session_id} className={`p-5 flex items-center justify-between gap-4 transition-all ${sess.is_current ? 'bg-[#F0F4F7]/50 dark:bg-[#233240]/50' : ''}`}>
                     <div className="flex items-start gap-4">
-                      <div className={`p-3 rounded-lg ${sess.is_current ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#12201D]' : 'bg-[#F7F5EF] text-[#66736F] dark:bg-[#12201D] dark:text-[#A3B0AB]'}`}>
+                      <div className={`p-3 rounded-lg ${sess.is_current ? 'bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#121921]' : 'bg-[#F7F8FA] text-[#66736F] dark:bg-[#121921] dark:text-[#A3B0AB]'}`}>
                         {sess.device_type === 'mobile' ? <Smartphone className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F5EF]">{sess.browser} on {sess.os}</h4>
+                          <h4 className="text-sm font-semibold text-[#263238] dark:text-[#F7F8FA]">{sess.browser} on {sess.os}</h4>
                           {sess.is_current && (
-                            <span className="bg-[#173F3A]/10 text-[#173F3A] dark:bg-[#EEF2ED]/10 dark:text-[#EEF2ED] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
+                            <span className="bg-[#244C66]/10 text-[#244C66] dark:bg-[#F0F4F7]/10 dark:text-[#F0F4F7] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
                               Current Device
                             </span>
                           )}
@@ -479,10 +479,10 @@ export default function SecurityDashboard() {
             </div>
 
             {/* TRUSTED DEVICES SECTION */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] space-y-4 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
               <div>
-                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                   Trusted Devices
                 </h3>
                 <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] mt-0.5">Browsers configured to bypass secondary OTP verification requests.</p>
@@ -493,9 +493,9 @@ export default function SecurityDashboard() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {trustedDevices.map(device => (
-                    <div key={device.device_id} className="p-4 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg flex items-center justify-between text-sm">
+                    <div key={device.device_id} className="p-4 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg flex items-center justify-between text-sm">
                       <div className="space-y-1">
-                        <div className="font-semibold text-[#263238] dark:text-[#F7F5EF]">{device.browser} on {device.os}</div>
+                        <div className="font-semibold text-[#263238] dark:text-[#F7F8FA]">{device.browser} on {device.os}</div>
                         <div className="text-xs text-[#66736F] dark:text-[#A3B0AB]">ID: {device.device_id.substring(0, 8)}...</div>
                       </div>
                       <button 
@@ -512,13 +512,13 @@ export default function SecurityDashboard() {
             </div>
 
             {/* ACCOUNT RECOVERY & BACKUP CODES */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] grid grid-cols-1 md:grid-cols-2 gap-8 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] grid grid-cols-1 md:grid-cols-2 gap-8 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
               
               {/* RECOVERY OPTIONS */}
               <form onSubmit={handleUpdateRecovery} className="space-y-4">
                 <div>
-                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                     Recovery Credentials
                   </h3>
                   <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] mt-0.5">Used as backup authentication channels.</p>
@@ -526,7 +526,7 @@ export default function SecurityDashboard() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] mb-1.5">Recovery Email</label>
+                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] mb-1.5">Recovery Email</label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-[#66736F] dark:text-[#A3B0AB] w-4 h-4" />
                       <input 
@@ -534,13 +534,13 @@ export default function SecurityDashboard() {
                         value={recoveryEmail} 
                         onChange={(e) => setRecoveryEmail(e.target.value)}
                         placeholder="recovery@example.com" 
-                        className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-4 text-sm text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED]"
+                        className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 pl-10 pr-4 text-sm text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7]"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] mb-1.5">Recovery Phone</label>
+                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] mb-1.5">Recovery Phone</label>
                     <div className="relative">
                       <Phone className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-[#66736F] dark:text-[#A3B0AB] w-4 h-4" />
                       <input 
@@ -548,7 +548,7 @@ export default function SecurityDashboard() {
                         value={recoveryPhone} 
                         onChange={(e) => setRecoveryPhone(e.target.value)}
                         placeholder="+91 XXXXX XXXXX" 
-                        className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-4 text-sm text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED]"
+                        className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 pl-10 pr-4 text-sm text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7]"
                       />
                     </div>
                   </div>
@@ -557,7 +557,7 @@ export default function SecurityDashboard() {
                 <button 
                   type="submit" 
                   disabled={savingRecovery}
-                  className="bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg py-2.5 px-6 text-sm font-semibold transition-all w-fit disabled:opacity-50"
+                  className="bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] text-[#244C66] dark:text-[#F0F4F7] rounded-lg py-2.5 px-6 text-sm font-semibold transition-all w-fit disabled:opacity-50"
                 >
                   {savingRecovery ? 'Saving...' : 'Save Recovery Options'}
                 </button>
@@ -566,8 +566,8 @@ export default function SecurityDashboard() {
               {/* BACKUP CODES GENERATION */}
               <div className="space-y-4 flex flex-col justify-between">
                 <div className="space-y-2">
-                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                    <Key className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                    <Key className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                     One-time Backup Codes
                   </h3>
                   <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
@@ -590,37 +590,37 @@ export default function SecurityDashboard() {
             </div>
 
             {/* CHANGE PASSWORD */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] h-fit shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2 mb-6">
-                <Key className="text-[#173F3A] dark:text-[#EEF2ED] w-5 h-5" />
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] h-fit shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+              <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2 mb-6">
+                <Key className="text-[#244C66] dark:text-[#F0F4F7] w-5 h-5" />
                 Change Account Password
               </h2>
               <form onSubmit={handleChangePassword} className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] mb-2">Current Password</label>
+                  <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] mb-2">Current Password</label>
                   <input
                     type="password"
                     required
                     value={pwData.current}
                     onChange={e => setPwData({...pwData, current: e.target.value})}
-                    className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED]"
+                    className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7]"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] mb-2">New Password</label>
+                  <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] mb-2">New Password</label>
                   <input
                     type="password"
                     required
                     value={pwData.new}
                     onChange={e => setPwData({...pwData, new: e.target.value})}
-                    className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED]"
+                    className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7]"
                   />
                   {pwData.new && (
                     <div className="space-y-1 mt-2">
                       <div className="flex gap-1">
                         {[1, 2, 3, 4].map((i) => (
-                          <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-[#E3DED2] dark:bg-[#2A403A]'}`} />
+                          <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-[#E3E7EA] dark:bg-[#293644]'}`} />
                         ))}
                       </div>
                       <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-semibold text-right">{strength.label}</div>
@@ -630,20 +630,20 @@ export default function SecurityDashboard() {
 
                 <div className="flex flex-col justify-between">
                   <div>
-                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F5EF] mb-2">Confirm New Password</label>
+                    <label className="block text-sm font-semibold text-[#263238] dark:text-[#F7F8FA] mb-2">Confirm New Password</label>
                     <input
                       type="password"
                       required
                       value={pwData.confirm}
                       onChange={e => setPwData({...pwData, confirm: e.target.value})}
-                      className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F5EF] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED]"
+                      className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-4 py-2.5 text-sm text-[#263238] dark:text-[#F7F8FA] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7]"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={changingPw}
-                    className="bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#12201D] text-white rounded-lg py-2.5 px-6 font-semibold disabled:opacity-70 disabled:cursor-not-allowed mt-4 text-sm"
+                    className="bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#121921] text-white rounded-lg py-2.5 px-6 font-semibold disabled:opacity-70 disabled:cursor-not-allowed mt-4 text-sm"
                   >
                     {changingPw ? 'Updating...' : 'Update Password'}
                   </button>
@@ -652,11 +652,11 @@ export default function SecurityDashboard() {
             </div>
 
             {/* LOGIN AUDIT HISTORY */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl border border-[#E3DED2] dark:border-[#2A403A] overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-              <div className="p-6 border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl border border-[#E3E7EA] dark:border-[#293644] overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+              <div className="p-6 border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                     Access History Logs
                   </h3>
                   <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">System-wide audit trail of signed coordinates and logins.</p>
@@ -669,7 +669,7 @@ export default function SecurityDashboard() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search logs by IP, OS, Location..."
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 pl-4 pr-10 text-sm text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 pl-4 pr-10 text-sm text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-all"
                   />
                 </div>
               </div>
@@ -685,14 +685,14 @@ export default function SecurityDashboard() {
                 ) : (
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] text-xs text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider font-bold">
+                      <tr className="border-b border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] text-xs text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider font-bold">
                         <th className="p-4">Time & Status</th>
                         <th className="p-4">System OS / Browser</th>
                         <th className="p-4">IP Coordinates</th>
                         <th className="p-4">Geolocation</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                    <tbody className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                       {filteredHistory.length === 0 ? (
                         <tr>
                           <td colSpan="4" className="p-8 text-center text-[#66736F] dark:text-[#A3B0AB] font-semibold">
@@ -701,9 +701,9 @@ export default function SecurityDashboard() {
                         </tr>
                       ) : (
                         filteredHistory.map((item) => (
-                          <tr key={item.id} className="hover:bg-[#F7F5EF] dark:hover:bg-[#213530]/30 transition-all">
+                          <tr key={item.id} className="hover:bg-[#F7F8FA] dark:hover:bg-[#233240]/30 transition-all">
                             <td className="p-4">
-                              <div className="font-semibold text-[#263238] dark:text-[#F7F5EF]">
+                              <div className="font-semibold text-[#263238] dark:text-[#F7F8FA]">
                                 {new Date(item.login_time).toLocaleString()}
                               </div>
                               <div className={`text-[10px] font-bold uppercase mt-1 flex items-center gap-1.5 ${
@@ -717,7 +717,7 @@ export default function SecurityDashboard() {
                                 {item.status}
                               </div>
                             </td>
-                            <td className="p-4 font-semibold text-[#263238] dark:text-[#F7F5EF]">
+                            <td className="p-4 font-semibold text-[#263238] dark:text-[#F7F8FA]">
                               {item.os} ({item.browser})
                             </td>
                             <td className="p-4 font-mono text-xs text-[#66736F] dark:text-[#A3B0AB]">
@@ -749,29 +749,29 @@ export default function SecurityDashboard() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 max-w-md w-full relative space-y-6 shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
+              className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-6 max-w-md w-full relative space-y-6 shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
             >
               <button 
                 onClick={() => setShowBackupModal(false)}
-                className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] p-1 rounded-lg transition-all"
+                className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] p-1 rounded-lg transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="text-center space-y-2">
-                <div className="inline-flex items-center justify-center p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-full border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED]">
+                <div className="inline-flex items-center justify-center p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-full border border-[#E3E7EA] dark:border-[#293644] text-[#244C66] dark:text-[#F0F4F7]">
                   <Key className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">Save Your Backup Codes</h3>
+                <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">Save Your Backup Codes</h3>
                 <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] leading-relaxed px-4">
                   Each code can be used ONE-TIME only. If you lose access to your primary email address, you can type any of these codes to log in successfully.
                 </p>
               </div>
 
               {/* Codes Grid */}
-              <div className="grid grid-cols-2 gap-3 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] p-4 rounded-lg font-mono text-center text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">
+              <div className="grid grid-cols-2 gap-3 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] p-4 rounded-lg font-mono text-center text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">
                 {backupCodes.map((code, idx) => (
-                  <div key={idx} className="p-2 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-md">
+                  <div key={idx} className="p-2 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-md">
                     {code}
                   </div>
                 ))}
@@ -780,7 +780,7 @@ export default function SecurityDashboard() {
               <div className="flex gap-4 pt-2">
                 <button 
                   onClick={handleDownloadBackupCodes}
-                  className="flex-1 bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#12201D] text-white rounded-lg py-2.5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#121921] text-white rounded-lg py-2.5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   <Download className="w-4 h-4" /> Download (.txt)
                 </button>
@@ -789,7 +789,7 @@ export default function SecurityDashboard() {
                     navigator.clipboard.writeText(backupCodes.join(', '));
                     toast.success('Codes copied to clipboard!');
                   }}
-                  className="bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] rounded-lg px-5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  className="bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] rounded-lg px-5 text-sm font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   <Copy className="w-4 h-4" /> Copy
                 </button>

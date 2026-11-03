@@ -666,11 +666,11 @@ export default function HotelBookingModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.25 }}
-        className="bg-[#FFFFFF] dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-[#1F2933] dark:text-[#F7F5EF] my-auto"
+        className="bg-[#FFFFFF] dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-[#1F2933] dark:text-[#F7F8FA] my-auto"
       >
         
         {/* ─── Modal Header ─── */}
-        <div className="p-4 sm:p-5 bg-[#F7F5EF] dark:bg-[#101B17] border-b border-[#E3DED2] dark:border-[#273E36] flex items-start justify-between relative">
+        <div className="p-4 sm:p-5 bg-[#F7F8FA] dark:bg-[#121921] border-b border-[#E3E7EA] dark:border-[#293644] flex items-start justify-between relative">
           <div className="flex items-start gap-3.5 pr-8">
             <div className="w-12 h-12 rounded-xl bg-[#14532D] text-white flex items-center justify-center flex-shrink-0 font-bold shadow-md">
               {hotel.isHostel ? <Bed className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
@@ -710,7 +710,7 @@ export default function HotelBookingModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#64748B] hover:text-[#1F2933] dark:hover:text-white hover:bg-[#EEF2ED] dark:hover:bg-[#1D322B] transition-colors absolute right-4 top-4"
+            className="p-2 rounded-xl text-[#64748B] hover:text-[#1F2933] dark:hover:text-white hover:bg-[#F0F4F7] dark:hover:bg-[#1D322B] transition-colors absolute right-4 top-4"
           >
             <X className="w-5 h-5" />
           </button>
@@ -718,12 +718,12 @@ export default function HotelBookingModal({
 
         {/* ─── Stepper Progress ─── */}
         {step < 4 && (
-          <div className="px-5 py-2.5 bg-[#FFFDF7] dark:bg-[#12201D] border-b border-[#E3DED2] dark:border-[#273E36] flex items-center justify-between text-xs font-semibold overflow-x-auto whitespace-nowrap">
+          <div className="px-5 py-2.5 bg-[#FFFDF7] dark:bg-[#121921] border-b border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-xs font-semibold overflow-x-auto whitespace-nowrap">
             <button
               onClick={() => setStep(1)}
               className={`flex items-center gap-1.5 transition-colors ${step === 1 ? 'text-[#14532D] dark:text-white font-bold' : 'text-[#64748B]'}`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 1 ? 'bg-[#14532D] text-white' : 'bg-[#EEF2ED] text-[#64748B]'}`}>1</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 1 ? 'bg-[#14532D] text-white' : 'bg-[#F0F4F7] text-[#64748B]'}`}>1</span>
               Choose Bed / Room
             </button>
             <ChevronRight className="w-3.5 h-3.5 text-[#CBD5E1]" />
@@ -732,7 +732,7 @@ export default function HotelBookingModal({
               onClick={() => setStep(2)}
               className={`flex items-center gap-1.5 transition-colors ${step === 2 ? 'text-[#14532D] dark:text-white font-bold' : 'text-[#64748B]'}`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 2 ? 'bg-[#14532D] text-white' : 'bg-[#EEF2ED] text-[#64748B]'}`}>2</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 2 ? 'bg-[#14532D] text-white' : 'bg-[#F0F4F7] text-[#64748B]'}`}>2</span>
               Stay Dates & Guests
             </button>
             <ChevronRight className="w-3.5 h-3.5 text-[#CBD5E1]" />
@@ -741,7 +741,7 @@ export default function HotelBookingModal({
               onClick={() => setStep(3)}
               className={`flex items-center gap-1.5 transition-colors ${step === 3 ? 'text-[#14532D] dark:text-white font-bold' : 'text-[#64748B]'}`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-[#14532D] text-white' : 'bg-[#EEF2ED] text-[#64748B]'}`}>3</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step === 3 ? 'bg-[#14532D] text-white' : 'bg-[#F0F4F7] text-[#64748B]'}`}>3</span>
               Guest & Payment
             </button>
           </div>
@@ -774,7 +774,7 @@ export default function HotelBookingModal({
                       className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-3 relative ${
                         isSelected 
                           ? 'border-[#14532D] dark:border-[#4ADE80] bg-[#14532D]/5 dark:bg-[#14532D]/20 shadow-md ring-1 ring-[#14532D]' 
-                          : 'border-[#E3DED2] dark:border-[#273E36] bg-[#FFFFFF] dark:bg-[#1B2C28] hover:border-[#14532D]/40'
+                          : 'border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] hover:border-[#14532D]/40'
                       }`}
                     >
                       {room.badge && (
@@ -801,14 +801,14 @@ export default function HotelBookingModal({
 
                         <div className="flex flex-wrap gap-1 mt-2.5">
                           {room.amenities?.slice(0, 4).map((am, idx) => (
-                            <span key={idx} className="text-[10px] bg-[#F7F5EF] dark:bg-[#101B17] text-[#64748B] dark:text-[#94A3B8] px-2 py-0.5 rounded-md border border-[#E3DED2] dark:border-[#273E36]">
+                            <span key={idx} className="text-[10px] bg-[#F7F8FA] dark:bg-[#121921] text-[#64748B] dark:text-[#94A3B8] px-2 py-0.5 rounded-md border border-[#E3E7EA] dark:border-[#293644]">
                               {am}
                             </span>
                           ))}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-[#E3DED2] dark:border-[#273E36] pt-3 mt-1">
+                      <div className="flex items-center justify-between border-t border-[#E3E7EA] dark:border-[#293644] pt-3 mt-1">
                         <div>
                           <div className="flex items-baseline gap-1">
                             <span className="text-lg font-black text-[#14532D] dark:text-white">
@@ -828,7 +828,7 @@ export default function HotelBookingModal({
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                             isSelected 
                               ? 'bg-[#14532D] text-white shadow-xs' 
-                              : 'bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-white hover:bg-[#14532D] hover:text-white'
+                              : 'bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-white hover:bg-[#14532D] hover:text-white'
                           }`}
                         >
                           {isSelected ? 'Selected' : 'Select'}
@@ -840,7 +840,7 @@ export default function HotelBookingModal({
               </div>
 
               {/* Number of Units / Beds Counter */}
-              <div className="p-4 bg-[#F7F5EF] dark:bg-[#101B17] rounded-xl border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-between">
+              <div className="p-4 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-[#14532D] dark:text-white">
                     {hotel.isHostel ? 'Number of Dorm Beds' : 'Number of Rooms'}
@@ -854,7 +854,7 @@ export default function HotelBookingModal({
                   <button
                     onClick={() => setUnitsCount(Math.max(1, unitsCount - 1))}
                     disabled={unitsCount <= 1}
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] font-bold text-sm disabled:opacity-40 hover:bg-[#EEF2ED] transition-colors"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] font-bold text-sm disabled:opacity-40 hover:bg-[#F0F4F7] transition-colors"
                   >
                     -
                   </button>
@@ -862,7 +862,7 @@ export default function HotelBookingModal({
                   <button
                     onClick={() => setUnitsCount(Math.min(8, unitsCount + 1))}
                     disabled={unitsCount >= 8}
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] font-bold text-sm disabled:opacity-40 hover:bg-[#EEF2ED] transition-colors"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] font-bold text-sm disabled:opacity-40 hover:bg-[#F0F4F7] transition-colors"
                   >
                     +
                   </button>
@@ -885,7 +885,7 @@ export default function HotelBookingModal({
 
               {/* Dates Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="p-3.5 bg-[#F7F5EF] dark:bg-[#101B17] rounded-xl border border-[#E3DED2] dark:border-[#273E36]">
+                <div className="p-3.5 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                   <label className="block text-xs font-bold text-[#14532D] dark:text-white mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-[#14532D]" /> Check-in Date
                   </label>
@@ -894,12 +894,12 @@ export default function HotelBookingModal({
                     min={todayStr}
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="w-full bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#14532D]"
+                    className="w-full bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#14532D]"
                   />
                   <span className="text-[10px] text-[#64748B] mt-1 block">Standard Check-in: 12:00 PM</span>
                 </div>
 
-                <div className="p-3.5 bg-[#F7F5EF] dark:bg-[#101B17] rounded-xl border border-[#E3DED2] dark:border-[#273E36]">
+                <div className="p-3.5 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                   <label className="block text-xs font-bold text-[#14532D] dark:text-white mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-[#14532D]" /> Check-out Date
                   </label>
@@ -908,14 +908,14 @@ export default function HotelBookingModal({
                     min={checkInDate || todayStr}
                     value={checkOutDate}
                     onChange={(e) => setCheckOutDate(e.target.value)}
-                    className="w-full bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#14532D]"
+                    className="w-full bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#14532D]"
                   />
                   <span className="text-[10px] text-[#64748B] mt-1 block">Total Duration: {nights} {nights === 1 ? 'Night' : 'Nights'}</span>
                 </div>
               </div>
 
               {/* Guests Count */}
-              <div className="p-4 bg-[#F7F5EF] dark:bg-[#101B17] rounded-xl border border-[#E3DED2] dark:border-[#273E36] flex items-center justify-between">
+              <div className="p-4 bg-[#F7F8FA] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-[#14532D] dark:text-white flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#14532D]" /> Total Guests / Backpackers
@@ -929,7 +929,7 @@ export default function HotelBookingModal({
                   <button
                     onClick={() => setGuestsCount(Math.max(1, guestsCount - 1))}
                     disabled={guestsCount <= 1}
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] font-bold text-sm disabled:opacity-40"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] font-bold text-sm disabled:opacity-40"
                   >
                     -
                   </button>
@@ -937,7 +937,7 @@ export default function HotelBookingModal({
                   <button
                     onClick={() => setGuestsCount(Math.min(10, guestsCount + 1))}
                     disabled={guestsCount >= 10}
-                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] font-bold text-sm disabled:opacity-40"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] font-bold text-sm disabled:opacity-40"
                   >
                     +
                   </button>
@@ -964,7 +964,7 @@ export default function HotelBookingModal({
                         className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
                           isMSelected 
                             ? 'border-[#14532D] bg-[#14532D]/5 dark:bg-[#14532D]/20 shadow-xs' 
-                            : 'border-[#E3DED2] dark:border-[#273E36] bg-white dark:bg-[#1B2C28]'
+                            : 'border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1011,7 +1011,7 @@ export default function HotelBookingModal({
                     placeholder="e.g. Aditya Sharma"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
-                    className="w-full bg-[#F7F5EF] dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
+                    className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
                   />
                 </div>
 
@@ -1026,7 +1026,7 @@ export default function HotelBookingModal({
                     placeholder="aditya@example.com"
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full bg-[#F7F5EF] dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
+                    className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
                   />
                   <p className="text-[10px] text-[#64748B] dark:text-[#94A3B8] mt-1">For Tax Invoice & e-Voucher PDF</p>
                 </div>
@@ -1042,17 +1042,17 @@ export default function HotelBookingModal({
                     placeholder="+91 98765 43210"
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
-                    className="w-full bg-[#F7F5EF] dark:bg-[#101B17] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
+                    className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D] focus:ring-1 focus:ring-[#14532D]"
                   />
                   <p className="text-[10px] text-[#64748B] dark:text-[#94A3B8] mt-1">For Instant OTP & SMS alerts</p>
                 </div>
               </div>
 
               {/* 2. REAL BOOKING APP GOVERNMENT ID AUTHENTICATION & KYC MODULE */}
-              <div className="p-4 bg-[#F8FAFC] dark:bg-[#101B17] border-2 border-[#14532D]/30 dark:border-[#273E36] rounded-2xl shadow-sm space-y-3.5">
+              <div className="p-4 bg-[#F8FAFC] dark:bg-[#121921] border-2 border-[#14532D]/30 dark:border-[#293644] rounded-2xl shadow-sm space-y-3.5">
                 
                 {/* Gov ID Card Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#E2E8F0] dark:border-[#273E36]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#E2E8F0] dark:border-[#293644]">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[#14532D]/10 dark:bg-[#14532D]/30 text-[#14532D] dark:text-[#4ADE80] flex items-center justify-center font-black">
                       <Shield className="w-4 h-4" />
@@ -1116,7 +1116,7 @@ export default function HotelBookingModal({
                       <button
                         type="button"
                         onClick={handleResetGovId}
-                        className="text-[11px] font-semibold text-[#64748B] hover:text-[#DC2626] dark:hover:text-red-400 px-3 py-1 rounded-lg border border-[#CBD5E1] dark:border-[#273E36] bg-[#F8FAFC] dark:bg-[#101B17] hover:border-[#DC2626] transition-colors cursor-pointer"
+                        className="text-[11px] font-semibold text-[#64748B] hover:text-[#DC2626] dark:hover:text-red-400 px-3 py-1 rounded-lg border border-[#CBD5E1] dark:border-[#293644] bg-[#F8FAFC] dark:bg-[#121921] hover:border-[#DC2626] transition-colors cursor-pointer"
                       >
                         Reset
                       </button>
@@ -1154,11 +1154,11 @@ export default function HotelBookingModal({
                     </div>
 
                     <div className="flex items-center gap-2 my-2">
-                      <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#273E36]" />
+                      <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#293644]" />
                       <span className="text-[10px] uppercase font-bold text-[#94A3B8] tracking-wider">
                         Or Enter Gov ID Manually
                       </span>
-                      <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#273E36]" />
+                      <div className="flex-1 h-px bg-[#E2E8F0] dark:bg-[#293644]" />
                     </div>
 
                     {/* ID Type Selector */}
@@ -1187,7 +1187,7 @@ export default function HotelBookingModal({
                               className={`p-2 rounded-lg border text-[11px] font-bold text-center transition-all ${
                                 isSel
                                   ? 'border-[#14532D] bg-[#14532D] text-white shadow-xs'
-                                  : 'border-[#CBD5E1] dark:border-[#273E36] bg-white dark:bg-[#172722] text-[#475569] dark:text-[#94A3B8] hover:border-[#14532D]'
+                                  : 'border-[#CBD5E1] dark:border-[#293644] bg-white dark:bg-[#172722] text-[#475569] dark:text-[#94A3B8] hover:border-[#14532D]'
                               }`}
                             >
                               {doc.label}
@@ -1212,7 +1212,7 @@ export default function HotelBookingModal({
                             }
                             value={govIdNumber}
                             onChange={(e) => handleFormatGovId(e.target.value)}
-                            className="w-full bg-white dark:bg-[#172722] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-mono font-bold uppercase tracking-wider focus:outline-none focus:border-[#14532D]"
+                            className="w-full bg-white dark:bg-[#172722] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-mono font-bold uppercase tracking-wider focus:outline-none focus:border-[#14532D]"
                           />
                         </div>
 
@@ -1227,7 +1227,7 @@ export default function HotelBookingModal({
                               else handleFormatGovId('ABC1234567');
                               toast.success(`Demo ${govIdType} filled! Now click Verify ID.`);
                             }}
-                            className="px-3 py-2 bg-[#F1F5F9] dark:bg-[#213530] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-lg border border-[#CBD5E1] dark:border-[#273E36] hover:bg-[#E2E8F0] transition-colors cursor-pointer shrink-0"
+                            className="px-3 py-2 bg-[#F1F5F9] dark:bg-[#233240] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-lg border border-[#CBD5E1] dark:border-[#293644] hover:bg-[#E2E8F0] transition-colors cursor-pointer shrink-0"
                           >
                             Demo Fill
                           </button>
@@ -1259,7 +1259,7 @@ export default function HotelBookingModal({
                               placeholder="e.g. 4829"
                               value={govIdOtp}
                               onChange={(e) => setGovIdOtp(e.target.value)}
-                              className="w-32 bg-white dark:bg-[#101B17] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-1.5 text-center text-sm font-mono font-black tracking-widest focus:outline-none focus:border-[#14532D]"
+                              className="w-32 bg-white dark:bg-[#121921] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-1.5 text-center text-sm font-mono font-black tracking-widest focus:outline-none focus:border-[#14532D]"
                             />
                             <button
                               type="button"
@@ -1267,7 +1267,7 @@ export default function HotelBookingModal({
                                 setGovIdOtp('4829');
                                 handleVerifyGovIdOtp('4829');
                               }}
-                              className="px-3 bg-[#F1F5F9] dark:bg-[#213530] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-lg border border-[#CBD5E1] dark:border-[#273E36] hover:bg-[#E2E8F0] transition-colors"
+                              className="px-3 bg-[#F1F5F9] dark:bg-[#233240] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-lg border border-[#CBD5E1] dark:border-[#293644] hover:bg-[#E2E8F0] transition-colors"
                             >
                               Auto-Fill OTP (4829)
                             </button>
@@ -1334,7 +1334,7 @@ export default function HotelBookingModal({
                         className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
                           active 
                             ? 'bg-[#14532D] text-white border-[#14532D]' 
-                            : 'bg-[#F7F5EF] dark:bg-[#101B17] text-[#64748B] dark:text-[#94A3B8] border-[#E3DED2] dark:border-[#273E36] hover:border-[#14532D]'
+                            : 'bg-[#F7F8FA] dark:bg-[#121921] text-[#64748B] dark:text-[#94A3B8] border-[#E3E7EA] dark:border-[#293644] hover:border-[#14532D]'
                         }`}
                       >
                         {active && '✓ '} {req}
@@ -1345,7 +1345,7 @@ export default function HotelBookingModal({
               </div>
 
               {/* Coupons & Promo Codes */}
-              <div className="p-3.5 bg-[#FFFDF7] dark:bg-[#101B17] rounded-xl border border-[#E3DED2] dark:border-[#273E36] space-y-2">
+              <div className="p-3.5 bg-[#FFFDF7] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#14532D] dark:text-white flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-[#E58A3A]" /> Have a Coupon Code?
@@ -1363,7 +1363,7 @@ export default function HotelBookingModal({
                     placeholder="Enter code (e.g. HOSTEL20, OYO300)"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    className="flex-1 bg-white dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-[#14532D]"
+                    className="flex-1 bg-white dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-[#14532D]"
                   />
                   <button
                     type="button"
@@ -1380,7 +1380,7 @@ export default function HotelBookingModal({
                       key={idx}
                       type="button"
                       onClick={() => handleApplyCoupon(c)}
-                      className="text-[10px] font-semibold bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-[#EEF2ED] px-2 py-0.5 rounded-md hover:bg-[#14532D] hover:text-white transition-colors"
+                      className="text-[10px] font-semibold bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] px-2 py-0.5 rounded-md hover:bg-[#14532D] hover:text-white transition-colors"
                     >
                       🏷️ {c.code} ({c.label})
                     </button>
@@ -1418,7 +1418,7 @@ export default function HotelBookingModal({
                         className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 ${
                           isSelected
                             ? 'border-[#14532D] bg-[#14532D]/10 dark:bg-[#14532D]/30 ring-1 ring-[#14532D] shadow-xs'
-                            : 'border-[#E3DED2] dark:border-[#273E36] bg-white dark:bg-[#1B2C28] hover:border-[#14532D]/40'
+                            : 'border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] hover:border-[#14532D]/40'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1443,7 +1443,7 @@ export default function HotelBookingModal({
                 </div>
 
                 {/* Sub-Panel: Dynamic Mode Specific Gateway Content */}
-                <div className="p-4 bg-[#F8FAFC] dark:bg-[#12201D] border border-[#E2E8F0] dark:border-[#273E36] rounded-xl shadow-xs">
+                <div className="p-4 bg-[#F8FAFC] dark:bg-[#121921] border border-[#E2E8F0] dark:border-[#293644] rounded-xl shadow-xs">
                   
                   {/* 1. PAY AT PROPERTY (OYO STYLE) */}
                   {paymentTab === 'property' && (
@@ -1476,7 +1476,7 @@ export default function HotelBookingModal({
                   {/* 2. DYNAMIC UPI & QR CODE (MMT SCAN & PAY STYLE) */}
                   {paymentTab === 'upi' && (
                     <div className="space-y-3.5">
-                      <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#273E36]">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#293644]">
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -1484,7 +1484,7 @@ export default function HotelBookingModal({
                             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                               upiOption === 'qr' 
                                 ? 'bg-[#14532D] text-white shadow-xs' 
-                                : 'bg-white dark:bg-[#1B2C28] text-[#64748B] border border-[#E2E8F0] dark:border-[#273E36]'
+                                : 'bg-white dark:bg-[#1B242E] text-[#64748B] border border-[#E2E8F0] dark:border-[#293644]'
                             }`}
                           >
                             📲 Scan Dynamic QR
@@ -1495,7 +1495,7 @@ export default function HotelBookingModal({
                             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                               upiOption === 'vpa' 
                                 ? 'bg-[#14532D] text-white shadow-xs' 
-                                : 'bg-white dark:bg-[#1B2C28] text-[#64748B] border border-[#E2E8F0] dark:border-[#273E36]'
+                                : 'bg-white dark:bg-[#1B242E] text-[#64748B] border border-[#E2E8F0] dark:border-[#293644]'
                             }`}
                           >
                             ⌨️ Enter UPI ID / VPA
@@ -1530,7 +1530,7 @@ export default function HotelBookingModal({
                               </p>
                             </div>
 
-                            <div className="p-2 bg-white dark:bg-[#1B2C28] rounded-lg border border-[#E2E8F0] dark:border-[#273E36] flex items-center justify-between text-[11px] font-mono">
+                            <div className="p-2 bg-white dark:bg-[#1B242E] rounded-lg border border-[#E2E8F0] dark:border-[#293644] flex items-center justify-between text-[11px] font-mono">
                               <span className="text-[#64748B] truncate">{DUMMY_HOTEL_UPI}</span>
                               <button
                                 type="button"
@@ -1566,7 +1566,7 @@ export default function HotelBookingModal({
                               placeholder="aditya@oksbi or 9876543210@paytm"
                               value={upiId}
                               onChange={(e) => setUpiId(e.target.value)}
-                              className="w-full bg-white dark:bg-[#1B2C28] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-mono font-medium focus:outline-none focus:border-[#14532D]"
+                              className="w-full bg-white dark:bg-[#1B242E] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-mono font-medium focus:outline-none focus:border-[#14532D]"
                             />
                           </div>
 
@@ -1577,7 +1577,7 @@ export default function HotelBookingModal({
                                 key={vpa}
                                 type="button"
                                 onClick={() => handleAutofillDemoUpi(vpa)}
-                                className="text-[10px] font-mono bg-white dark:bg-[#1B2C28] text-[#14532D] dark:text-[#4ADE80] px-2 py-0.5 rounded border border-[#CBD5E1] dark:border-[#273E36] hover:border-[#14532D]"
+                                className="text-[10px] font-mono bg-white dark:bg-[#1B242E] text-[#14532D] dark:text-[#4ADE80] px-2 py-0.5 rounded border border-[#CBD5E1] dark:border-[#293644] hover:border-[#14532D]"
                               >
                                 {vpa}
                               </button>
@@ -1615,7 +1615,7 @@ export default function HotelBookingModal({
                             placeholder="4532 •••• •••• 3840"
                             value={cardNumber}
                             onChange={(e) => handleFormatCardNumber(e.target.value)}
-                            className="w-full bg-white dark:bg-[#1B2C28] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:border-[#14532D]"
+                            className="w-full bg-white dark:bg-[#1B242E] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-mono font-bold focus:outline-none focus:border-[#14532D]"
                           />
                         </div>
 
@@ -1629,7 +1629,7 @@ export default function HotelBookingModal({
                               placeholder="Name on card"
                               value={cardHolder}
                               onChange={(e) => setCardHolder(e.target.value)}
-                              className="w-full bg-white dark:bg-[#1B2C28] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D]"
+                              className="w-full bg-white dark:bg-[#1B242E] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#14532D]"
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
@@ -1643,7 +1643,7 @@ export default function HotelBookingModal({
                                 placeholder="MM/YY"
                                 value={cardExpiry}
                                 onChange={(e) => handleFormatExpiry(e.target.value)}
-                                className="w-full bg-white dark:bg-[#1B2C28] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-mono text-center focus:outline-none focus:border-[#14532D]"
+                                className="w-full bg-white dark:bg-[#1B242E] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-mono text-center focus:outline-none focus:border-[#14532D]"
                               />
                             </div>
                             <div>
@@ -1656,7 +1656,7 @@ export default function HotelBookingModal({
                                 placeholder="•••"
                                 value={cardCvv}
                                 onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                className="w-full bg-white dark:bg-[#1B2C28] border border-[#CBD5E1] dark:border-[#273E36] rounded-lg px-3 py-2 text-xs font-mono text-center focus:outline-none focus:border-[#14532D]"
+                                className="w-full bg-white dark:bg-[#1B242E] border border-[#CBD5E1] dark:border-[#293644] rounded-lg px-3 py-2 text-xs font-mono text-center focus:outline-none focus:border-[#14532D]"
                               />
                             </div>
                           </div>
@@ -1687,7 +1687,7 @@ export default function HotelBookingModal({
                               className={`p-2 rounded-lg border text-xs font-semibold text-left transition-all ${
                                 isBSelected 
                                   ? 'border-[#14532D] bg-[#14532D] text-white shadow-xs' 
-                                  : 'border-[#CBD5E1] dark:border-[#273E36] bg-white dark:bg-[#1B2C28] text-[#1F2933] dark:text-white hover:border-[#14532D]'
+                                  : 'border-[#CBD5E1] dark:border-[#293644] bg-white dark:bg-[#1B242E] text-[#1F2933] dark:text-white hover:border-[#14532D]'
                               }`}
                             >
                               🏦 {bank}
@@ -1731,7 +1731,7 @@ export default function HotelBookingModal({
                             className={`p-2.5 rounded-lg border text-left transition-all ${
                               payLaterChoice === w.id
                                 ? 'border-[#14532D] bg-[#14532D]/10 dark:bg-[#14532D]/30 ring-1 ring-[#14532D]'
-                                : 'border-[#CBD5E1] dark:border-[#273E36] bg-white dark:bg-[#1B2C28]'
+                                : 'border-[#CBD5E1] dark:border-[#293644] bg-white dark:bg-[#1B242E]'
                             }`}
                           >
                             <p className="text-xs font-bold text-[#1F2933] dark:text-white">{w.title}</p>
@@ -1770,7 +1770,7 @@ export default function HotelBookingModal({
               </div>
 
               {/* ─── Professional MMT / OYO Style e-Voucher Card ─── */}
-              <div className="bg-white dark:bg-[#101B17] border-2 border-[#14532D]/30 dark:border-[#273E36] rounded-2xl shadow-xl overflow-hidden max-w-2xl mx-auto text-left">
+              <div className="bg-white dark:bg-[#121921] border-2 border-[#14532D]/30 dark:border-[#293644] rounded-2xl shadow-xl overflow-hidden max-w-2xl mx-auto text-left">
                 
                 {/* Brand Header Bar */}
                 <div className="bg-gradient-to-r from-[#092B16] via-[#14532D] to-[#166534] text-white p-4 sm:p-5 flex items-center justify-between border-b-2 border-[#E58A3A]">
@@ -1808,7 +1808,7 @@ export default function HotelBookingModal({
                 <div className="p-4 sm:p-5 space-y-4">
                   
                   {/* Billed To (Customer) & Booking ID Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#273E36]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#293644]">
                     <div>
                       <span className="text-[10px] font-bold text-[#64748B] dark:text-[#94A3B8] uppercase tracking-wider block">
                         Billed To (Primary Customer)
@@ -1820,7 +1820,7 @@ export default function HotelBookingModal({
                         📞 {confirmedBooking.guestPhone || guestPhone || 'Not Provided'} &nbsp;|&nbsp; ✉️ {confirmedBooking.guestEmail || guestEmail || 'guest@traveliq.local'}
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
-                        <span className="text-[10px] text-[#14532D] dark:text-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#1E332C] px-2 py-0.5 rounded font-semibold">
+                        <span className="text-[10px] text-[#14532D] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#1E332C] px-2 py-0.5 rounded font-semibold">
                           👥 {confirmedBooking.guestsCount || guestsCount} Guest(s) • {confirmedBooking.unitsCount || unitsCount} {hotel.isHostel ? 'Bed' : 'Room'}
                         </span>
                         <span className="text-[10px] text-[#15803D] dark:text-[#4ADE80] bg-[#DCFCE7] dark:bg-[#14532D]/50 px-2 py-0.5 rounded border border-[#86EFAC] dark:border-[#14532D] font-bold flex items-center gap-1">
@@ -1829,7 +1829,7 @@ export default function HotelBookingModal({
                       </div>
                     </div>
 
-                    <div className="sm:border-l sm:border-[#E2E8F0] dark:sm:border-[#273E36] sm:pl-3 flex flex-col justify-between">
+                    <div className="sm:border-l sm:border-[#E2E8F0] dark:sm:border-[#293644] sm:pl-3 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-[#64748B] dark:text-[#94A3B8] uppercase tracking-wider">
@@ -1855,7 +1855,7 @@ export default function HotelBookingModal({
                   </div>
 
                   {/* Hotel Header Info */}
-                  <div className="p-3.5 bg-[#FFFDF7] dark:bg-[#12201D] rounded-xl border border-[#E3DED2] dark:border-[#273E36]">
+                  <div className="p-3.5 bg-[#FFFDF7] dark:bg-[#121921] rounded-xl border border-[#E3E7EA] dark:border-[#293644]">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#E58A3A]/15 text-[#E58A3A] border border-[#E58A3A]/30">
@@ -1877,7 +1877,7 @@ export default function HotelBookingModal({
                     </div>
 
                     {/* Stay Timings Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3 pt-3 border-t border-[#E3DED2] dark:border-[#273E36] text-xs">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3 pt-3 border-t border-[#E3E7EA] dark:border-[#293644] text-xs">
                       <div>
                         <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] block">Check-in</span>
                         <span className="font-bold text-[#14532D] dark:text-[#4ADE80]">{confirmedBooking.checkInDate}</span>
@@ -1902,7 +1902,7 @@ export default function HotelBookingModal({
                   </div>
 
                   {/* Room Type & Grand Total Strip */}
-                  <div className="p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#273E36] flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#293644] flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] text-[#64748B] dark:text-[#94A3B8] uppercase tracking-wider block font-bold">
                         Allocated Room / Bed Category
@@ -1934,8 +1934,8 @@ export default function HotelBookingModal({
                   </div>
 
                   {/* QR Security & Instant Check-in Badge */}
-                  <div className="p-3 bg-[#F0FDF4] dark:bg-[#12201D] rounded-xl border border-[#BBF7D0] dark:border-[#273E36] flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white dark:bg-[#172722] border border-[#86EFAC] dark:border-[#273E36] rounded-lg p-1 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <div className="p-3 bg-[#F0FDF4] dark:bg-[#121921] rounded-xl border border-[#BBF7D0] dark:border-[#293644] flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white dark:bg-[#172722] border border-[#86EFAC] dark:border-[#293644] rounded-lg p-1 flex items-center justify-center flex-shrink-0 shadow-xs">
                       <QrCode className="w-9 h-9 text-[#14532D] dark:text-[#4ADE80]" />
                     </div>
                     <div>
@@ -1962,13 +1962,13 @@ export default function HotelBookingModal({
                 </button>
                 <button
                   onClick={() => handlePrint(false)}
-                  className="px-4 py-2.5 bg-white dark:bg-[#172722] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#14532D] dark:text-white text-xs font-bold rounded-xl border border-[#14532D]/30 dark:border-[#273E36] transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2.5 bg-white dark:bg-[#172722] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#14532D] dark:text-white text-xs font-bold rounded-xl border border-[#14532D]/30 dark:border-[#293644] transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> View Full Tax Invoice
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-5 py-2.5 bg-[#F7F5EF] dark:bg-[#101B17] hover:bg-[#EEF2ED] text-[#1F2933] dark:text-white text-xs font-bold rounded-xl border border-[#E3DED2] dark:border-[#273E36] transition-all cursor-pointer"
+                  className="px-5 py-2.5 bg-[#F7F8FA] dark:bg-[#121921] hover:bg-[#F0F4F7] text-[#1F2933] dark:text-white text-xs font-bold rounded-xl border border-[#E3E7EA] dark:border-[#293644] transition-all cursor-pointer"
                 >
                   Done & Close
                 </button>
@@ -1981,7 +1981,7 @@ export default function HotelBookingModal({
 
         {/* ─── Modal Footer with Sticky Pricing & Controls ─── */}
         {step < 4 && (
-          <div className="p-4 sm:p-5 bg-[#F7F5EF] dark:bg-[#101B17] border-t border-[#E3DED2] dark:border-[#273E36] flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 bg-[#F7F8FA] dark:bg-[#121921] border-t border-[#E3E7EA] dark:border-[#293644] flex flex-col sm:flex-row items-center justify-between gap-3">
             
             {/* Live Pricing Summary Breakdown */}
             <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
@@ -2012,7 +2012,7 @@ export default function HotelBookingModal({
                 <button
                   type="button"
                   onClick={() => setStep(step - 1)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E3DED2] dark:border-[#273E36] bg-white dark:bg-[#172722] text-[#1F2933] dark:text-white text-xs font-bold hover:bg-[#EEF2ED] transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#172722] text-[#1F2933] dark:text-white text-xs font-bold hover:bg-[#F0F4F7] transition-colors"
                 >
                   Back
                 </button>
@@ -2142,7 +2142,7 @@ export default function HotelBookingModal({
                               className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                                 isSel 
                                   ? 'border-[#15803D] bg-[#15803D]/10 dark:bg-[#15803D]/30 ring-1 ring-[#15803D]' 
-                                  : 'border-[#E2E8F0] dark:border-[#273E36] bg-white dark:bg-[#172722] hover:border-[#15803D]/40'
+                                  : 'border-[#E2E8F0] dark:border-[#293644] bg-white dark:bg-[#172722] hover:border-[#15803D]/40'
                               }`}
                             >
                               <p className="text-xs font-bold text-[#1F2933] dark:text-white leading-tight">{doc.label}</p>
@@ -2170,7 +2170,7 @@ export default function HotelBookingModal({
                               }
                             }}
                             placeholder={digiLockerDocType === 'Aadhaar Card' ? '5829 1948 4829' : 'Enter ID number'}
-                            className="flex-1 bg-white dark:bg-[#172722] border border-[#CBD5E1] dark:border-[#273E36] rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold tracking-wider uppercase focus:outline-none focus:border-[#15803D]"
+                            className="flex-1 bg-white dark:bg-[#172722] border border-[#CBD5E1] dark:border-[#293644] rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold tracking-wider uppercase focus:outline-none focus:border-[#15803D]"
                           />
                           <button
                             type="button"
@@ -2181,7 +2181,7 @@ export default function HotelBookingModal({
                               else setDigiLockerAadhaar('M8392104');
                               toast.success(`Demo ${digiLockerDocType} populated!`);
                             }}
-                            className="px-3 bg-[#EEF2ED] dark:bg-[#213530] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-xl border border-[#CBD5E1] dark:border-[#273E36] hover:bg-[#14532D] hover:text-white transition-colors cursor-pointer"
+                            className="px-3 bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#4ADE80] text-xs font-bold rounded-xl border border-[#CBD5E1] dark:border-[#293644] hover:bg-[#14532D] hover:text-white transition-colors cursor-pointer"
                           >
                             Demo Fill
                           </button>
@@ -2189,7 +2189,7 @@ export default function HotelBookingModal({
                       </div>
 
                       {/* Statutory Legal Consent Box */}
-                      <div className="p-3 bg-[#FFFDF7] dark:bg-[#12201D] rounded-xl border border-[#FDE68A] dark:border-[#78350F]/60 space-y-2">
+                      <div className="p-3 bg-[#FFFDF7] dark:bg-[#121921] rounded-xl border border-[#FDE68A] dark:border-[#78350F]/60 space-y-2">
                         <label className="flex items-start gap-2.5 cursor-pointer">
                           <input
                             type="checkbox"
@@ -2208,7 +2208,7 @@ export default function HotelBookingModal({
                         <button
                           type="button"
                           onClick={() => setIsDigiLockerOpen(false)}
-                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#273E36] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#293644] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -2252,7 +2252,7 @@ export default function HotelBookingModal({
                       </div>
 
                       {/* OTP Input Card */}
-                      <div className="space-y-2 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#273E36]">
+                      <div className="space-y-2 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#293644]">
                         <div className="flex items-center justify-between">
                           <label className="block text-xs font-bold text-[#14532D] dark:text-white">
                             6-Digit UIDAI OTP *
@@ -2274,12 +2274,12 @@ export default function HotelBookingModal({
                           value={digiLockerOtp}
                           onChange={(e) => setDigiLockerOtp(e.target.value.replace(/\D/g, ''))}
                           placeholder="• • • • • •"
-                          className="w-full bg-white dark:bg-[#101B17] border border-[#CBD5E1] dark:border-[#273E36] rounded-xl px-4 py-2.5 text-center text-lg font-mono font-black tracking-widest text-[#0F172A] dark:text-white focus:outline-none focus:border-[#15803D]"
+                          className="w-full bg-white dark:bg-[#121921] border border-[#CBD5E1] dark:border-[#293644] rounded-xl px-4 py-2.5 text-center text-lg font-mono font-black tracking-widest text-[#0F172A] dark:text-white focus:outline-none focus:border-[#15803D]"
                         />
                       </div>
 
                       {/* DigiLocker 6-Digit PIN */}
-                      <div className="space-y-2 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#273E36]">
+                      <div className="space-y-2 p-3.5 bg-[#F8FAFC] dark:bg-[#172722] rounded-xl border border-[#E2E8F0] dark:border-[#293644]">
                         <div className="flex items-center justify-between">
                           <label className="block text-xs font-bold text-[#14532D] dark:text-white">
                             DigiLocker 6-Digit Security PIN
@@ -2301,7 +2301,7 @@ export default function HotelBookingModal({
                           value={digiLockerPin}
                           onChange={(e) => setDigiLockerPin(e.target.value.replace(/\D/g, ''))}
                           placeholder="••••••"
-                          className="w-full bg-white dark:bg-[#101B17] border border-[#CBD5E1] dark:border-[#273E36] rounded-xl px-4 py-2 text-center text-base font-mono font-bold tracking-widest text-[#0F172A] dark:text-white focus:outline-none focus:border-[#15803D]"
+                          className="w-full bg-white dark:bg-[#121921] border border-[#CBD5E1] dark:border-[#293644] rounded-xl px-4 py-2 text-center text-base font-mono font-bold tracking-widest text-[#0F172A] dark:text-white focus:outline-none focus:border-[#15803D]"
                         />
                       </div>
 
@@ -2310,7 +2310,7 @@ export default function HotelBookingModal({
                         <button
                           type="button"
                           onClick={() => setDigiLockerStep(1)}
-                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#273E36] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#293644] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                         >
                           Back
                         </button>
@@ -2352,7 +2352,7 @@ export default function HotelBookingModal({
                       </div>
 
                       {/* Official UIDAI Aadhaar Digital Card Mockup */}
-                      <div className="bg-gradient-to-b from-[#FFFDF7] to-[#F8FAFC] dark:from-[#172722] dark:to-[#101B17] border-2 border-[#15803D] rounded-2xl p-4 shadow-lg space-y-3">
+                      <div className="bg-gradient-to-b from-[#FFFDF7] to-[#F8FAFC] dark:from-[#172722] dark:to-[#121921] border-2 border-[#15803D] rounded-2xl p-4 shadow-lg space-y-3">
                         {/* Tricolor Header */}
                         <div className="flex h-1.5 w-full rounded-full overflow-hidden mb-1">
                           <div className="flex-1 bg-[#FF9933]" />
@@ -2360,7 +2360,7 @@ export default function HotelBookingModal({
                           <div className="flex-1 bg-[#138808]" />
                         </div>
 
-                        <div className="flex items-center justify-between border-b border-[#E2E8F0] dark:border-[#273E36] pb-2.5">
+                        <div className="flex items-center justify-between border-b border-[#E2E8F0] dark:border-[#293644] pb-2.5">
                           <div>
                             <span className="text-[10px] font-black uppercase text-[#14532D] dark:text-[#4ADE80] tracking-wider block">
                               Unique Identification Authority of India (UIDAI)
@@ -2402,7 +2402,7 @@ export default function HotelBookingModal({
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-[#E2E8F0] dark:border-[#273E36] flex items-center justify-between text-[10px]">
+                        <div className="pt-2 border-t border-[#E2E8F0] dark:border-[#293644] flex items-center justify-between text-[10px]">
                           <span className="text-[#15803D] dark:text-[#4ADE80] font-bold flex items-center gap-1">
                             <BadgeCheck className="w-3.5 h-3.5" /> DigiLocker Verified Signature Token
                           </span>
@@ -2415,7 +2415,7 @@ export default function HotelBookingModal({
                         <button
                           type="button"
                           onClick={() => setDigiLockerStep(1)}
-                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#273E36] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors text-center cursor-pointer"
+                          className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] dark:border-[#293644] text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-colors text-center cursor-pointer"
                         >
                           Verify Different ID
                         </button>

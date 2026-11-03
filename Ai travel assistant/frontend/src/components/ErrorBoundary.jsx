@@ -23,20 +23,20 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] flex items-center justify-center px-4 py-8">
-          <div className="travel-card max-w-lg w-full p-8 text-center bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+        <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] flex items-center justify-center px-4 py-8">
+          <div className="travel-card max-w-lg w-full p-8 text-center bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
             <div className="w-14 h-14 mx-auto mb-5 rounded-xl bg-[#B94A48]/10 dark:bg-[#B94A48]/20 flex items-center justify-center">
               <AlertTriangle className="w-7 h-7 text-[#B94A48]" />
             </div>
-            <h2 className="font-['Manrope',sans-serif] text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 tracking-tight">
+            <h2 className="font-['Manrope',sans-serif] text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 tracking-tight">
               Something went wrong
             </h2>
             <p className="text-[#66736F] dark:text-[#A3B0AB] mb-6 text-sm leading-relaxed">
               An unexpected error occurred. This has been logged for debugging.
             </p>
             {import.meta.env.DEV && this.state.error && (
-              <details className="text-left mb-6 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-4 text-xs text-[#B94A48] dark:text-[#D9534F] overflow-auto max-h-40 font-mono">
-                <summary className="cursor-pointer text-[#66736F] dark:text-[#A3B0AB] font-medium mb-2 hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-colors select-none">
+              <details className="text-left mb-6 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-4 text-xs text-[#B94A48] dark:text-[#D9534F] overflow-auto max-h-40 font-mono">
+                <summary className="cursor-pointer text-[#66736F] dark:text-[#A3B0AB] font-medium mb-2 hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-colors select-none">
                   Error Details
                 </summary>
                 <pre className="whitespace-pre-wrap">{this.state.error.toString()}</pre>
@@ -56,7 +56,7 @@ class ErrorBoundary extends React.Component {
               </button>
               <button
                 onClick={() => (window.location.href = '/')}
-                className="btn-secondary w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#263238] dark:text-[#F7F5EF] font-medium text-sm transition-colors shadow-sm"
+                className="btn-secondary w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#263238] dark:text-[#F7F8FA] font-medium text-sm transition-colors shadow-sm"
               >
                 Go Home
               </button>

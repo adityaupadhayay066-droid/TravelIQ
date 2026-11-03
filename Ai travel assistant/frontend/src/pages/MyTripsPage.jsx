@@ -90,7 +90,7 @@ export default function MyTripsPage() {
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Review active boarding tickets, download e-receipts, or track historic searches.</p>
           </div>
           
-          <div className="flex bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-2xs">
+          <div className="flex bg-white dark:bg-[#1B242E] border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-2xs">
             <button 
               onClick={() => setActiveTab('bookings')}
               className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${activeTab === 'bookings' ? 'bg-teal-600 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
@@ -120,7 +120,7 @@ export default function MyTripsPage() {
             placeholder="Search by hotel name, booking ID, or city..." 
             value={search} 
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-all font-medium shadow-2xs"
+            className="w-full bg-white dark:bg-[#1B242E] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-all font-medium shadow-2xs"
           />
         </div>
 
@@ -128,9 +128,9 @@ export default function MyTripsPage() {
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="travel-card p-6 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm">
-                <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/3 mb-3 animate-pulse" />
-                <div className="h-3 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/4 animate-pulse" />
+              <div key={i} className="travel-card p-6 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm">
+                <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/3 mb-3 animate-pulse" />
+                <div className="h-3 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/4 animate-pulse" />
               </div>
             ))}
           </div>
@@ -138,16 +138,16 @@ export default function MyTripsPage() {
           /* Hotels & Stays List */
           <div className="space-y-4">
             {hotelBookings.length === 0 ? (
-              <div className="travel-card p-12 text-center border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm">
+              <div className="travel-card p-12 text-center border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm">
                 <Building2 className="w-12 h-12 text-[#66736F] dark:text-[#A3B0AB] mx-auto mb-4" />
-                <h3 className="text-[#263238] dark:text-[#F7F5EF] font-bold text-sm mb-1">No hotel reservations found</h3>
+                <h3 className="text-[#263238] dark:text-[#F7F8FA] font-bold text-sm mb-1">No hotel reservations found</h3>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Your confirmed hotel stays and backpacker dorm vouchers will appear here.</p>
               </div>
             ) : (
               hotelBookings
                 .filter(h => !search || h.hotelName?.toLowerCase().includes(search.toLowerCase()) || h.id?.toLowerCase().includes(search.toLowerCase()) || h.city?.toLowerCase().includes(search.toLowerCase()))
                 .map((hb, idx) => (
-                  <div key={idx} className="travel-card p-5 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden group">
+                  <div key={idx} className="travel-card p-5 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden group">
                     <div className="flex gap-4">
                       <div className="w-12 h-12 rounded-xl bg-[#14532D]/10 dark:bg-[#14532D]/30 text-[#14532D] dark:text-[#4ADE80] flex items-center justify-center flex-shrink-0">
                         {hb.isHostel ? <Bed className="w-6 h-6" /> : (hb.category?.toLowerCase().includes('homestay') || hb.category?.toLowerCase().includes('villa') ? <Home className="w-6 h-6" /> : <Building2 className="w-6 h-6" />)}
@@ -157,7 +157,7 @@ export default function MyTripsPage() {
                           <span className="font-bold text-sm text-[#14532D] dark:text-white">
                             {hb.hotelName}
                           </span>
-                          <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono font-bold bg-[#F7F5EF] dark:bg-[#12201D] px-2 py-0.5 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                          <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono font-bold bg-[#F7F8FA] dark:bg-[#121921] px-2 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">
                             {hb.id || hb.bookingReference}
                           </span>
                         </div>
@@ -192,7 +192,7 @@ export default function MyTripsPage() {
                       </button>
                       <button
                         onClick={() => printHotelInvoice(hb, false)}
-                        className="px-3 py-1.5 bg-[#F7F5EF] dark:bg-[#12201D] text-[#14532D] dark:text-[#4ADE80] border border-[#E3DED2] dark:border-[#273E36] rounded-lg text-[10px] font-bold hover:bg-[#EEF2ED] transition-all cursor-pointer"
+                        className="px-3 py-1.5 bg-[#F7F8FA] dark:bg-[#121921] text-[#14532D] dark:text-[#4ADE80] border border-[#E3E7EA] dark:border-[#293644] rounded-lg text-[10px] font-bold hover:bg-[#F0F4F7] transition-all cursor-pointer"
                       >
                         View Tax Invoice
                       </button>
@@ -204,24 +204,24 @@ export default function MyTripsPage() {
         ) : activeTab === 'bookings' ? (
           <div className="space-y-4">
             {filteredBookings.length === 0 ? (
-              <div className="travel-card p-12 text-center border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm">
+              <div className="travel-card p-12 text-center border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm">
                 <Train className="w-12 h-12 text-[#66736F] dark:text-[#A3B0AB] mx-auto mb-4" />
-                <h3 className="text-[#263238] dark:text-[#F7F5EF] font-bold text-sm mb-1">No ticket bookings yet</h3>
+                <h3 className="text-[#263238] dark:text-[#F7F8FA] font-bold text-sm mb-1">No ticket bookings yet</h3>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Your boarding passes will appear here after booking a train.</p>
               </div>
             ) : (
               filteredBookings.map((booking) => (
-                <div key={booking.id} className="travel-card p-5 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden group">
+                <div key={booking.id} className="travel-card p-5 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden group">
                   <div className="flex gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-[#EEF2ED] dark:bg-[#213530] flex items-center justify-center flex-shrink-0 transition-transform">
-                      <Train className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                    <div className="w-11 h-11 rounded-xl bg-[#F0F4F7] dark:bg-[#233240] flex items-center justify-center flex-shrink-0 transition-transform">
+                      <Train className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                     </div>
                     <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 text-[#263238] dark:text-[#F7F5EF] font-bold text-sm">
+                      <div className="flex items-center gap-2 text-[#263238] dark:text-[#F7F8FA] font-bold text-sm">
                         <span>{booking.source_station_code}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-[#D96C4F]" />
                         <span>{booking.destination_station_code}</span>
-                        <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono font-bold bg-[#F7F5EF] dark:bg-[#12201D] px-2 py-0.5 rounded border border-[#E3DED2] dark:border-[#2A403A]">#TK-{booking.id}</span>
+                        <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono font-bold bg-[#F7F8FA] dark:bg-[#121921] px-2 py-0.5 rounded border border-[#E3E7EA] dark:border-[#293644]">#TK-{booking.id}</span>
                       </div>
                       
                       <div className="flex flex-wrap gap-3 text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-medium">
@@ -229,7 +229,7 @@ export default function MyTripsPage() {
                         <span>🚄 Train {booking.train_number}</span>
                         <span>🎫 Class {booking.travel_class}</span>
                         <span>Seat: {booking.seat_preference || 'No Preference'} | Berth: {booking.berth_preference || 'No Preference'}</span>
-                        <span className="text-[#173F3A] dark:text-[#EEF2ED] font-bold font-mono">₹{booking.ticket_fare}</span>
+                        <span className="text-[#244C66] dark:text-[#F0F4F7] font-bold font-mono">₹{booking.ticket_fare}</span>
                       </div>
                       
                       <div className="flex items-center gap-2 mt-2">
@@ -248,14 +248,14 @@ export default function MyTripsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setActiveQr(booking)}
-                        className="btn-ghost bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#EEF2ED] dark:hover:bg-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg p-2.5 transition-all cursor-pointer"
+                        className="btn-ghost bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F0F4F7] dark:hover:bg-[#293644] text-[#244C66] dark:text-[#F0F4F7] rounded-lg p-2.5 transition-all cursor-pointer"
                         title="Display Ticket QR Code"
                       >
                         <QrCode className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handlePrintReceipt(booking)}
-                        className="btn-ghost bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#EEF2ED] dark:hover:bg-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg p-2.5 transition-all cursor-pointer"
+                        className="btn-ghost bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F0F4F7] dark:hover:bg-[#293644] text-[#244C66] dark:text-[#F0F4F7] rounded-lg p-2.5 transition-all cursor-pointer"
                         title="Print E-Ticket Receipt"
                       >
                         <Download className="w-4 h-4" />
@@ -279,18 +279,18 @@ export default function MyTripsPage() {
           /* Search Logs list */
           <div className="space-y-4">
             {trips.length === 0 ? (
-              <div className="travel-card p-12 text-center border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm">
+              <div className="travel-card p-12 text-center border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm">
                 <Search className="w-12 h-12 text-[#66736F] dark:text-[#A3B0AB] mx-auto mb-4" />
-                <h3 className="text-[#263238] dark:text-[#F7F5EF] font-bold text-sm mb-1">No search logs yet</h3>
+                <h3 className="text-[#263238] dark:text-[#F7F8FA] font-bold text-sm mb-1">No search logs yet</h3>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs font-medium">Your previous search routes will be tracked here.</p>
               </div>
             ) : (
               trips.map((trip) => (
-                <div key={trip.id} className="travel-card p-4 rounded-xl bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#F7F5EF] dark:hover:bg-[#213530] transition-all flex items-center justify-between shadow-sm">
+                <div key={trip.id} className="travel-card p-4 rounded-xl bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA] dark:hover:bg-[#233240] transition-all flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-[#263238] dark:text-[#F7F5EF] text-xs">{trip.source}</span>
+                    <span className="font-bold text-[#263238] dark:text-[#F7F8FA] text-xs">{trip.source}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-[#D96C4F]" />
-                    <span className="font-bold text-[#263238] dark:text-[#F7F5EF] text-xs">{trip.destination}</span>
+                    <span className="font-bold text-[#263238] dark:text-[#F7F8FA] text-xs">{trip.destination}</span>
                   </div>
                   <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono font-medium">
                     Logged: {new Date(trip.created_at).toLocaleDateString()}
@@ -307,7 +307,7 @@ export default function MyTripsPage() {
       <AnimatePresence>
         {activeQr && (
           <div 
-            className="fixed inset-0 bg-[#263238]/40 dark:bg-[#12201D]/70 flex items-center justify-center p-4 z-50 transition-colors"
+            className="fixed inset-0 bg-[#263238]/40 dark:bg-[#121921]/70 flex items-center justify-center p-4 z-50 transition-colors"
             onClick={() => setActiveQr(null)}
           >
             <motion.div
@@ -315,15 +315,15 @@ export default function MyTripsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] p-8 rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] relative text-center space-y-6"
+              className="w-full max-w-sm border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] p-8 rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] relative text-center space-y-6"
             >
-              <h3 className="text-lg font-bold font-manrope text-[#263238] dark:text-[#F7F5EF] mb-1 flex items-center justify-center gap-2">
-                <QrCode className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" /> E-Boarding Pass
+              <h3 className="text-lg font-bold font-manrope text-[#263238] dark:text-[#F7F8FA] mb-1 flex items-center justify-center gap-2">
+                <QrCode className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" /> E-Boarding Pass
               </h3>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Scan this QR Code at the platform boarding gates.</p>
 
               {/* Graphic styled CSS/SVG QR code */}
-              <div className="bg-[#FFFFFF] p-6 rounded-xl w-48 h-48 mx-auto flex items-center justify-center border border-[#E3DED2] shadow-sm">
+              <div className="bg-[#FFFFFF] p-6 rounded-xl w-48 h-48 mx-auto flex items-center justify-center border border-[#E3E7EA] shadow-sm">
                 <svg className="w-full h-full text-[#263238]" viewBox="0 0 100 100">
                   <rect x="10" y="10" width="20" height="20" fill="currentColor"/>
                   <rect x="70" y="10" width="20" height="20" fill="currentColor"/>
@@ -343,7 +343,7 @@ export default function MyTripsPage() {
 
               <button
                 onClick={() => setActiveQr(null)}
-                className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7F5EF] dark:hover:bg-[#2A403A] transition-all cursor-pointer"
+                className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7F8FA] dark:hover:bg-[#293644] transition-all cursor-pointer"
               >✕</button>
             </motion.div>
           </div>

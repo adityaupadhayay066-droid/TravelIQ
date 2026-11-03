@@ -5,18 +5,18 @@ import { motion } from 'framer-motion';
 export default function SeatAvailabilityCard({ occupancyData, loading }) {
   if (loading) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm animate-pulse space-y-3">
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/3" />
-        <div className="h-8 bg-[#EEF2ED] dark:bg-[#213530] rounded w-1/2" />
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded w-3/4" />
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm animate-pulse space-y-3">
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/3" />
+        <div className="h-8 bg-[#F0F4F7] dark:bg-[#233240] rounded w-1/2" />
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded w-3/4" />
       </div>
     );
   }
 
   if (!occupancyData || occupancyData.availability_probability == null) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm text-center">
-        <div className="p-2 bg-[#EEF2ED] text-[#173F3A] dark:bg-[#213530] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm text-center">
+        <div className="p-2 bg-[#F0F4F7] text-[#244C66] dark:bg-[#233240] dark:text-[#F0F4F7] rounded-lg w-fit mx-auto mb-2">
           <Armchair className="w-5 h-5" />
         </div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">Seat Forecast</h4>
@@ -45,16 +45,16 @@ export default function SeatAvailabilityCard({ occupancyData, loading }) {
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm transition-all"
+      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm transition-all"
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[#EEF2ED] text-[#173F3A] dark:bg-[#213530] dark:text-[#EEF2ED] rounded-lg">
+          <div className="p-2 bg-[#F0F4F7] text-[#244C66] dark:bg-[#233240] dark:text-[#F0F4F7] rounded-lg">
             <Armchair className="w-5 h-5" />
           </div>
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB]">Seat Forecast</h4>
-            <p className="text-xs text-[#263238]/70 dark:text-[#F7F5EF]/70 font-medium">Occupancy Estimator Net</p>
+            <p className="text-xs text-[#263238]/70 dark:text-[#F7F8FA]/70 font-medium">Occupancy Estimator Net</p>
           </div>
         </div>
         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${wlColor}`}>
@@ -63,15 +63,15 @@ export default function SeatAvailabilityCard({ occupancyData, loading }) {
       </div>
 
       <div className="mt-4 space-y-1">
-        <div className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] flex items-baseline gap-1.5 font-['Manrope']">
+        <div className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] flex items-baseline gap-1.5 font-['Manrope']">
           {availability_probability}% <span className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB]">Availability</span>
         </div>
         <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">Coach booking density: ~{coach_occupancy_percent}%</p>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-[#E3DED2] dark:border-[#2A403A] pt-3">
+      <div className="mt-4 flex items-center justify-between border-t border-[#E3E7EA] dark:border-[#293644] pt-3">
         <span className="text-[10px] font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Status Forecast</span>
-        <span className="text-xs font-semibold text-[#263238] dark:text-[#F7F5EF]">{expected_waiting_list}</span>
+        <span className="text-xs font-semibold text-[#263238] dark:text-[#F7F8FA]">{expected_waiting_list}</span>
       </div>
     </motion.div>
   );

@@ -5,18 +5,18 @@ import { motion } from 'framer-motion';
 export default function FareForecastCard({ fareData, loading }) {
   if (loading) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 space-y-3 shadow-sm">
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg w-1/3 animate-pulse" />
-        <div className="h-8 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg w-1/2 animate-pulse" />
-        <div className="h-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg w-3/4 animate-pulse" />
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 space-y-3 shadow-sm">
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg w-1/3 animate-pulse" />
+        <div className="h-8 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg w-1/2 animate-pulse" />
+        <div className="h-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg w-3/4 animate-pulse" />
       </div>
     );
   }
 
   if (!fareData || fareData.current_fare == null) {
     return (
-      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm text-center">
-        <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg w-fit mx-auto mb-2">
+      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm text-center">
+        <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg w-fit mx-auto mb-2">
           <DollarSign className="w-5 h-5" />
         </div>
         <h4 className="text-xs font-bold uppercase tracking-wider text-[#66736F] dark:text-[#A3B0AB] font-display">Smart Fare Prediction</h4>
@@ -39,11 +39,11 @@ export default function FareForecastCard({ fareData, loading }) {
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm transition-all"
+      className="relative overflow-hidden bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm transition-all"
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg">
+          <div className="p-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
@@ -63,7 +63,7 @@ export default function FareForecastCard({ fareData, loading }) {
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div>
           <span className="text-[11px] font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Current Fare</span>
-          <p className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] font-display">₹{current_fare}</p>
+          <p className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] font-display">₹{current_fare}</p>
         </div>
         <div>
           <span className="text-[11px] font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">Predicted 7D</span>
@@ -73,7 +73,7 @@ export default function FareForecastCard({ fareData, loading }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-[#E3DED2] dark:border-[#2A403A] pt-3">
+      <div className="mt-4 flex items-center justify-between border-t border-[#E3E7EA] dark:border-[#293644] pt-3">
         <div className="flex items-center gap-1.5 text-[11px] text-[#66736F] dark:text-[#A3B0AB] font-medium">
           {priceDiff > 0 ? (
             <>
@@ -87,7 +87,7 @@ export default function FareForecastCard({ fareData, loading }) {
             </>
           )}
         </div>
-        <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+        <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
           {demand_level} Demand
         </span>
       </div>

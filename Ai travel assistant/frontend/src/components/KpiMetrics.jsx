@@ -42,7 +42,7 @@ const KpiCard = ({ icon: Icon, label, value, prefix = '', suffix = '' }) => {
   return (
     <div className="travel-card p-4 sm:p-5 flex flex-col justify-between group">
       <div className="flex justify-between items-start mb-3">
-        <div className="p-2.5 rounded-lg bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] group-hover:text-[#D96C4F] transition-colors">
+        <div className="p-2.5 rounded-lg bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] group-hover:text-[#D96C4F] transition-colors">
           <Icon className="w-5 h-5" />
         </div>
       </div>
@@ -51,7 +51,7 @@ const KpiCard = ({ icon: Icon, label, value, prefix = '', suffix = '' }) => {
         <h3 className="text-[#66736F] dark:text-[#A3B0AB] text-[11px] font-bold uppercase tracking-wider mb-1 font-heading">
           {label}
         </h3>
-        <p className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] flex items-baseline gap-1 tracking-tight font-sans">
+        <p className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] flex items-baseline gap-1 tracking-tight font-sans">
           {prefix && <span className="text-sm text-[#66736F] dark:text-[#A3B0AB] font-medium">{prefix}</span>}
           {displayValue}
           {suffix && <span className="text-sm text-[#66736F] dark:text-[#A3B0AB] font-medium">{suffix}</span>}

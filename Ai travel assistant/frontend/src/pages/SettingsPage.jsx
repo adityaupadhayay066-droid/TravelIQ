@@ -12,9 +12,9 @@ const API_BASE = getBackendBaseURL();
 function SectionCard({ title, icon: Icon, children, delay = 0 }) {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
-      className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] p-6 space-y-4 rounded-xl shadow-sm">
-      <h3 className="text-[#263238] dark:text-[#F7F5EF] font-semibold flex items-center gap-2 text-sm">
-        <Icon className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" /> {title}
+      className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] p-6 space-y-4 rounded-xl shadow-sm">
+      <h3 className="text-[#263238] dark:text-[#F7F8FA] font-semibold flex items-center gap-2 text-sm">
+        <Icon className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" /> {title}
       </h3>
       {children}
     </motion.div>
@@ -26,17 +26,17 @@ function ThemeOption({ icon: Icon, label, value, active, onClick }) {
     <button onClick={onClick}
       className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
         active 
-          ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530]' 
-          : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] hover:border-[#263238] dark:hover:border-[#A3B0AB]'
+          ? 'border-[#244C66] dark:border-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240]' 
+          : 'border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] hover:border-[#263238] dark:hover:border-[#A3B0AB]'
       }`}>
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
         active 
-          ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A]' 
-          : 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3DED2] dark:border-[#2A403A]'
+          ? 'bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66]' 
+          : 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3E7EA] dark:border-[#293644]'
       }`}>
         <Icon className="w-5 h-5" />
       </div>
-      <span className={`text-xs font-medium ${active ? 'text-[#173F3A] dark:text-[#EEF2ED]' : 'text-[#66736F] dark:text-[#A3B0AB]'}`}>{label}</span>
+      <span className={`text-xs font-medium ${active ? 'text-[#244C66] dark:text-[#F0F4F7]' : 'text-[#66736F] dark:text-[#A3B0AB]'}`}>{label}</span>
     </button>
   );
 }
@@ -109,23 +109,23 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#F7F5EF] dark:bg-[#12201D]">
+    <div className="flex-1 overflow-y-auto bg-[#F7F8FA] dark:bg-[#121921]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#E3DED2] dark:border-[#2A403A] flex-shrink-0 bg-[#FFFFFF] dark:bg-[#1B2C28]">
+          <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#E3E7EA] dark:border-[#293644] flex-shrink-0 bg-[#FFFFFF] dark:bg-[#1B242E]">
             {user?.profile_image ? (
               <img src={getAvatarUrl(user.profile_image)} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-[#EEF2ED] dark:bg-[#213530] flex items-center justify-center">
-                <User className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+              <div className="w-full h-full bg-[#F0F4F7] dark:bg-[#233240] flex items-center justify-center">
+                <User className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
               </div>
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope">Settings</h1>
+            <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope">Settings</h1>
             <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mt-0.5 font-inter">Manage your account preferences and security</p>
           </div>
         </motion.div>
@@ -164,13 +164,13 @@ export default function SettingsPage() {
                     }}
                     className={`p-3 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       isSelected
-                        ? 'border-[#173F3A] dark:border-[#EEF2ED] bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] font-semibold ring-1 ring-[#173F3A]/30 dark:ring-[#EEF2ED]/30'
-                        : 'border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] hover:border-[#173F3A]/40 dark:hover:border-[#EEF2ED]/40'
+                        ? 'border-[#244C66] dark:border-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] font-semibold ring-1 ring-[#244C66]/30 dark:ring-[#F0F4F7]/30'
+                        : 'border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] hover:border-[#244C66]/40 dark:hover:border-[#F0F4F7]/40'
                     }`}
                   >
                     <span className="text-xs">{opt.label}</span>
                     {opt.tag && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#173F3A]/10 dark:bg-[#EEF2ED]/10 text-[#173F3A] dark:text-[#EEF2ED] font-medium">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] font-medium">
                         {opt.tag}
                       </span>
                     )}
@@ -191,8 +191,8 @@ export default function SettingsPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
               <input type={showCurrent ? 'text' : 'password'} placeholder="Current password" value={passwords.current}
                 onChange={e => setPasswords({ ...passwords, current: e.target.value })}
-                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-10 text-[#263238] dark:text-[#F7F5EF] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all" />
-              <button onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#66736F] hover:text-[#263238] dark:text-[#A3B0AB] dark:hover:text-[#F7F5EF]">
+                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 pl-10 pr-10 text-[#263238] dark:text-[#F7F8FA] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-all" />
+              <button onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#66736F] hover:text-[#263238] dark:text-[#A3B0AB] dark:hover:text-[#F7F8FA]">
                 {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
@@ -200,8 +200,8 @@ export default function SettingsPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
               <input type={showNew ? 'text' : 'password'} placeholder="New password" value={passwords.new}
                 onChange={e => setPasswords({ ...passwords, new: e.target.value })}
-                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-10 text-[#263238] dark:text-[#F7F5EF] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all" />
-              <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#66736F] hover:text-[#263238] dark:text-[#A3B0AB] dark:hover:text-[#F7F5EF]">
+                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 pl-10 pr-10 text-[#263238] dark:text-[#F7F8FA] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-all" />
+              <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#66736F] hover:text-[#263238] dark:text-[#A3B0AB] dark:hover:text-[#F7F8FA]">
                 {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
@@ -209,10 +209,10 @@ export default function SettingsPage() {
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#66736F] dark:text-[#A3B0AB]" />
               <input type="password" placeholder="Confirm new password" value={passwords.confirm}
                 onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
-                className="w-full bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2.5 pl-10 pr-4 text-[#263238] dark:text-[#F7F5EF] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] transition-all" />
+                className="w-full bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2.5 pl-10 pr-4 text-[#263238] dark:text-[#F7F8FA] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] transition-all" />
             </div>
             <button onClick={handlePasswordChange} disabled={changingPw}
-              className="flex items-center gap-2 bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0F332F] dark:hover:bg-[#FFFFFF] transition-all disabled:opacity-50">
+              className="flex items-center gap-2 bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66] px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#193B51] dark:hover:bg-[#FFFFFF] transition-all disabled:opacity-50">
               {changingPw ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
               Update Password
             </button>
@@ -225,11 +225,11 @@ export default function SettingsPage() {
             {/* Deactivate */}
             <div className="flex items-center justify-between p-3 rounded-lg border border-[#D96C4F]/30 bg-[#D96C4F]/5 dark:bg-[#D96C4F]/10">
               <div>
-                <p className="text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">Deactivate Account</p>
+                <p className="text-[#263238] dark:text-[#F7F8FA] text-sm font-medium">Deactivate Account</p>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Temporarily disable your account. You can reactivate by logging in.</p>
               </div>
               <button onClick={() => { setShowDeactivate(!showDeactivate); setShowDelete(false); setDangerPassword(''); }}
-                className="text-[#D96C4F] border border-[#D96C4F]/30 hover:bg-[#D96C4F]/10 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#FFFFFF] dark:bg-[#1B2C28]">
+                className="text-[#D96C4F] border border-[#D96C4F]/30 hover:bg-[#D96C4F]/10 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#FFFFFF] dark:bg-[#1B242E]">
                 <Pause className="w-3.5 h-3.5 inline mr-1" /> Deactivate
               </button>
             </div>
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                 <p className="text-[#D96C4F] text-xs font-medium">Enter your password to deactivate:</p>
                 <input type="password" placeholder="Your password" value={dangerPassword}
                   onChange={e => setDangerPassword(e.target.value)}
-                  className="w-full bg-[#FFFFFF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-[#263238] dark:text-[#F7F5EF] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#D96C4F] transition-all" />
+                  className="w-full bg-[#FFFFFF] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-[#263238] dark:text-[#F7F8FA] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#D96C4F] transition-all" />
                 <button onClick={handleDeactivate} disabled={processing}
                   className="flex items-center gap-2 bg-[#D96C4F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#C75D43] transition-all disabled:opacity-50">
                   {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pause className="w-4 h-4" />} Confirm Deactivation
@@ -251,11 +251,11 @@ export default function SettingsPage() {
             {/* Delete */}
             <div className="flex items-center justify-between p-3 rounded-lg border border-[#B94A48]/30 bg-[#B94A48]/5 dark:bg-[#B94A48]/10">
               <div>
-                <p className="text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">Delete Account</p>
+                <p className="text-[#263238] dark:text-[#F7F8FA] text-sm font-medium">Delete Account</p>
                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Permanently delete your account and all data. This cannot be undone.</p>
               </div>
               <button onClick={() => { setShowDelete(!showDelete); setShowDeactivate(false); setDangerPassword(''); }}
-                className="text-[#B94A48] border border-[#B94A48]/30 hover:bg-[#B94A48]/10 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#FFFFFF] dark:bg-[#1B2C28]">
+                className="text-[#B94A48] border border-[#B94A48]/30 hover:bg-[#B94A48]/10 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-[#FFFFFF] dark:bg-[#1B242E]">
                 <Trash2 className="w-3.5 h-3.5 inline mr-1" /> Delete
               </button>
             </div>
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                 </div>
                 <input type="password" placeholder="Enter your password to confirm" value={dangerPassword}
                   onChange={e => setDangerPassword(e.target.value)}
-                  className="w-full bg-[#FFFFFF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-2 px-3 text-[#263238] dark:text-[#F7F5EF] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#B94A48] transition-all" />
+                  className="w-full bg-[#FFFFFF] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-2 px-3 text-[#263238] dark:text-[#F7F8FA] text-sm placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#B94A48] transition-all" />
                 <button onClick={handleDelete} disabled={processing}
                   className="flex items-center gap-2 bg-[#B94A48] text-white px-4 py-2 rounded-lg text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50">
                   {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Permanently Delete Account
@@ -282,7 +282,7 @@ export default function SettingsPage() {
         {/* Sign Out */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <button onClick={() => { logout(); navigate('/'); }}
-            className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 flex items-center justify-between hover:border-[#B94A48]/50 transition-colors group text-left shadow-sm">
+            className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 flex items-center justify-between hover:border-[#B94A48]/50 transition-colors group text-left shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-[#B94A48]/10 flex items-center justify-center">
                 <LogOut className="w-4 h-4 text-[#B94A48]" />

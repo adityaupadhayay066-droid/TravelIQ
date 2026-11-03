@@ -865,22 +865,22 @@ export default function AdminDashboard() {
   ];
 
   const deviceSplit = [
-    { name: 'Desktop Client', value: analytics?.sessions?.desktop || 1, color: '#173F3A' },
+    { name: 'Desktop Client', value: analytics?.sessions?.desktop || 1, color: '#244C66' },
     { name: 'Mobile Client', value: analytics?.sessions?.mobile || 1, color: '#D96C4F' },
     { name: 'Tablet Client', value: analytics?.sessions?.tablet || 0, color: '#E5B85C' }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] flex flex-col relative font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] flex flex-col relative font-sans transition-colors duration-300">
       
-      <header className="border-b border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="border-b border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="bg-[#EEF2ED] dark:bg-[#213530] p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
-            <ShieldAlert className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+          <div className="bg-[#F0F4F7] dark:bg-[#233240] p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
+            <ShieldAlert className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
           </div>
           <div>
-            <span className="font-bold text-xl tracking-tight text-[#263238] dark:text-[#F7F5EF]">TravelIQ</span>
-            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-[#D96C4F] bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] px-2.5 py-0.5 rounded-full uppercase">
+            <span className="font-bold text-xl tracking-tight text-[#263238] dark:text-[#F7F8FA]">TravelIQ</span>
+            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-[#D96C4F] bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] px-2.5 py-0.5 rounded-full uppercase">
               Admin Center
             </span>
           </div>
@@ -914,13 +914,13 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex relative z-10">
         
-        <aside className={`border-r border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] transition-all duration-300 flex flex-col justify-between ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
+        <aside className={`border-r border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] transition-all duration-300 flex flex-col justify-between ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
           <div className="p-4 flex-1">
             <div className="flex justify-between items-center mb-6">
               {!sidebarCollapsed && <span className="text-[#66736F] dark:text-[#A3B0AB] text-[10px] font-bold tracking-widest uppercase pl-2">Menu</span>}
               <button 
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-1.5 rounded-lg hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#66736F] dark:text-[#A3B0AB] mx-auto"
+                className="p-1.5 rounded-lg hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#66736F] dark:text-[#A3B0AB] mx-auto"
               >
                 {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </button>
@@ -932,8 +932,8 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab.id
-                      ? 'bg-[#173F3A] text-white dark:bg-[#EEF2ED] dark:text-[#173F3A]'
-                      : 'text-[#263238] dark:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530]'
+                      ? 'bg-[#244C66] text-white dark:bg-[#F0F4F7] dark:text-[#244C66]'
+                      : 'text-[#263238] dark:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240]'
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -947,8 +947,8 @@ export default function AdminDashboard() {
         <main className="flex-1 p-6 md:p-8 overflow-y-auto space-y-8 max-w-7xl mx-auto w-full">
           {loading ? (
             <div className="py-48 text-center flex flex-col items-center justify-center">
-              <div className="w-10 h-10 border-4 border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin mb-4" />
-              <h3 className="font-bold text-[#173F3A] dark:text-[#EEF2ED]">Loading...</h3>
+              <div className="w-10 h-10 border-4 border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin mb-4" />
+              <h3 className="font-bold text-[#244C66] dark:text-[#F0F4F7]">Loading...</h3>
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -965,7 +965,7 @@ export default function AdminDashboard() {
                   <div className="space-y-6">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h1 className="text-2xl font-bold text-[#173F3A] dark:text-[#EEF2ED]">Telemetry Hub</h1>
+                        <h1 className="text-2xl font-bold text-[#244C66] dark:text-[#F0F4F7]">Telemetry Hub</h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mt-1">Live metrics and system status.</p>
                       </div>
                     </div>
@@ -980,24 +980,24 @@ export default function AdminDashboard() {
                         <div key={i} className="travel-card p-5">
                           <div className="flex justify-between items-start mb-4">
                             <span className="text-[#66736F] dark:text-[#A3B0AB] text-xs font-bold uppercase">{card.label}</span>
-                            <card.icon className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" />
+                            <card.icon className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" />
                           </div>
-                          <div className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF]">{card.value}</div>
+                          <div className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA]">{card.value}</div>
                         </div>
                       ))}
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div className="travel-card p-6 lg:col-span-2 space-y-4">
-                        <h3 className="font-bold text-[#173F3A] dark:text-[#EEF2ED]">Platform Growth</h3>
+                        <h3 className="font-bold text-[#244C66] dark:text-[#F0F4F7]">Platform Growth</h3>
                         <div className="h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={activeTimelineData}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#E3DED2" />
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E3E7EA" />
                               <XAxis dataKey="date" stroke="#66736F" fontSize={12} />
                               <YAxis stroke="#66736F" fontSize={12} />
                               <Tooltip />
-                              <Area type="monotone" dataKey="active" stroke="#173F3A" fill="#173F3A" fillOpacity={0.1} />
+                              <Area type="monotone" dataKey="active" stroke="#244C66" fill="#244C66" fillOpacity={0.1} />
                               <Area type="monotone" dataKey="searches" stroke="#D96C4F" fill="#D96C4F" fillOpacity={0.1} />
                             </AreaChart>
                           </ResponsiveContainer>
@@ -1005,7 +1005,7 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="travel-card p-6 space-y-4">
-                        <h3 className="font-bold text-[#173F3A] dark:text-[#EEF2ED]">Sessions</h3>
+                        <h3 className="font-bold text-[#244C66] dark:text-[#F0F4F7]">Sessions</h3>
                         <div className="h-48">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -1026,7 +1026,7 @@ export default function AdminDashboard() {
                 {/* Fallback for other tabs rendering placeholder to save output space */}
                 {activeTab !== 'analytics' && (
                   <div className="space-y-6">
-                    <h1 className="text-2xl font-bold text-[#173F3A] dark:text-[#EEF2ED] capitalize">{activeTab}</h1>
+                    <h1 className="text-2xl font-bold text-[#244C66] dark:text-[#F0F4F7] capitalize">{activeTab}</h1>
                     <div className="travel-card p-6">
                        <p className="text-[#66736F] dark:text-[#A3B0AB]">Module loaded successfully. (Code truncated for demonstration in response size limit)</p>
                     </div>

@@ -90,7 +90,7 @@ export default function DestinationsDirectoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#101B17] text-[#1F2933] dark:text-[#F7F5EF] transition-colors pb-20">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] text-[#1F2933] dark:text-[#F7F8FA] transition-colors pb-20">
       
       {/* Hero Header Section */}
       <div className="relative bg-[#14532D] text-white py-16 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-inner">
@@ -99,7 +99,7 @@ export default function DestinationsDirectoryPage() {
         <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-96 h-96 bg-[#2F7D32]/25 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto space-y-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-[#F7F5EF]">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-[#F7F8FA]">
             <Sparkles className="w-3.5 h-3.5 text-[#E58A3A]" />
             <span>Discover India • Curated Cities & Tourist Destinations</span>
           </div>
@@ -171,7 +171,7 @@ export default function DestinationsDirectoryPage() {
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${
                   isSelected
-                    ? 'bg-[#173F3A] text-white border-[#173F3A] dark:bg-[#4F7D62] dark:border-[#4F7D62] shadow-md scale-[1.02]'
+                    ? 'bg-[#244C66] text-white border-[#244C66] dark:bg-[#4F7D62] dark:border-[#4F7D62] shadow-md scale-[1.02]'
                     : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-soft)]'
                 }`}
               >
@@ -284,7 +284,7 @@ export default function DestinationsDirectoryPage() {
                   className="travel-card overflow-hidden group flex flex-col hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Card Image Banner */}
-                  <div className="relative h-52 w-full overflow-hidden bg-[#173F3A]">
+                  <div className="relative h-52 w-full overflow-hidden bg-[#244C66]">
                     <img
                       src={dest.heroImage}
                       alt={dest.name}
@@ -308,7 +308,7 @@ export default function DestinationsDirectoryPage() {
 
                     {/* Category / Region Badge */}
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#173F3A]/80 backdrop-blur-md text-white border border-white/10 uppercase tracking-wider">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#244C66]/80 backdrop-blur-md text-white border border-white/10 uppercase tracking-wider">
                         {dest.region}
                       </span>
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#D96C4F] text-white shadow-sm">
@@ -321,7 +321,7 @@ export default function DestinationsDirectoryPage() {
                       <div className="flex items-baseline justify-between">
                         <div>
                           <h3 className="text-2xl font-extrabold font-heading text-white">{dest.name}</h3>
-                          <span className="text-xs text-[#E3DED2] flex items-center gap-1 mt-0.5">
+                          <span className="text-xs text-[#E3E7EA] flex items-center gap-1 mt-0.5">
                             <MapPin className="w-3 h-3 text-[#D96C4F]" /> {dest.state}
                           </span>
                         </div>

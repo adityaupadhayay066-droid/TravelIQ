@@ -141,7 +141,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col justify-center items-center relative overflow-hidden px-4">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] flex flex-col justify-center items-center relative overflow-hidden px-4">
       <AnimatePresence mode="wait">
         {!twoFactorRequired ? (
           /* PASSWORD OR PASSKEY ENTRY */
@@ -151,15 +151,15 @@ export default function Login() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm"
+            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm"
           >
             <div className="text-center mb-8">
               <Link to="/" className="inline-block mb-4">
-                <span className="font-bold text-3xl tracking-tight text-[#173F3A] dark:text-[#EEF2ED] font-['Manrope']">
+                <span className="font-bold text-3xl tracking-tight text-[#244C66] dark:text-[#F0F4F7] font-['Manrope']">
                   TravelIQ
                 </span>
               </Link>
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 font-['Manrope']">Welcome Back</h2>
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-['Manrope']">Welcome Back</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm font-['Inter']">Sign in to resume your premium itinerary planner</p>
             </div>
 
@@ -174,7 +174,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email address"
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] transition-all font-['Inter']"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] transition-all font-['Inter']"
                   />
                 </div>
                 
@@ -187,7 +187,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
-                    className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] transition-all font-['Inter']"
+                    className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] transition-all font-['Inter']"
                   />
                 </div>
               </div>
@@ -223,16 +223,16 @@ export default function Login() {
                   type="button"
                   onClick={handlePasskeyLogin}
                   disabled={isSubmitting}
-                  className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] rounded-lg py-3 flex items-center justify-center gap-2 font-semibold text-xs transition-all font-['Inter']"
+                  className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] rounded-lg py-3 flex items-center justify-center gap-2 font-semibold text-xs transition-all font-['Inter']"
                 >
-                  <Fingerprint className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <Fingerprint className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                   Sign In with biometric Passkey
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowIrctcLoginModal(true)}
-                  className="w-full bg-[#F7F5EF] dark:bg-[#12201D] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#E5B85C] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 flex items-center justify-center gap-2 font-semibold text-xs transition-all duration-300 shadow-sm cursor-pointer active:scale-95 font-['Inter']"
+                  className="w-full bg-[#F7F8FA] dark:bg-[#121921] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#E5B85C] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 flex items-center justify-center gap-2 font-semibold text-xs transition-all duration-300 shadow-sm cursor-pointer active:scale-95 font-['Inter']"
                 >
                   <Train className="w-4 h-4 text-[#E5B85C]" />
                   Continue with IRCTC
@@ -243,12 +243,12 @@ export default function Login() {
             <div className="mt-8 text-center space-y-3">
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs font-['Inter']">
                 Don't have an account?{' '}
-                <Link to="/signup" className="text-[#173F3A] dark:text-[#EEF2ED] hover:text-[#0F332F] dark:hover:text-[#FFFFFF] transition-colors font-semibold">
+                <Link to="/signup" className="text-[#244C66] dark:text-[#F0F4F7] hover:text-[#193B51] dark:hover:text-[#FFFFFF] transition-colors font-semibold">
                   Create one now <ArrowRight className="w-3.5 h-3.5 inline" />
                 </Link>
               </p>
               <div>
-                <Link to="/admin/login" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-[#EEF2ED] transition-colors text-[11px] font-medium inline-flex items-center gap-1 font-['Inter']">
+                <Link to="/admin/login" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-[#F0F4F7] transition-colors text-[11px] font-medium inline-flex items-center gap-1 font-['Inter']">
                   Shield Check Are you an Administrator? Access Admin Portal
                 </Link>
               </div>
@@ -262,18 +262,18 @@ export default function Login() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="w-full max-w-sm bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] p-8 rounded-xl shadow-sm relative text-center space-y-6"
+                    className="w-full max-w-sm bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] p-8 rounded-xl shadow-sm relative text-center space-y-6"
                   >
                     <div className="absolute top-0 left-0 right-0 h-1 bg-[#E5B85C] rounded-t-xl" />
                     
                     <div className="flex justify-center mb-2">
-                      <div className="w-16 h-16 bg-[#EEF2ED] dark:bg-[#213530] rounded-xl flex items-center justify-center text-[#173F3A] dark:text-[#EEF2ED]">
+                      <div className="w-16 h-16 bg-[#F0F4F7] dark:bg-[#233240] rounded-xl flex items-center justify-center text-[#244C66] dark:text-[#F0F4F7]">
                         <ShieldCheck className="w-8 h-8" />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] font-['Manrope']">Login on IRCTC to complete booking</h3>
+                      <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] font-['Manrope']">Login on IRCTC to complete booking</h3>
                       <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed font-['Inter']">
                         TravelIQ does not ask for or store IRCTC passwords. Click Continue to sign in securely on the official government website.
                       </p>
@@ -283,7 +283,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => setShowIrctcLoginModal(false)}
-                        className="w-full py-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] transition-all cursor-pointer text-center font-['Inter']"
+                        className="w-full py-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] transition-all cursor-pointer text-center font-['Inter']"
                       >
                         Cancel
                       </button>
@@ -302,7 +302,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowIrctcLoginModal(false)}
-                      className="absolute top-2 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-all cursor-pointer"
+                      className="absolute top-2 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-all cursor-pointer"
                     >✕</button>
                   </motion.div>
                 </div>
@@ -317,13 +317,13 @@ export default function Login() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
-            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm"
+            className="w-full max-w-md p-8 relative z-10 bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm"
           >
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center p-3.5 bg-[#EEF2ED] dark:bg-[#213530] rounded-full mb-4 text-[#173F3A] dark:text-[#EEF2ED]">
+              <div className="inline-flex items-center justify-center p-3.5 bg-[#F0F4F7] dark:bg-[#233240] rounded-full mb-4 text-[#244C66] dark:text-[#F0F4F7]">
                 <KeyRound className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 font-['Manrope']">Two-Factor Verification</h2>
+              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-['Manrope']">Two-Factor Verification</h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed px-2 font-['Inter']">
                 {useBackupCode 
                   ? "Enter a 10-character alphanumeric recovery backup code to log in."
@@ -344,21 +344,21 @@ export default function Login() {
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
                   placeholder={useBackupCode ? "e.g., A8F9C1E2" : "000000"}
-                  className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3.5 text-center text-xl font-bold font-mono text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] tracking-[0.25em] focus:outline-none focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] transition-all uppercase"
+                  className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3.5 text-center text-xl font-bold font-mono text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] tracking-[0.25em] focus:outline-none focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] transition-all uppercase"
                 />
               </div>
 
               {/* Trust device checkbox */}
-              <div className="flex items-center gap-2.5 p-3.5 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg">
+              <div className="flex items-center gap-2.5 p-3.5 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg">
                 <input
                   id="trust-device"
                   type="checkbox"
                   checked={trustDevice}
                   onChange={(e) => setTrustDevice(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] focus:ring-[#173F3A]/20 bg-transparent"
+                  className="w-4 h-4 rounded border-[#E3E7EA] dark:border-[#293644] text-[#244C66] focus:ring-[#244C66]/20 bg-transparent"
                 />
                 <label htmlFor="trust-device" className="flex items-center gap-1.5 text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium cursor-pointer selection:bg-transparent font-['Inter']">
-                  <Laptop className="w-3.5 h-3.5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                  <Laptop className="w-3.5 h-3.5 text-[#244C66] dark:text-[#F0F4F7]" />
                   Trust this browser for 30 days
                 </label>
               </div>
@@ -367,7 +367,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#263238] text-white rounded-lg py-3 font-semibold flex items-center justify-center transition-all disabled:opacity-75 disabled:cursor-not-allowed text-xs font-['Inter']"
+                  className="w-full bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#263238] text-white rounded-lg py-3 font-semibold flex items-center justify-center transition-all disabled:opacity-75 disabled:cursor-not-allowed text-xs font-['Inter']"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
@@ -385,7 +385,7 @@ export default function Login() {
                     setUseBackupCode(!useBackupCode);
                     setOtpCode('');
                   }}
-                  className="w-full border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] rounded-lg py-2.5 text-xs font-semibold transition-all font-['Inter']"
+                  className="w-full border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] rounded-lg py-2.5 text-xs font-semibold transition-all font-['Inter']"
                 >
                   {useBackupCode ? "Use Email OTP Instead" : "Use Backup Recovery Code"}
                 </button>
@@ -397,7 +397,7 @@ export default function Login() {
                     setOtpCode('');
                     setUseBackupCode(false);
                   }}
-                  className="w-full text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] text-xs font-semibold py-2 transition-all block text-center font-['Inter']"
+                  className="w-full text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] text-xs font-semibold py-2 transition-all block text-center font-['Inter']"
                 >
                   Cancel and Sign In again
                 </button>

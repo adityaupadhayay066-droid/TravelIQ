@@ -64,7 +64,7 @@ export default function AuthSuccessOverlay({ mode, userName, onComplete }) {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="relative z-10 w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B2C28] p-10 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] shadow-sm text-center flex flex-col items-center space-y-6 overflow-hidden"
+          className="relative z-10 w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B242E] p-10 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm text-center flex flex-col items-center space-y-6 overflow-hidden"
         >
           {/* Success Checkmark */}
           <div className="relative flex items-center justify-center w-20 h-20">
@@ -97,11 +97,11 @@ export default function AuthSuccessOverlay({ mode, userName, onComplete }) {
 
           {/* Welcome Message Headers */}
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] tracking-tight font-sans">
+            <h3 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] tracking-tight font-sans">
               {mode === 'login' ? 'Welcome Back' : 'Account Created'}
             </h3>
             {userName && (
-              <p className="text-lg font-semibold text-[#173F3A] dark:text-[#EEF2ED]">
+              <p className="text-lg font-semibold text-[#244C66] dark:text-[#F0F4F7]">
                 Ready for your next journey, {userName}?
               </p>
             )}
@@ -111,7 +111,7 @@ export default function AuthSuccessOverlay({ mode, userName, onComplete }) {
           </div>
 
           {/* Separator */}
-          <div className="w-full h-px bg-[#E3DED2] dark:bg-[#2A403A]" />
+          <div className="w-full h-px bg-[#E3E7EA] dark:bg-[#293644]" />
 
           {/* Countdown & Redirect Status */}
           <div className="space-y-3 w-full">
@@ -128,7 +128,7 @@ export default function AuthSuccessOverlay({ mode, userName, onComplete }) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.2 }}
                   transition={{ duration: 0.2 }}
-                  className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF]"
+                  className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA]"
                 >
                   {countdown}
                 </motion.span>
@@ -136,12 +136,12 @@ export default function AuthSuccessOverlay({ mode, userName, onComplete }) {
             </div>
 
             {/* Custom linear progress bar */}
-            <div className="w-full bg-[#EEF2ED] dark:bg-[#213530] h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#F0F4F7] dark:bg-[#233240] h-1.5 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: '100%' }}
                 animate={{ width: '0%' }}
                 transition={{ duration: 3, ease: 'linear' }}
-                className="h-full bg-[#173F3A] dark:bg-[#EEF2ED] rounded-full"
+                className="h-full bg-[#244C66] dark:bg-[#F0F4F7] rounded-full"
               />
             </div>
           </div>

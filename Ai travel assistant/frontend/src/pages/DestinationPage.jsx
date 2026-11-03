@@ -428,24 +428,24 @@ export default function DestinationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] transition-colors pb-20">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] transition-colors pb-20">
       
       {/* ========================================================================= */}
       {/* HERO BANNER & QUICK DESTINATION SWITCHER                                  */}
       {/* ========================================================================= */}
-      <div className="relative h-88 sm:h-[440px] w-full bg-[#173F3A] overflow-hidden">
+      <div className="relative h-88 sm:h-[440px] w-full bg-[#244C66] overflow-hidden">
         <img 
           src={dest.heroImage} 
           alt={dest.name} 
           className="w-full h-full object-cover opacity-85 transition-transform duration-700 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#12201D] via-[#173F3A]/65 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121921] via-[#244C66]/65 to-black/40" />
         
         <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-white">
           <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
             <Link 
               to="/destinations" 
-              className="inline-flex items-center gap-1.5 text-xs text-[#E3DED2] hover:text-white transition-colors bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10"
+              className="inline-flex items-center gap-1.5 text-xs text-[#E3E7EA] hover:text-white transition-colors bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> All Indian Holiday Destinations ({DESTINATIONS_CATALOG.length})
             </Link>
@@ -459,7 +459,7 @@ export default function DestinationPage() {
                   className={`text-xs px-3 py-1 rounded-full font-medium transition-all whitespace-nowrap ${
                     dest.id === city.id 
                       ? 'bg-[#D96C4F] text-white shadow-md font-bold scale-105' 
-                      : 'bg-white/20 text-[#E3DED2] hover:bg-white/30 backdrop-blur-sm'
+                      : 'bg-white/20 text-[#E3E7EA] hover:bg-white/30 backdrop-blur-sm'
                   }`}
                 >
                   {city.name}
@@ -513,7 +513,7 @@ export default function DestinationPage() {
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Live Weather</div>
-              <div className="text-sm font-extrabold text-[#173F3A] dark:text-white">
+              <div className="text-sm font-extrabold text-[#244C66] dark:text-white">
                 {dest.weather?.temp || '18°C'} • {dest.weather?.condition || 'Sunny & Crisp'}
               </div>
               <div className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] truncate max-w-[180px]">
@@ -528,7 +528,7 @@ export default function DestinationPage() {
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Best Season</div>
-              <div className="text-sm font-extrabold text-[#173F3A] dark:text-white">{dest.bestTime}</div>
+              <div className="text-sm font-extrabold text-[#244C66] dark:text-white">{dest.bestTime}</div>
               <div className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">Ideal stay: {dest.idealDays || '3 - 4 Days'}</div>
             </div>
           </div>
@@ -539,7 +539,7 @@ export default function DestinationPage() {
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Avg Daily Budget</div>
-              <div className="text-sm font-extrabold text-[#173F3A] dark:text-white">{dest.avgBudget}</div>
+              <div className="text-sm font-extrabold text-[#244C66] dark:text-white">{dest.avgBudget}</div>
               <div className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">Includes hotel, meals & local cabs</div>
             </div>
           </div>
@@ -550,7 +550,7 @@ export default function DestinationPage() {
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Getting Around</div>
-              <div className="text-xs font-bold text-[#173F3A] dark:text-white line-clamp-1">{dest.gettingAround}</div>
+              <div className="text-xs font-bold text-[#244C66] dark:text-white line-clamp-1">{dest.gettingAround}</div>
               <div className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">Rental cabs & scooties easily available</div>
             </div>
           </div>
@@ -575,7 +575,7 @@ export default function DestinationPage() {
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>MMT & OYO Smart Holiday Engine</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#173F3A] dark:text-white font-heading">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#244C66] dark:text-white font-heading">
                 Customize Your {dest.name} Holiday Package
               </h2>
               <p className="text-xs sm:text-sm text-[#66736F] dark:text-[#A3B0AB] mt-1">
@@ -635,7 +635,7 @@ export default function DestinationPage() {
                     onClick={() => setPlannerDays(num)}
                     className={`py-3 px-2 rounded-xl text-center font-bold text-xs sm:text-sm border transition-all ${
                       plannerDays === num
-                        ? 'bg-[#173F3A] text-white border-[#173F3A] dark:bg-[#4F7D62] dark:border-[#4F7D62] shadow-md scale-[1.03]'
+                        ? 'bg-[#244C66] text-white border-[#244C66] dark:bg-[#4F7D62] dark:border-[#4F7D62] shadow-md scale-[1.03]'
                         : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:border-[#D96C4F]/50 hover:bg-[var(--color-soft)]'
                     }`}
                   >
@@ -720,7 +720,7 @@ export default function DestinationPage() {
                       onClick={() => toggleCategory(cat.id)}
                       className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all text-xs font-medium ${
                         isSelected
-                          ? 'bg-[#4F7D62]/15 border-[#4F7D62] text-[#173F3A] dark:text-emerald-300 font-bold shadow-sm scale-[1.01]'
+                          ? 'bg-[#4F7D62]/15 border-[#4F7D62] text-[#244C66] dark:text-emerald-300 font-bold shadow-sm scale-[1.01]'
                           : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-soft)]'
                       }`}
                     >
@@ -751,7 +751,7 @@ export default function DestinationPage() {
                       onClick={() => setBudgetTier(b.id)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                         budgetTier === b.id
-                          ? 'bg-[#173F3A] text-white dark:bg-[#4F7D62] shadow-sm font-bold'
+                          ? 'bg-[#244C66] text-white dark:bg-[#4F7D62] shadow-sm font-bold'
                           : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-soft)]'
                       }`}
                     >
@@ -774,31 +774,31 @@ export default function DestinationPage() {
               </div>
 
               {/* MMT-Style Real Package Price Breakdown Card */}
-              <div className="bg-[#173F3A]/5 dark:bg-black/30 border border-[#173F3A]/20 dark:border-emerald-500/20 rounded-2xl p-4 sm:p-5">
+              <div className="bg-[#244C66]/5 dark:bg-black/30 border border-[#244C66]/20 dark:border-emerald-500/20 rounded-2xl p-4 sm:p-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
                     <div className="space-y-0.5">
                       <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Curated Stays</div>
-                      <div className="text-xs sm:text-sm font-bold text-[#173F3A] dark:text-white">₹{budgetBreakdown.staysTotal.toLocaleString('en-IN')}</div>
+                      <div className="text-xs sm:text-sm font-bold text-[#244C66] dark:text-white">₹{budgetBreakdown.staysTotal.toLocaleString('en-IN')}</div>
                       <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">{plannerDays} days stay</div>
                     </div>
 
                     <div className="space-y-0.5">
                       <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Sightseeing & Passes</div>
-                      <div className="text-xs sm:text-sm font-bold text-[#173F3A] dark:text-white">₹{budgetBreakdown.sightseeingTotal.toLocaleString('en-IN')}</div>
+                      <div className="text-xs sm:text-sm font-bold text-[#244C66] dark:text-white">₹{budgetBreakdown.sightseeingTotal.toLocaleString('en-IN')}</div>
                       <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">All selected entries</div>
                     </div>
 
                     <div className="space-y-0.5">
                       <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Local Cabs / Transit</div>
-                      <div className="text-xs sm:text-sm font-bold text-[#173F3A] dark:text-white">₹{budgetBreakdown.cabTotal.toLocaleString('en-IN')}</div>
+                      <div className="text-xs sm:text-sm font-bold text-[#244C66] dark:text-white">₹{budgetBreakdown.cabTotal.toLocaleString('en-IN')}</div>
                       <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">Dedicated local driver</div>
                     </div>
 
                     <div className="space-y-0.5">
                       <div className="text-[10px] font-bold uppercase text-[#66736F] dark:text-[#A3B0AB]">Food Allowance</div>
-                      <div className="text-xs sm:text-sm font-bold text-[#173F3A] dark:text-white">₹{budgetBreakdown.foodTotal.toLocaleString('en-IN')}</div>
+                      <div className="text-xs sm:text-sm font-bold text-[#244C66] dark:text-white">₹{budgetBreakdown.foodTotal.toLocaleString('en-IN')}</div>
                       <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">Cafes & local thalis</div>
                     </div>
                   </div>
@@ -810,7 +810,7 @@ export default function DestinationPage() {
                         Save ₹{(3000 + budgetBreakdown.discount).toLocaleString('en-IN')}
                       </span>
                     </div>
-                    <div className="text-xl sm:text-2xl font-black text-[#173F3A] dark:text-emerald-400 font-heading">
+                    <div className="text-xl sm:text-2xl font-black text-[#244C66] dark:text-emerald-400 font-heading">
                       ₹{budgetBreakdown.finalTotal.toLocaleString('en-IN')}
                     </div>
                     <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">
@@ -863,7 +863,7 @@ export default function DestinationPage() {
                     onClick={() => setActivePlanDay(d.dayNumber)}
                     className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
                       activePlanDay === d.dayNumber
-                        ? 'bg-[#173F3A] text-white dark:bg-[#4F7D62] shadow-md scale-[1.02]'
+                        ? 'bg-[#244C66] text-white dark:bg-[#4F7D62] shadow-md scale-[1.02]'
                         : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:bg-[var(--color-soft)]'
                     }`}
                   >
@@ -888,7 +888,7 @@ export default function DestinationPage() {
               {showAddCustom && (
                 <form onSubmit={handleAddCustomActivity} className="travel-card p-5 bg-[#D96C4F]/5 border-[#D96C4F]/40 space-y-4 rounded-2xl animate-fade-in">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-[#173F3A] dark:text-white flex items-center gap-1.5">
+                    <h4 className="text-sm font-bold text-[#244C66] dark:text-white flex items-center gap-1.5">
                       <Plus className="w-4 h-4 text-[#D96C4F]" />
                       Add Custom Activity / Spot to Day {activePlanDay}
                     </h4>
@@ -962,12 +962,12 @@ export default function DestinationPage() {
                   <div key={dayData.dayNumber} className="space-y-4">
                     
                     {/* Day Highlights Strip */}
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-[#173F3A]/10 via-[#4F7D62]/10 to-transparent border border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-[#244C66]/10 via-[#4F7D62]/10 to-transparent border border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-bold text-[#D96C4F] uppercase tracking-wider">
                           {dayData.dateStr} • {dest.name}
                         </div>
-                        <h3 className="text-base sm:text-lg font-extrabold text-[#173F3A] dark:text-white font-heading">
+                        <h3 className="text-base sm:text-lg font-extrabold text-[#244C66] dark:text-white font-heading">
                           {dayData.title}
                         </h3>
                       </div>
@@ -1033,7 +1033,7 @@ export default function DestinationPage() {
                                       <Clock className="w-3 h-3" />
                                       {slot.timeSlot}
                                     </span>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#173F3A] dark:text-emerald-300 bg-[#4F7D62]/15 px-2 py-0.5 rounded-md">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#244C66] dark:text-emerald-300 bg-[#4F7D62]/15 px-2 py-0.5 rounded-md">
                                       {slot.category}
                                     </span>
                                     <span className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">
@@ -1135,7 +1135,7 @@ export default function DestinationPage() {
                 <ShieldCheck className="w-4 h-4" />
                 <span>OYO Sanitized & MMT Assured Stays</span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-[#173F3A] dark:text-white font-heading">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#244C66] dark:text-white font-heading">
                 Top Hotels & Mountain Stays in {dest.name}
               </h3>
               <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">
@@ -1167,7 +1167,7 @@ export default function DestinationPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                      <span className="bg-[#173F3A]/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow">
+                      <span className="bg-[#244C66]/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow">
                         {stay.type || 'Verified Stay'}
                       </span>
                       {stay.discountBadge && (
@@ -1186,7 +1186,7 @@ export default function DestinationPage() {
                   {/* Content */}
                   <div className="p-5 space-y-3">
                     <div>
-                      <h4 className="font-bold text-base text-[#173F3A] dark:text-white font-heading line-clamp-1 group-hover:text-[#D96C4F] transition-colors">
+                      <h4 className="font-bold text-base text-[#244C66] dark:text-white font-heading line-clamp-1 group-hover:text-[#D96C4F] transition-colors">
                         {stay.name}
                       </h4>
                       <div className="flex items-center gap-1 text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1">
@@ -1211,7 +1211,7 @@ export default function DestinationPage() {
                   <div>
                     <div className="text-[10px] text-[#66736F]">Per night for 2 adults</div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-black text-[#173F3A] dark:text-emerald-400">
+                      <span className="text-lg font-black text-[#244C66] dark:text-emerald-400">
                         ₹{(stay.price || stay.pricePerNight || 2499).toLocaleString('en-IN')}
                       </span>
                       {stay.originalPrice && (
@@ -1245,7 +1245,7 @@ export default function DestinationPage() {
               <Navigation className="w-4 h-4" />
               <span>Transit & Connectivity Guide</span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-[#173F3A] dark:text-white font-heading">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-[#244C66] dark:text-white font-heading">
               How to Reach {dest.name}
             </h3>
             <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">
@@ -1267,7 +1267,7 @@ export default function DestinationPage() {
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-[#173F3A] dark:text-white font-heading">By Air / Flights</h4>
+                  <h4 className="font-bold text-base text-[#244C66] dark:text-white font-heading">By Air / Flights</h4>
                   <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1 font-medium">
                     {dest.howToReach?.flight?.title || 'Nearest Domestic & International Airport'}
                   </p>
@@ -1308,7 +1308,7 @@ export default function DestinationPage() {
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-[#173F3A] dark:text-white font-heading">By Railway / Trains</h4>
+                  <h4 className="font-bold text-base text-[#244C66] dark:text-white font-heading">By Railway / Trains</h4>
                   <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1 font-medium">
                     {dest.howToReach?.train?.title || 'Nearest Railway Hub'}
                   </p>
@@ -1349,7 +1349,7 @@ export default function DestinationPage() {
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-[#173F3A] dark:text-white font-heading">By Intercity Volvo Bus</h4>
+                  <h4 className="font-bold text-base text-[#244C66] dark:text-white font-heading">By Intercity Volvo Bus</h4>
                   <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1 font-medium">
                     {dest.howToReach?.bus?.title || 'Multi-Axle AC Volvo Sleeper'}
                   </p>
@@ -1387,13 +1387,13 @@ export default function DestinationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4 border-t border-[var(--color-border)]">
           
           <div className="travel-card p-6 space-y-4 border border-[var(--color-border)]">
-            <h3 className="text-lg font-bold text-[#173F3A] dark:text-white flex items-center gap-2 font-heading">
+            <h3 className="text-lg font-bold text-[#244C66] dark:text-white flex items-center gap-2 font-heading">
               <Compass className="w-5 h-5 text-[#D96C4F]" />
               Signature Experiences in {dest.name}
             </h3>
             <ul className="space-y-3">
               {(dest.thingsToDo || []).map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#263238] dark:text-[#F7F5EF]">
+                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#263238] dark:text-[#F7F8FA]">
                   <CheckCircle2 className="w-4 h-4 text-[#4F7D62] shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{item}</span>
                 </li>
@@ -1402,13 +1402,13 @@ export default function DestinationPage() {
           </div>
 
           <div className="travel-card p-6 space-y-4 border border-[var(--color-border)]">
-            <h3 className="text-lg font-bold text-[#173F3A] dark:text-white flex items-center gap-2 font-heading">
+            <h3 className="text-lg font-bold text-[#244C66] dark:text-white flex items-center gap-2 font-heading">
               <Utensils className="w-5 h-5 text-[#D96C4F]" />
               Iconic Local Food & Must-Visit Cafes
             </h3>
             <ul className="space-y-3">
               {(dest.localFood || []).map((dish, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#263238] dark:text-[#F7F5EF]">
+                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#263238] dark:text-[#F7F8FA]">
                   <span className="w-2 h-2 rounded-full bg-[#D96C4F] shrink-0 mt-1.5" />
                   <span className="leading-relaxed">{dish}</span>
                 </li>
@@ -1422,14 +1422,14 @@ export default function DestinationPage() {
         {/* ICONIC LANDMARKS CARDS                                                    */}
         {/* ========================================================================= */}
         <div className="space-y-4 pt-4 border-t border-[var(--color-border)]">
-          <h3 className="text-xl font-bold text-[#173F3A] dark:text-white font-heading">
+          <h3 className="text-xl font-bold text-[#244C66] dark:text-white font-heading">
             Iconic Places & Landmarks in {dest.name}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {(dest.popularPlaces || []).map((place) => (
               <div key={place.name} className="travel-card p-5 space-y-2 border border-[var(--color-border)] hover:border-[#D96C4F]/40 transition">
                 <span className="travel-badge text-[10px] font-bold">{place.type}</span>
-                <h4 className="font-bold text-base text-[#173F3A] dark:text-white font-heading">{place.name}</h4>
+                <h4 className="font-bold text-base text-[#244C66] dark:text-white font-heading">{place.name}</h4>
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">{place.desc}</p>
               </div>
             ))}
@@ -1448,7 +1448,7 @@ export default function DestinationPage() {
             {/* Header */}
             <div className="p-5 border-b border-[var(--color-border)] flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-[#173F3A] dark:text-white font-heading flex items-center gap-2">
+                <h3 className="text-base font-extrabold text-[#244C66] dark:text-white font-heading flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-[#D96C4F]" />
                   Swap Activity for Day {swapTargetActivity?.dayNumber}
                 </h3>
@@ -1472,7 +1472,7 @@ export default function DestinationPage() {
                   onClick={() => setSwapCategoryFilter(cat)}
                   className={`text-[11px] px-3 py-1 rounded-full font-bold whitespace-nowrap capitalize transition ${
                     swapCategoryFilter === cat
-                      ? 'bg-[#173F3A] text-white dark:bg-[#4F7D62]'
+                      ? 'bg-[#244C66] text-white dark:bg-[#4F7D62]'
                       : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
@@ -1492,7 +1492,7 @@ export default function DestinationPage() {
                   >
                     <div className="space-y-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase text-[#173F3A] dark:text-emerald-300 bg-[#4F7D62]/15 px-2 py-0.5 rounded">
+                        <span className="text-[10px] font-bold uppercase text-[#244C66] dark:text-emerald-300 bg-[#4F7D62]/15 px-2 py-0.5 rounded">
                           {act.category}
                         </span>
                         <span className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">• {act.duration}</span>

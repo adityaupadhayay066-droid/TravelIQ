@@ -31,7 +31,7 @@ export default function ActivityLog() {
       case 'LOGOUT': return <LogOut className="w-5 h-5 text-[#66736F] dark:text-[#A3B0AB]" />;
       case 'PASSWORD_CHANGE': return <Key className="w-5 h-5 text-[#D96C4F]" />;
       case 'SESSION_TERMINATED': return <Monitor className="w-5 h-5 text-[#E5B85C]" />;
-      default: return <ShieldAlert className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />;
+      default: return <ShieldAlert className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />;
     }
   };
 
@@ -50,19 +50,19 @@ export default function ActivityLog() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-8 h-8 border-4 border-[#173F3A] dark:border-[#EEF2ED] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#244C66] dark:border-[#F0F4F7] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 font-inter text-[#263238] dark:text-[#F7F5EF]">
+    <div className="max-w-4xl mx-auto p-6 font-inter text-[#263238] dark:text-[#F7F8FA]">
       <div className="mb-8 flex items-center gap-3">
-        <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-xl">
-          <ShieldAlert className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+        <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-xl">
+          <ShieldAlert className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold font-manrope text-[#263238] dark:text-[#F7F5EF]">Security Audit Log</h1>
+          <h1 className="text-2xl font-bold font-manrope text-[#263238] dark:text-[#F7F8FA]">Security Audit Log</h1>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mt-1">
             Review recent security events and account activity. If you notice anything suspicious, change your password immediately.
           </p>
@@ -76,14 +76,14 @@ export default function ActivityLog() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="travel-card p-5 rounded-xl border bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] shadow-sm hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+            className="travel-card p-5 rounded-xl border bg-[#FFFFFF] dark:bg-[#1B242E] border-[#E3E7EA] dark:border-[#293644] shadow-sm hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
           >
             <div className="flex items-start gap-4">
-              <div className="p-2.5 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg shrink-0 mt-1">
+              <div className="p-2.5 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg shrink-0 mt-1">
                 {getEventIcon(log.event_type)}
               </div>
               <div>
-                <h3 className="font-semibold font-manrope text-[#263238] dark:text-[#F7F5EF]">
+                <h3 className="font-semibold font-manrope text-[#263238] dark:text-[#F7F8FA]">
                   {getEventLabel(log.event_type)}
                 </h3>
                 <div className="text-sm text-[#66736F] dark:text-[#A3B0AB] mt-1 space-y-1">

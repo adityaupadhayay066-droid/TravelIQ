@@ -3,8 +3,8 @@ import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsRenderer, Poly
 
 // Warm Editorial Theme styling for Google Maps matching the TravelIQ look
 const warmMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#F7F5EF" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#F7F5EF" }] },
+  { elementType: "geometry", stylers: [{ color: "#F7F8FA" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#F7F8FA" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#66736F" }] },
   {
     featureType: "administrative.locality",
@@ -19,12 +19,12 @@ const warmMapStyle = [
   {
     featureType: "poi.park",
     elementType: "geometry",
-    stylers: [{ color: "#EEF2ED" }],
+    stylers: [{ color: "#F0F4F7" }],
   },
   {
     featureType: "poi.park",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#173F3A" }],
+    stylers: [{ color: "#244C66" }],
   },
   {
     featureType: "road",
@@ -34,7 +34,7 @@ const warmMapStyle = [
   {
     featureType: "road",
     elementType: "geometry.stroke",
-    stylers: [{ color: "#E3DED2" }],
+    stylers: [{ color: "#E3E7EA" }],
   },
   {
     featureType: "road",
@@ -49,17 +49,17 @@ const warmMapStyle = [
   {
     featureType: "road.highway",
     elementType: "geometry.stroke",
-    stylers: [{ color: "#E3DED2" }],
+    stylers: [{ color: "#E3E7EA" }],
   },
   {
     featureType: "water",
     elementType: "geometry",
-    stylers: [{ color: "#E3DED2" }],
+    stylers: [{ color: "#E3E7EA" }],
   },
   {
     featureType: "water",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#173F3A" }],
+    stylers: [{ color: "#244C66" }],
   },
 ];
 
@@ -300,7 +300,7 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
 
   if (loadError) {
     return (
-      <div className="w-full h-full min-h-[380px] bg-[#F7F5EF] dark:bg-[#12201D] rounded-xl flex items-center justify-center p-6 text-center border border-[#B94A48] dark:border-[#B94A48]">
+      <div className="w-full h-full min-h-[380px] bg-[#F7F8FA] dark:bg-[#121921] rounded-xl flex items-center justify-center p-6 text-center border border-[#B94A48] dark:border-[#B94A48]">
         <div className="space-y-2">
           <p className="font-bold text-base text-[#B94A48]">⚠️ Google Maps Load Error</p>
           <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] max-w-sm">Failed to connect to Google Maps servers. Check that your VITE_GOOGLE_MAPS_API_KEY environment variable is configured correctly.</p>
@@ -311,10 +311,10 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
 
   if (!isLoaded) {
     return (
-      <div className="w-full h-full min-h-[380px] bg-[#F7F5EF] dark:bg-[#12201D] rounded-xl flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3DED2] dark:border-[#2A403A]">
+      <div className="w-full h-full min-h-[380px] bg-[#F7F8FA] dark:bg-[#121921] rounded-xl flex items-center justify-center text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3E7EA] dark:border-[#293644]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-[#173F3A] dark:border-[#EEF2ED] border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">Loading Map...</span>
+          <div className="w-10 h-10 border-4 border-[#244C66] dark:border-[#F0F4F7] border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">Loading Map...</span>
         </div>
       </div>
     );
@@ -324,7 +324,7 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
   const activeCenter = sCoord || defaultCoords;
 
   return (
-    <div className="relative w-full h-full min-h-[380px] rounded-xl overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)] border border-[#E3DED2] dark:border-[#2A403A]">
+    <div className="relative w-full h-full min-h-[380px] rounded-xl overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)] border border-[#E3E7EA] dark:border-[#293644]">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={activeCenter}
@@ -426,7 +426,7 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
             <div className="p-3 text-[#263238] max-w-[220px]">
               <h4 className="font-bold text-base leading-snug">{selectedMarker.data?.station_name || 'Station'}</h4>
               <p className="text-xs text-[#D96C4F] font-bold font-mono uppercase mt-0.5">Code: {selectedMarker.data?.station_code || 'N/A'}</p>
-              <div className="border-t border-[#E3DED2] my-2" />
+              <div className="border-t border-[#E3E7EA] my-2" />
               <p className="text-sm text-[#66736F] font-medium">City: <span className="text-[#263238] font-semibold">{selectedMarker.data?.city || 'India'}</span></p>
               <p className="text-sm text-[#66736F] font-medium">State: <span className="text-[#263238] font-semibold">{selectedMarker.data?.state || 'India'}</span></p>
             </div>
@@ -436,21 +436,21 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
 
       {/* Floating Directions Info overlay if calculated or computed via geodesic fallback */}
       {((directions && !directionsError) || (isFallbackRoute && fallbackData)) && (
-        <div className="absolute bottom-4 right-4 z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] px-4 py-3 rounded-xl flex flex-col gap-1 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+        <div className="absolute bottom-4 right-4 z-10 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] px-4 py-3 rounded-xl flex flex-col gap-1 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
           <span className="text-[10px] font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-widest">
             {isFallbackRoute ? 'Estimated Path (Direct)' : 'Calculated Route'}
           </span>
-          <div className="flex items-center gap-4 text-sm font-bold text-[#263238] dark:text-[#F7F5EF] mt-0.5">
+          <div className="flex items-center gap-4 text-sm font-bold text-[#263238] dark:text-[#F7F8FA] mt-0.5">
             <div>
               Distance:{' '}
-              <span className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">
+              <span className="text-[#244C66] dark:text-[#F0F4F7] font-mono">
                 {isFallbackRoute ? fallbackData.distance : directions.routes[0].legs[0].distance.text}
               </span>
             </div>
-            <div className="w-px h-3 bg-[#E3DED2] dark:bg-[#2A403A]" />
+            <div className="w-px h-3 bg-[#E3E7EA] dark:bg-[#293644]" />
             <div>
               Duration:{' '}
-              <span className="text-[#173F3A] dark:text-[#EEF2ED] font-mono">
+              <span className="text-[#244C66] dark:text-[#F0F4F7] font-mono">
                 {isFallbackRoute ? fallbackData.duration : directions.routes[0].legs[0].duration.text}
               </span>
             </div>
@@ -460,9 +460,9 @@ export default function GoogleMapComponent({ source, dest, liveLocation, onRoute
 
       {/* Routing error notification */}
       {directionsError && (
-        <div className="absolute bottom-4 left-4 right-4 z-10 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#D96C4F] dark:border-[#D96C4F] px-4 py-3 rounded-xl flex items-center justify-between text-sm text-[#D96C4F] font-bold shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+        <div className="absolute bottom-4 left-4 right-4 z-10 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#D96C4F] dark:border-[#D96C4F] px-4 py-3 rounded-xl flex items-center justify-between text-sm text-[#D96C4F] font-bold shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
           <span>⚠️ {directionsError}</span>
-          <button onClick={() => setDirectionsError(null)} className="text-[#D96C4F] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] px-2 py-0.5 rounded-lg font-mono transition-colors">✕</button>
+          <button onClick={() => setDirectionsError(null)} className="text-[#D96C4F] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] px-2 py-0.5 rounded-lg font-mono transition-colors">✕</button>
         </div>
       )}
     </div>

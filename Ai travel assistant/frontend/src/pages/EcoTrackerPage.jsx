@@ -73,13 +73,13 @@ export default function EcoTrackerPage() {
     const graphData = getGraphData();
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen py-8 px-4 md:px-8 relative">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen py-8 px-4 md:px-8 relative">
             <div className="max-w-6xl mx-auto relative z-10 space-y-8">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-6">
+                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 flex items-center gap-3 font-['Manrope']">
+                        <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 flex items-center gap-3 font-['Manrope']">
                             <Leaf className="w-8 h-8 text-[#4F7D62]" /> Green Travel & Carbon Economics
                         </h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">
@@ -90,7 +90,7 @@ export default function EcoTrackerPage() {
                     <button
                         onClick={loadData}
                         disabled={loading}
-                        className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-[#FFFFFF] rounded-lg p-2.5 transition-all shadow-sm"
+                        className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-[#FFFFFF] rounded-lg p-2.5 transition-all shadow-sm"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -98,7 +98,7 @@ export default function EcoTrackerPage() {
 
                 {loading ? (
                     <div className="py-40 text-center">
-                        <div className="w-12 h-12 border-4 border-[#EEF2ED] dark:border-[#213530] border-t-[#4F7D62] rounded-full animate-spin mx-auto mb-4" />
+                        <div className="w-12 h-12 border-4 border-[#F0F4F7] dark:border-[#233240] border-t-[#4F7D62] rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Querying green telemetry records...</p>
                     </div>
                 ) : (
@@ -108,31 +108,31 @@ export default function EcoTrackerPage() {
                         <div className="lg:col-span-1 space-y-6">
                             
                             {/* Eco Badge Panel */}
-                            <div className="rounded-xl p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] text-center shadow-sm">
-                                <div className="inline-flex items-center justify-center p-4 bg-[#EEF2ED] dark:bg-[#213530] rounded-xl mb-4 border border-[#E3DED2] dark:border-[#2A403A]">
+                            <div className="rounded-xl p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-center shadow-sm">
+                                <div className="inline-flex items-center justify-center p-4 bg-[#F0F4F7] dark:bg-[#233240] rounded-xl mb-4 border border-[#E3E7EA] dark:border-[#293644]">
                                     <Award className="w-10 h-10 text-[#4F7D62]" />
                                 </div>
                                 <h3 className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-semibold uppercase tracking-widest mb-1">
                                     TravelIQ Badge Rank
                                 </h3>
-                                <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] leading-tight">
+                                <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] leading-tight">
                                     {summary?.badge || 'Bronze Eco-Traveler'}
                                 </h2>
                                 
-                                <div className="mt-6 pt-4 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center gap-2">
-                                    <span className="text-[#263238] dark:text-[#F7F5EF] font-bold text-2xl">{summary?.eco_score_points || 0}</span>
+                                <div className="mt-6 pt-4 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center gap-2">
+                                    <span className="text-[#263238] dark:text-[#F7F8FA] font-bold text-2xl">{summary?.eco_score_points || 0}</span>
                                     <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium">Eco Points Earned 🌱</span>
                                 </div>
                             </div>
 
                             {/* Progress towards next level */}
-                            <div className="rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] shadow-sm">
+                            <div className="rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] shadow-sm">
                                 <h4 className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider mb-4 flex justify-between items-center">
                                     <span>Next Badge Tier</span>
                                     <span className="text-[#4F7D62]">{summary?.next_badge}</span>
                                 </h4>
 
-                                <div className="w-full bg-[#EEF2ED] dark:bg-[#213530] h-3 rounded-full overflow-hidden border border-[#E3DED2] dark:border-[#2A403A] mb-3">
+                                <div className="w-full bg-[#F0F4F7] dark:bg-[#233240] h-3 rounded-full overflow-hidden border border-[#E3E7EA] dark:border-[#293644] mb-3">
                                     <div 
                                         className="bg-[#4F7D62] h-full rounded-full transition-all duration-1000"
                                         style={{ width: `${summary?.percentage_to_next || 0}%` }}
@@ -145,20 +145,20 @@ export default function EcoTrackerPage() {
                             </div>
 
                             {/* Accumulative Carbon Saved Stats */}
-                            <div className="rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] shadow-sm space-y-4">
+                            <div className="rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] shadow-sm space-y-4">
                                 <h4 className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider mb-2">
                                     Eco Metrics Summary
                                 </h4>
                                 
-                                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-2.5">
+                                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-2.5">
                                     <span className="text-xs text-[#66736F] dark:text-[#A3B0AB]">Trips Audited</span>
-                                    <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">{summary?.trips_logged || 0}</strong>
+                                    <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">{summary?.trips_logged || 0}</strong>
                                 </div>
-                                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-2.5">
+                                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-2.5">
                                     <span className="text-xs text-[#66736F] dark:text-[#A3B0AB]">Total Distance Logged</span>
-                                    <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">{summary?.total_distance_km || 0} km</strong>
+                                    <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">{summary?.total_distance_km || 0} km</strong>
                                 </div>
-                                <div className="flex items-center justify-between border-b border-[#E3DED2] dark:border-[#2A403A] pb-2.5">
+                                <div className="flex items-center justify-between border-b border-[#E3E7EA] dark:border-[#293644] pb-2.5">
                                     <span className="text-xs text-[#66736F] dark:text-[#A3B0AB]">CO₂ Expelled (Actual)</span>
                                     <strong className="text-[#B94A48] text-sm">{summary?.total_emissions_co2_kg || 0} kg</strong>
                                 </div>
@@ -173,10 +173,10 @@ export default function EcoTrackerPage() {
                         <div className="lg:col-span-2 space-y-6">
                             
                             {/* Trip Footprint comparative */}
-                            <div className="rounded-xl p-6 border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] shadow-sm">
+                            <div className="rounded-xl p-6 border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] shadow-sm">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                                     <div>
-                                        <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2 font-['Manrope']">
+                                        <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2 font-['Manrope']">
                                             <BarChart3 className="w-5 h-5 text-[#4F7D62]" /> Comparative Emissions Calculator
                                         </h3>
                                         <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">Compare travel impact for your upcoming itineraries.</p>
@@ -187,10 +187,10 @@ export default function EcoTrackerPage() {
                                         <select
                                             value={selectedTripId}
                                             onChange={(e) => setSelectedTripId(e.target.value)}
-                                            className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg px-3 py-2 text-xs text-[#263238] dark:text-[#F7F5EF] focus:outline-none cursor-pointer max-w-xs shadow-sm"
+                                            className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg px-3 py-2 text-xs text-[#263238] dark:text-[#F7F8FA] focus:outline-none cursor-pointer max-w-xs shadow-sm"
                                         >
                                             {trips.map(trip => (
-                                                <option key={trip.id} value={trip.id} className="bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#263238] dark:text-[#F7F5EF]">
+                                                <option key={trip.id} value={trip.id} className="bg-[#FFFFFF] dark:bg-[#1B242E] text-[#263238] dark:text-[#F7F8FA]">
                                                     {trip.source} → {trip.destination}
                                                 </option>
                                             ))}
@@ -202,7 +202,7 @@ export default function EcoTrackerPage() {
 
                                 {calculating ? (
                                     <div className="py-24 text-center">
-                                        <div className="w-8 h-8 border-4 border-[#EEF2ED] dark:border-[#213530] border-t-[#4F7D62] rounded-full animate-spin mx-auto mb-2" />
+                                        <div className="w-8 h-8 border-4 border-[#F0F4F7] dark:border-[#233240] border-t-[#4F7D62] rounded-full animate-spin mx-auto mb-2" />
                                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Re-calculating footprints...</p>
                                     </div>
                                 ) : !tripDetails ? (
@@ -215,17 +215,17 @@ export default function EcoTrackerPage() {
                                         
                                         {/* Carbon economics highlights */}
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 text-center shadow-sm">
+                                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 text-center shadow-sm">
                                                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-semibold uppercase tracking-wider block">Chosen Travel Mode</span>
-                                                <div className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] my-1">{tripDetails.chosen_mode}</div>
+                                                <div className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] my-1">{tripDetails.chosen_mode}</div>
                                                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">Distance: {tripDetails.distance_km} km</span>
                                             </div>
-                                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 text-center shadow-sm">
+                                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 text-center shadow-sm">
                                                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-semibold uppercase tracking-wider block">Mode Footprint</span>
                                                 <div className="text-sm font-bold text-[#B94A48] my-1">{tripDetails.emissions.chosen} kg CO₂</div>
                                                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">Estimated emissions</span>
                                             </div>
-                                            <div className="bg-[#EEF2ED] dark:bg-[#213530] border border-[#4F7D62]/20 rounded-xl p-4 text-center shadow-sm">
+                                            <div className="bg-[#F0F4F7] dark:bg-[#233240] border border-[#4F7D62]/20 rounded-xl p-4 text-center shadow-sm">
                                                 <span className="text-[10px] text-[#4F7D62] font-semibold uppercase tracking-wider block">Carbon Saved 🌱</span>
                                                 <div className="text-lg font-bold text-[#4F7D62] my-0.5">{tripDetails.emissions.saved} kg CO₂</div>
                                                 <span className="text-[9px] text-[#4F7D62]/80">Compared to high-impact flight</span>
@@ -248,7 +248,7 @@ export default function EcoTrackerPage() {
                                                         <YAxis stroke="#66736F" fontSize={11} tickLine={false} />
                                                         <Tooltip 
                                                             cursor={{ fill: 'rgba(38, 50, 56, 0.04)' }}
-                                                            contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3DED2)', borderRadius: '8px' }}
+                                                            contentStyle={{ background: 'var(--color-surface, #FFFFFF)', border: '1px solid var(--color-border, #E3E7EA)', borderRadius: '8px' }}
                                                             labelStyle={{ color: 'var(--color-text, #263238)', fontSize: '12px', fontWeight: 'bold' }}
                                                             itemStyle={{ color: '#4F7D62', fontSize: '11px' }}
                                                             formatter={(value) => [`${value} kg CO₂`, 'Emission']}
@@ -264,10 +264,10 @@ export default function EcoTrackerPage() {
                                         )}
 
                                         {/* Eco Scoring tips */}
-                                        <div className="p-4 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl flex items-start gap-3">
+                                        <div className="p-4 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl flex items-start gap-3">
                                             <Info className="w-5 h-5 text-[#4F7D62] flex-shrink-0 mt-0.5" />
                                             <div>
-                                                <h5 className="text-xs text-[#263238] dark:text-[#F7F5EF] font-bold mb-1">Eco-Travel Tips</h5>
+                                                <h5 className="text-xs text-[#263238] dark:text-[#F7F8FA] font-bold mb-1">Eco-Travel Tips</h5>
                                                 <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
                                                     Choosing trains over short-haul regional flights reduces your carbon footprints by **up to 85%**! Green choices immediately improve your TravelIQ Eco Score and help you achieve the **Gold Green Pioneer** badge rank!
                                                 </p>

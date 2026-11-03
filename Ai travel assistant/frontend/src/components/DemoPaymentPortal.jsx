@@ -50,7 +50,7 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
     canvas.height = canvas.parentElement.clientHeight;
 
     let particles = [];
-    const colors = ['#173F3A', '#D96C4F', '#E5B85C', '#66736F', '#4F7D62'];
+    const colors = ['#244C66', '#D96C4F', '#E5B85C', '#66736F', '#4F7D62'];
 
     for (let i = 0; i < 150; i++) {
       particles.push({

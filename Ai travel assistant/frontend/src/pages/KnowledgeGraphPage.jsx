@@ -8,7 +8,7 @@ const GROUP_COLORS = {
   city: '#D96C4F',     // accent
   station: '#E5B85C',  // secondary
   food: '#4F7D62',     // success
-  hotel: '#173F3A',    // primary
+  hotel: '#244C66',    // primary
   route: '#66736F',    // text-muted
   user: '#263238',     // text
   booking: '#B94A48'   // danger
@@ -122,7 +122,7 @@ export default function KnowledgeGraphPage() {
         const t = computedNodes.find(n => n.id === link.target);
         if (!s || !t) return;
         const hl = (hoveredNode || selectedNode)?.id === s.id || (hoveredNode || selectedNode)?.id === t.id;
-        ctx.strokeStyle = hl ? '#D96C4F' : '#E3DED2';
+        ctx.strokeStyle = hl ? '#D96C4F' : '#E3E7EA';
         ctx.lineWidth = hl ? 2.5 : 1;
         ctx.beginPath();
         ctx.moveTo(s.x, s.y);
@@ -146,11 +146,11 @@ export default function KnowledgeGraphPage() {
           ctx.fill();
         }
 
-        ctx.fillStyle = GROUP_COLORS[node.group] || '#173F3A';
+        ctx.fillStyle = GROUP_COLORS[node.group] || '#244C66';
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#F7F5EF';
+        ctx.strokeStyle = '#F7F8FA';
         ctx.lineWidth = 1;
         ctx.stroke();
 
@@ -200,26 +200,26 @@ export default function KnowledgeGraphPage() {
   return (
     <div className="flex-1 w-full p-4 lg:p-8 space-y-6 max-w-7xl mx-auto font-inter">
       <div className="flex items-center gap-3 mb-2">
-        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] rounded-xl transition-colors">
+        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3E7EA] dark:hover:bg-[#293644] rounded-xl transition-colors">
           <ArrowLeft className="w-5 h-5 text-[#66736F] dark:text-[#A3B0AB]" />
         </Link>
-        <div className="p-2.5 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
+        <div className="p-2.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
           <Network className="w-6 h-6 text-[#D96C4F]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope">Knowledge Graph</h1>
+          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope">Knowledge Graph</h1>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Interactive relational graph of cities, stations, routes, foods, hotels, and bookings.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Canvas */}
-        <div className="lg:col-span-9 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 relative shadow-sm">
+        <div className="lg:col-span-9 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 relative shadow-sm">
           <canvas ref={canvasRef} className="w-full block cursor-crosshair" />
           {activeNode && (
-            <div className="absolute top-4 left-4 p-4 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] max-w-[220px] z-10">
+            <div className="absolute top-4 left-4 p-4 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] max-w-[220px] z-10">
               <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-widest font-bold font-manrope">{GROUP_LABELS[activeNode.group]}</p>
-              <p className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] mt-1 font-manrope">{activeNode.label}</p>
+              <p className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] mt-1 font-manrope">{activeNode.label}</p>
               <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] mt-1">
                 {graphData.links.filter(l => l.source === activeNode.id || l.target === activeNode.id).length} connections
               </p>
@@ -229,24 +229,24 @@ export default function KnowledgeGraphPage() {
 
         {/* Legend + Details */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="p-5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm">
-            <h3 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] mb-3 uppercase tracking-widest font-manrope">Legend</h3>
+          <div className="p-5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm">
+            <h3 className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA] mb-3 uppercase tracking-widest font-manrope">Legend</h3>
             <div className="space-y-2">
               {Object.entries(GROUP_LABELS).map(([key, label]) => (
                 <div key={key} className="flex items-center gap-2 text-xs">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: GROUP_COLORS[key] }} />
-                  <span className="text-[#263238] dark:text-[#F7F5EF] font-medium">{label}</span>
+                  <span className="text-[#263238] dark:text-[#F7F8FA] font-medium">{label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="p-5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm">
-            <h3 className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF] mb-3 uppercase tracking-widest font-manrope">Graph Stats</h3>
+          <div className="p-5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm">
+            <h3 className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA] mb-3 uppercase tracking-widest font-manrope">Graph Stats</h3>
             <div className="space-y-2 text-xs text-[#66736F] dark:text-[#A3B0AB]">
-              <div className="flex justify-between"><span>Nodes</span><span className="text-[#263238] dark:text-[#F7F5EF] font-bold">{graphData.nodes.length}</span></div>
-              <div className="flex justify-between"><span>Links</span><span className="text-[#263238] dark:text-[#F7F5EF] font-bold">{graphData.links.length}</span></div>
-              <div className="flex justify-between"><span>Groups</span><span className="text-[#263238] dark:text-[#F7F5EF] font-bold">{new Set(graphData.nodes.map(n => n.group)).size}</span></div>
+              <div className="flex justify-between"><span>Nodes</span><span className="text-[#263238] dark:text-[#F7F8FA] font-bold">{graphData.nodes.length}</span></div>
+              <div className="flex justify-between"><span>Links</span><span className="text-[#263238] dark:text-[#F7F8FA] font-bold">{graphData.links.length}</span></div>
+              <div className="flex justify-between"><span>Groups</span><span className="text-[#263238] dark:text-[#F7F8FA] font-bold">{new Set(graphData.nodes.map(n => n.group)).size}</span></div>
             </div>
           </div>
         </div>

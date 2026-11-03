@@ -75,15 +75,15 @@ export default function AIInsightsCard({ source, destination, train }) {
   }, [source, destination, train]);
 
   return (
-    <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 space-y-6 shadow-sm">
+    <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-6 space-y-6 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-[#173F3A] dark:bg-[#EEF2ED] rounded-lg text-[#FFFFFF] dark:text-[#263238]">
+        <div className="p-2.5 bg-[#244C66] dark:bg-[#F0F4F7] rounded-lg text-[#FFFFFF] dark:text-[#263238]">
           <BrainCircuit className="w-6 h-6" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-lg text-[#173F3A] dark:text-[#EEF2ED] font-['Manrope']">AI Travel Intelligence Insights</h3>
-            <span className="flex items-center gap-1 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] text-[#173F3A] dark:text-[#EEF2ED] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+            <h3 className="font-bold text-lg text-[#244C66] dark:text-[#F0F4F7] font-['Manrope']">AI Travel Intelligence Insights</h3>
+            <span className="flex items-center gap-1 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] text-[#244C66] dark:text-[#F0F4F7] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
               <Sparkles className="w-3 h-3" /> PyTorch Engine
             </span>
           </div>

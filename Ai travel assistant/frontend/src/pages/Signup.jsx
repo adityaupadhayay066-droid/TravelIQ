@@ -89,20 +89,20 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] dark:bg-[#12201D] flex flex-col justify-center items-center relative px-4 py-12">
+    <div className="min-h-screen bg-[#F7F8FA] dark:bg-[#121921] flex flex-col justify-center items-center relative px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B2C28] rounded-xl shadow-sm border border-[#E3DED2] dark:border-[#2A403A] p-8 relative z-10"
+        className="w-full max-w-md bg-[#FFFFFF] dark:bg-[#1B242E] rounded-xl shadow-sm border border-[#E3E7EA] dark:border-[#293644] p-8 relative z-10"
       >
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4">
-            <span className="font-bold text-3xl tracking-tight text-[#173F3A] dark:text-[#EEF2ED]">
+            <span className="font-bold text-3xl tracking-tight text-[#244C66] dark:text-[#F0F4F7]">
               TravelIQ
             </span>
           </Link>
-          <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Create Account</h2>
+          <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">Create Account</h2>
           <p className="text-[#66736F] dark:text-[#A3B0AB]">Join the AI travel revolution</p>
         </div>
 
@@ -117,7 +117,7 @@ export default function Signup() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
-              className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] transition-all"
+              className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] focus:ring-1 focus:ring-[#244C66] transition-all"
             />
           </div>
           
@@ -131,7 +131,7 @@ export default function Signup() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email address"
-              className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] transition-all"
+              className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] focus:ring-1 focus:ring-[#244C66] transition-all"
             />
           </div>
 
@@ -144,7 +144,7 @@ export default function Signup() {
               value={formData.phone}
               onChange={handleChange}
               placeholder="Phone Number (Optional)"
-              className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] transition-all"
+              className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] focus:ring-1 focus:ring-[#244C66] transition-all"
             />
           </div>
 
@@ -160,7 +160,7 @@ export default function Signup() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password (min 6 characters)"
-                className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] transition-all"
+                className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] focus:ring-1 focus:ring-[#244C66] transition-all"
               />
             </div>
             {/* Password Strength Indicator */}
@@ -168,7 +168,7 @@ export default function Signup() {
               <div className="flex items-center gap-2 px-1">
                 <div className="flex-1 flex gap-1">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= strength.level ? strength.color : 'bg-[#E3DED2] dark:bg-[#2A403A]'}`} />
+                    <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= strength.level ? strength.color : 'bg-[#E3E7EA] dark:bg-[#293644]'}`} />
                   ))}
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${
@@ -191,13 +191,13 @@ export default function Signup() {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm Password"
-              className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F5EF] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] transition-all"
+              className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 pl-12 pr-4 text-[#263238] dark:text-[#F7F8FA] placeholder-[#66736F] dark:placeholder-[#A3B0AB] focus:outline-none focus:border-[#244C66] focus:ring-1 focus:ring-[#244C66] transition-all"
             />
           </div>
 
           {/* Security notice */}
-          <div className="flex items-start gap-2.5 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 mt-2">
-            <ShieldCheck className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED] flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 mt-2">
+            <ShieldCheck className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7] flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
               Your account is created securely. We use enterprise-grade encryption to protect your credentials.
             </p>
@@ -231,18 +231,18 @@ export default function Signup() {
         </form>
 
         <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#E3DED2] dark:border-[#2A403A]"></div></div>
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#E3E7EA] dark:border-[#293644]"></div></div>
           <div className="relative flex justify-center text-[10px] uppercase font-bold">
-            <span className="bg-[#FFFFFF] dark:bg-[#1B2C28] px-2 text-[#66736F] dark:text-[#A3B0AB]">Or continue with</span>
+            <span className="bg-[#FFFFFF] dark:bg-[#1B242E] px-2 text-[#66736F] dark:text-[#A3B0AB]">Or continue with</span>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => setShowIrctcLoginModal(true)}
-          className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg py-3 flex items-center justify-center gap-2 font-bold text-xs transition-all duration-300 shadow-sm cursor-pointer active:scale-95"
+          className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644] rounded-lg py-3 flex items-center justify-center gap-2 font-bold text-xs transition-all duration-300 shadow-sm cursor-pointer active:scale-95"
         >
-          <Train className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" />
+          <Train className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" />
           Continue with IRCTC
         </button>
 
@@ -254,7 +254,7 @@ export default function Signup() {
             </Link>
           </p>
           <div>
-            <Link to="/admin/signup" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#173F3A] dark:hover:text-[#EEF2ED] transition-colors text-[11px] font-medium inline-flex items-center gap-1">
+            <Link to="/admin/signup" className="text-[#66736F] dark:text-[#A3B0AB] hover:text-[#244C66] dark:hover:text-[#F0F4F7] transition-colors text-[11px] font-medium inline-flex items-center gap-1">
               🛡️ Need an Admin Account? Register as Administrator
             </Link>
           </div>
@@ -262,24 +262,24 @@ export default function Signup() {
 
         <AnimatePresence>
           {showIrctcLoginModal && (
-            <div className="fixed inset-0 bg-[#263238]/50 dark:bg-[#12201D]/80 flex items-center justify-center p-4 z-[10000]" onClick={() => setShowIrctcLoginModal(false)}>
+            <div className="fixed inset-0 bg-[#263238]/50 dark:bg-[#121921]/80 flex items-center justify-center p-4 z-[10000]" onClick={() => setShowIrctcLoginModal(false)}>
               <motion.div
                 onClick={(e) => e.stopPropagation()}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-sm border border-[#E3DED2] dark:border-[#2A403A] bg-[#FFFFFF] dark:bg-[#1B2C28] p-8 rounded-xl shadow-sm relative text-center space-y-6"
+                className="w-full max-w-sm border border-[#E3E7EA] dark:border-[#293644] bg-[#FFFFFF] dark:bg-[#1B242E] p-8 rounded-xl shadow-sm relative text-center space-y-6"
               >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-[#D96C4F]" />
                 
                 <div className="flex justify-center mb-2">
-                  <div className="w-16 h-16 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl flex items-center justify-center text-[#173F3A] dark:text-[#EEF2ED] text-3xl">
+                  <div className="w-16 h-16 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl flex items-center justify-center text-[#244C66] dark:text-[#F0F4F7] text-3xl">
                     🛡️
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF]">Login on IRCTC to complete booking</h3>
+                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA]">Login on IRCTC to complete booking</h3>
                   <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed">
                     TravelIQ does not ask for or store IRCTC passwords. Click Continue to sign in securely on the official government website.
                   </p>
@@ -289,7 +289,7 @@ export default function Signup() {
                   <button
                     type="button"
                     onClick={() => setShowIrctcLoginModal(false)}
-                    className="w-full py-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] text-xs font-bold text-[#66736F] dark:text-[#A3B0AB] transition-all cursor-pointer text-center"
+                    className="w-full py-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] text-xs font-bold text-[#66736F] dark:text-[#A3B0AB] transition-all cursor-pointer text-center"
                   >
                     Cancel
                   </button>
@@ -299,7 +299,7 @@ export default function Signup() {
                       window.open('https://www.irctc.co.in/nget/train-search', '_blank');
                       setShowIrctcLoginModal(false);
                     }}
-                    className="w-full py-2.5 rounded-lg bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] dark:text-[#173F3A] text-white text-xs font-bold transition-all cursor-pointer text-center"
+                    className="w-full py-2.5 rounded-lg bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#244C66] text-white text-xs font-bold transition-all cursor-pointer text-center"
                   >
                     Continue
                   </button>
@@ -308,7 +308,7 @@ export default function Signup() {
                 <button
                   type="button"
                   onClick={() => setShowIrctcLoginModal(false)}
-                  className="absolute top-2 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-all cursor-pointer"
+                  className="absolute top-2 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] text-lg font-bold w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-all cursor-pointer"
                 >✕</button>
               </motion.div>
             </div>

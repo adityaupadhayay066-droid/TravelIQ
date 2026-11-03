@@ -134,14 +134,14 @@ export default function VoiceAssistantPage() {
     <div className="flex-1 w-full p-4 lg:p-8 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
-        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3DED2] dark:hover:bg-[#2A403A] rounded-xl transition-colors">
-          <ArrowLeft className="w-5 h-5 text-[#263238] dark:text-[#F7F5EF]" />
+        <Link to="/dashboard/ai-workspace" className="p-2 hover:bg-[#E3E7EA] dark:hover:bg-[#293644] rounded-xl transition-colors">
+          <ArrowLeft className="w-5 h-5 text-[#263238] dark:text-[#F7F8FA]" />
         </Link>
-        <div className="p-2.5 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
-          <Radio className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+        <div className="p-2.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
+          <Radio className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF]">AI Voice Assistant</h1>
+          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA]">AI Voice Assistant</h1>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Speak naturally to search trains, track trips, find food, and navigate stations.</p>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function VoiceAssistantPage() {
                   key={i}
                   animate={{ height: `${amp * 100}%` }}
                   transition={{ duration: 0.1 }}
-                  className={`w-1.5 rounded-full ${isListening ? 'bg-[#D96C4F]' : 'bg-[#E3DED2] dark:bg-[#2A403A]'}`}
+                  className={`w-1.5 rounded-full ${isListening ? 'bg-[#D96C4F]' : 'bg-[#E3E7EA] dark:bg-[#293644]'}`}
                   style={{ minHeight: '4px' }}
                 />
               ))}
@@ -182,9 +182,9 @@ export default function VoiceAssistantPage() {
 
             {/* Transcript */}
             {transcript && (
-              <div className="w-full p-4 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
+              <div className="w-full p-4 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
                 <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-widest font-bold mb-1">Live Transcript</p>
-                <p className="text-[#263238] dark:text-[#F7F5EF] text-sm">{transcript}</p>
+                <p className="text-[#263238] dark:text-[#F7F8FA] text-sm">{transcript}</p>
               </div>
             )}
           </div>
@@ -206,7 +206,7 @@ export default function VoiceAssistantPage() {
                   </span>
                 </div>
 
-                <p className="text-[#263238] dark:text-[#F7F5EF] text-sm leading-relaxed">{aiResponse.text}</p>
+                <p className="text-[#263238] dark:text-[#F7F8FA] text-sm leading-relaxed">{aiResponse.text}</p>
 
                 <div className="flex gap-3">
                   <button
@@ -224,13 +224,13 @@ export default function VoiceAssistantPage() {
         {/* Conversation History */}
         <div className="lg:col-span-5">
           <div className="p-5 travel-card space-y-3">
-            <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2">
-              <MessageCircle className="w-4 h-4 text-[#173F3A] dark:text-[#EEF2ED]" /> Conversation History
+            <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-[#244C66] dark:text-[#F0F4F7]" /> Conversation History
             </h3>
 
             {conversations.length === 0 ? (
               <div className="text-center py-12 space-y-3">
-                <Mic className="w-10 h-10 text-[#E3DED2] dark:text-[#2A403A] mx-auto" />
+                <Mic className="w-10 h-10 text-[#E3E7EA] dark:text-[#293644] mx-auto" />
                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">Start speaking to see your conversation here.</p>
               </div>
             ) : (
@@ -238,13 +238,13 @@ export default function VoiceAssistantPage() {
                 {conversations.map((c, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-end">
-                      <div className="px-3 py-2 bg-[#173F3A] text-[#F7F5EF] dark:bg-[#EEF2ED] dark:text-[#173F3A] rounded-xl max-w-[85%] shadow-sm">
+                      <div className="px-3 py-2 bg-[#244C66] text-[#F7F8FA] dark:bg-[#F0F4F7] dark:text-[#244C66] rounded-xl max-w-[85%] shadow-sm">
                         <p className="text-xs">{c.user}</p>
                       </div>
                     </div>
                     <div className="flex justify-start">
-                      <div className="px-3 py-2 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl max-w-[85%] shadow-sm">
-                        <p className="text-xs text-[#263238] dark:text-[#F7F5EF]">{c.ai}</p>
+                      <div className="px-3 py-2 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl max-w-[85%] shadow-sm">
+                        <p className="text-xs text-[#263238] dark:text-[#F7F8FA]">{c.ai}</p>
                         <p className="text-[9px] text-[#66736F] dark:text-[#A3B0AB] mt-1">Intent: {c.intent}</p>
                       </div>
                     </div>

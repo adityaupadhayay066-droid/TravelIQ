@@ -5,17 +5,17 @@ import { motion } from 'framer-motion';
 export default function ModelHealthCard({ modelKey, name, metrics }) {
   if (!metrics) {
     return (
-      <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm space-y-3">
+      <div className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Cpu className="w-5 h-5 text-[#66736F] dark:text-[#A3B0AB]" />
-            <h4 className="font-semibold text-[#263238] dark:text-[#F7F5EF] text-sm">{name}</h4>
+            <h4 className="font-semibold text-[#263238] dark:text-[#F7F8FA] text-sm">{name}</h4>
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
             Unbenchmarked
           </span>
         </div>
-        <div className="p-4 bg-[#F7F5EF] dark:bg-[#213530] rounded-lg text-center border border-[#E3DED2] dark:border-[#2A403A]">
+        <div className="p-4 bg-[#F7F8FA] dark:bg-[#233240] rounded-lg text-center border border-[#E3E7EA] dark:border-[#293644]">
           <AlertCircle className="w-6 h-6 mx-auto text-amber-500 mb-1" />
           <p className="text-xs font-medium text-[#66736F] dark:text-[#A3B0AB]">Evaluation Metrics Unavailable</p>
           <p className="text-[10px] text-[#8C9B96] dark:text-[#7A8E88] mt-0.5">Run model evaluation pipeline to generate verified performance benchmarks.</p>
@@ -77,19 +77,19 @@ export default function ModelHealthCard({ modelKey, name, metrics }) {
   return (
     <motion.div 
       whileHover={{ y: -2 }}
-      className="travel-card bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 shadow-sm space-y-4"
+      className="travel-card bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 shadow-sm space-y-4"
     >
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+          <Activity className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
           <div>
-            <h4 className="font-semibold text-[#263238] dark:text-[#F7F5EF] text-sm">{name}</h4>
+            <h4 className="font-semibold text-[#263238] dark:text-[#F7F8FA] text-sm">{name}</h4>
             <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] capitalize font-mono">
               {modelType.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
-        <div className="travel-badge bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] dark:text-[#4F7D62] border-[#E3DED2] dark:border-[#2A403A] py-0.5 px-2">
+        <div className="travel-badge bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] dark:text-[#4F7D62] border-[#E3E7EA] dark:border-[#293644] py-0.5 px-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#4F7D62]" />
           <span className="text-[10px] font-bold uppercase tracking-wider">{metrics.status || 'Active'}</span>
         </div>
@@ -103,17 +103,17 @@ export default function ModelHealthCard({ modelKey, name, metrics }) {
       )}
 
       <div className="grid grid-cols-2 gap-3 text-left">
-        <div className="bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3">
+        <div className="bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3">
           <span className="text-[10px] font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">{primaryLabel}</span>
-          <p className="text-lg font-bold text-[#173F3A] dark:text-[#EEF2ED] font-mono mt-0.5">{primaryValue}</p>
+          <p className="text-lg font-bold text-[#244C66] dark:text-[#F0F4F7] font-mono mt-0.5">{primaryValue}</p>
         </div>
-        <div className="bg-[#F7F5EF] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3">
+        <div className="bg-[#F7F8FA] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3">
           <span className="text-[10px] font-semibold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">{secondaryLabel}</span>
           <p className="text-lg font-bold text-[#D96C4F] font-mono mt-0.5">{secondaryValue}</p>
         </div>
       </div>
 
-      <div className="flex justify-between items-center text-xs font-medium text-[#66736F] dark:text-[#A3B0AB] border-t border-[#E3DED2] dark:border-[#2A403A] pt-3">
+      <div className="flex justify-between items-center text-xs font-medium text-[#66736F] dark:text-[#A3B0AB] border-t border-[#E3E7EA] dark:border-[#293644] pt-3">
         <span className="flex items-center gap-1.5">
           <Database className="w-3.5 h-3.5 text-[#66736F] dark:text-[#A3B0AB]" />
           {metrics.train_samples ? `${metrics.train_samples} tr / ${metrics.test_samples} te` : 'Evaluated samples'}

@@ -95,7 +95,7 @@ export default function SupportPage() {
 
     const getStatusColor = (status) => {
         switch(status) {
-            case 'Open': return 'bg-[#EEF2ED] text-[#173F3A] border-[#173F3A]/20 dark:bg-[#213530] dark:text-[#EEF2ED]';
+            case 'Open': return 'bg-[#F0F4F7] text-[#244C66] border-[#244C66]/20 dark:bg-[#233240] dark:text-[#F0F4F7]';
             case 'In Progress': return 'bg-[#E5B85C]/10 text-[#E5B85C] border-[#E5B85C]/20';
             case 'Resolved': return 'bg-[#4F7D62]/10 text-[#4F7D62] border-[#4F7D62]/20';
             case 'Closed': return 'bg-[#66736F]/10 text-[#66736F] border-[#66736F]/20 dark:text-[#A3B0AB]';
@@ -107,7 +107,7 @@ export default function SupportPage() {
     const getPriorityColor = (priority) => {
         switch(priority) {
             case 'Low': return 'text-[#66736F] dark:text-[#A3B0AB]';
-            case 'Medium': return 'text-[#173F3A] dark:text-[#EEF2ED]';
+            case 'Medium': return 'text-[#244C66] dark:text-[#F0F4F7]';
             case 'High': return 'text-[#E5B85C]';
             case 'Critical': return 'text-[#D96C4F] font-bold';
             default: return 'text-[#66736F] dark:text-[#A3B0AB]';
@@ -115,13 +115,13 @@ export default function SupportPage() {
     };
 
     return (
-        <div className="flex-1 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen pb-12 transition-colors duration-300 font-sans">
+        <div className="flex-1 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen pb-12 transition-colors duration-300 font-sans">
             
             {/* Header Area */}
-            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border-b border-[#E3DED2] dark:border-[#2A403A] pt-8 pb-6 px-4 md:px-8">
+            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border-b border-[#E3E7EA] dark:border-[#293644] pt-8 pb-6 px-4 md:px-8">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2 flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 flex items-center gap-3">
                             <HelpCircle className="w-8 h-8 text-[#D96C4F]" /> Help & Support
                         </h1>
                         <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm max-w-2xl">
@@ -129,15 +129,15 @@ export default function SupportPage() {
                         </p>
                     </div>
 
-                    <div className="flex bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-1">
+                    <div className="flex bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-1">
                         {['My Tickets', 'Create Ticket', 'FAQs'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-5 py-2 rounded-md text-sm font-semibold transition-all ${
                                     activeTab === tab 
-                                        ? 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#173F3A] dark:text-[#EEF2ED] shadow-sm' 
-                                        : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'
+                                        ? 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#244C66] dark:text-[#F0F4F7] shadow-sm' 
+                                        : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
                                 }`}
                             >
                                 {tab}
@@ -153,10 +153,10 @@ export default function SupportPage() {
                 {activeTab === 'My Tickets' && (
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">Your Support Tickets</h2>
+                            <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">Your Support Tickets</h2>
                             <button 
                                 onClick={() => setActiveTab('Create Ticket')}
-                                className="bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-white dark:text-[#12201D] px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                                className="bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-white dark:text-[#121921] px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
                             >
                                 <Plus className="w-4 h-4" /> New Ticket
                             </button>
@@ -164,15 +164,15 @@ export default function SupportPage() {
 
                         {loading ? (
                             <div className="py-20 text-center">
-                                <div className="w-8 h-8 border-3 border-[#173F3A]/30 border-t-[#173F3A] dark:border-[#EEF2ED]/30 dark:border-t-[#EEF2ED] rounded-full animate-spin mx-auto mb-4" />
+                                <div className="w-8 h-8 border-3 border-[#244C66]/30 border-t-[#244C66] dark:border-[#F0F4F7]/30 dark:border-t-[#F0F4F7] rounded-full animate-spin mx-auto mb-4" />
                                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Loading tickets...</p>
                             </div>
                         ) : tickets.length > 0 ? (
-                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
                                 <div className="overflow-x-auto scrollbar-none">
                                     <div className="min-w-[700px]">
                                         {/* Table Header */}
-                                        <div className="grid grid-cols-12 gap-4 p-4 bg-[#EEF2ED] dark:bg-[#213530] border-b border-[#E3DED2] dark:border-[#2A403A] text-xs font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">
+                                        <div className="grid grid-cols-12 gap-4 p-4 bg-[#F0F4F7] dark:bg-[#233240] border-b border-[#E3E7EA] dark:border-[#293644] text-xs font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider">
                                             <div className="col-span-3">Ticket ID & Subject</div>
                                             <div className="col-span-2 text-center">Category</div>
                                             <div className="col-span-2 text-center">Status</div>
@@ -182,16 +182,16 @@ export default function SupportPage() {
                                         </div>
 
                                         {/* Table Body */}
-                                        <div className="divide-y divide-[#E3DED2] dark:divide-[#2A403A]">
+                                        <div className="divide-y divide-[#E3E7EA] dark:divide-[#293644]">
                                             {tickets.map(ticket => (
-                                                <div key={ticket.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F5EF] dark:hover:bg-[#213530]/50 transition-colors">
+                                                <div key={ticket.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-[#F7F8FA] dark:hover:bg-[#233240]/50 transition-colors">
                                                     <div className="col-span-3">
-                                                        <p className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] truncate" title={ticket.subject}>{ticket.subject}</p>
+                                                        <p className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] truncate" title={ticket.subject}>{ticket.subject}</p>
                                                         <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono mt-1 block">TRV-{ticket.id.toString().padStart(5, '0')}</span>
                                                     </div>
                                                     
                                                     <div className="col-span-2 text-center">
-                                                        <span className="text-xs text-[#263238] dark:text-[#F7F5EF]">{ticket.category}</span>
+                                                        <span className="text-xs text-[#263238] dark:text-[#F7F8FA]">{ticket.category}</span>
                                                     </div>
 
                                                     <div className="col-span-2 flex justify-center">
@@ -211,7 +211,7 @@ export default function SupportPage() {
                                                     <div className="col-span-1 flex justify-center">
                                                         <Link 
                                                             to={`/support/ticket/${ticket.id}`}
-                                                            className="p-2 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#D96C4F] dark:hover:text-[#D96C4F] hover:border-[#D96C4F]/50 transition-colors"
+                                                            className="p-2 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#D96C4F] dark:hover:text-[#D96C4F] hover:border-[#D96C4F]/50 transition-colors"
                                                             title="View Details"
                                                         >
                                                             <MessageSquare className="w-4 h-4" />
@@ -224,13 +224,13 @@ export default function SupportPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-12 text-center shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+                            <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-12 text-center shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
                                 <FileText className="w-12 h-12 text-[#66736F] dark:text-[#A3B0AB] mx-auto mb-4" />
-                                <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">No Support Tickets</h3>
+                                <h3 className="text-lg font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">No Support Tickets</h3>
                                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mb-6">You haven't opened any support requests yet.</p>
                                 <button 
                                     onClick={() => setActiveTab('Create Ticket')}
-                                    className="bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-white dark:text-[#12201D] px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                                    className="bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-white dark:text-[#121921] px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors"
                                 >
                                     Create a Ticket
                                 </button>
@@ -242,8 +242,8 @@ export default function SupportPage() {
                 {/* TAB: CREATE TICKET */}
                 {activeTab === 'Create Ticket' && (
                     <div className="max-w-3xl mx-auto">
-                        <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-6 md:p-8 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
-                            <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-6 border-b border-[#E3DED2] dark:border-[#2A403A] pb-4">Submit a Support Request</h2>
+                        <div className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-6 md:p-8 shadow-[0_4px_16px_rgba(23,63,58,0.06)]">
+                            <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-6 border-b border-[#E3E7EA] dark:border-[#293644] pb-4">Submit a Support Request</h2>
                             
                             <form onSubmit={handleCreateTicket} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -253,7 +253,7 @@ export default function SupportPage() {
                                         <select 
                                             value={category}
                                             onChange={e => setCategory(e.target.value)}
-                                            className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 text-[#263238] dark:text-[#F7F5EF] text-sm focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none transition-all"
+                                            className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 text-[#263238] dark:text-[#F7F8FA] text-sm focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none transition-all"
                                             required
                                         >
                                             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -266,7 +266,7 @@ export default function SupportPage() {
                                         <select 
                                             value={priority}
                                             onChange={e => setPriority(e.target.value)}
-                                            className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 text-[#263238] dark:text-[#F7F5EF] text-sm focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none transition-all"
+                                            className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 text-[#263238] dark:text-[#F7F8FA] text-sm focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none transition-all"
                                         >
                                             <option value="Low">Low</option>
                                             <option value="Medium">Medium</option>
@@ -284,7 +284,7 @@ export default function SupportPage() {
                                         value={subject}
                                         onChange={e => setSubject(e.target.value)}
                                         placeholder="Brief summary of the issue"
-                                        className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 text-[#263238] dark:text-[#F7F5EF] text-sm focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none transition-all"
+                                        className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 text-[#263238] dark:text-[#F7F8FA] text-sm focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none transition-all"
                                         required
                                     />
                                 </div>
@@ -297,7 +297,7 @@ export default function SupportPage() {
                                         onChange={e => setDescription(e.target.value)}
                                         placeholder="Please provide as much detail as possible to help us resolve your issue..."
                                         rows="5"
-                                        className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg p-3 text-[#263238] dark:text-[#F7F5EF] text-sm focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none transition-all resize-none"
+                                        className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-lg p-3 text-[#263238] dark:text-[#F7F8FA] text-sm focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none transition-all resize-none"
                                         required
                                     ></textarea>
                                 </div>
@@ -309,7 +309,7 @@ export default function SupportPage() {
                                         <button 
                                             type="button"
                                             onClick={() => fileInputRef.current.click()}
-                                            className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] hover:border-[#173F3A] dark:hover:border-[#EEF2ED] text-[#263238] dark:text-[#F7F5EF] px-4 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2"
+                                            className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] hover:border-[#244C66] dark:hover:border-[#F0F4F7] text-[#263238] dark:text-[#F7F8FA] px-4 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2"
                                         >
                                             <Upload className="w-4 h-4" /> Choose File
                                         </button>
@@ -321,7 +321,7 @@ export default function SupportPage() {
                                             accept="image/*"
                                         />
                                         {file && (
-                                            <div className="flex items-center gap-2 bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] px-3 py-2 rounded-lg text-sm border border-[#173F3A]/20 dark:border-[#EEF2ED]/20">
+                                            <div className="flex items-center gap-2 bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] px-3 py-2 rounded-lg text-sm border border-[#244C66]/20 dark:border-[#F0F4F7]/20">
                                                 <CheckCircle className="w-4 h-4" /> {file.name}
                                                 <button type="button" onClick={() => setFile(null)} className="ml-2 hover:text-[#D96C4F]"><X className="w-4 h-4" /></button>
                                             </div>
@@ -330,7 +330,7 @@ export default function SupportPage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-6 border-t border-[#E3DED2] dark:border-[#2A403A] flex justify-end">
+                                <div className="pt-6 border-t border-[#E3E7EA] dark:border-[#293644] flex justify-end">
                                     <button 
                                         type="submit"
                                         className="bg-[#D96C4F] hover:bg-[#C75D43] text-white px-8 py-3 rounded-lg font-bold transition-all flex items-center gap-2 shadow-sm"
@@ -347,17 +347,17 @@ export default function SupportPage() {
                 {activeTab === 'FAQs' && (
                     <div className="max-w-3xl mx-auto space-y-4">
                         <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] mb-2">Frequently Asked Questions</h2>
+                            <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2">Frequently Asked Questions</h2>
                             <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Find quick answers to common issues.</p>
                         </div>
 
                         {FAQS.map((faq, idx) => (
-                            <div key={idx} className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl overflow-hidden transition-all shadow-sm">
+                            <div key={idx} className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl overflow-hidden transition-all shadow-sm">
                                 <button 
                                     onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                                    className="w-full flex items-center justify-between p-5 text-left focus:outline-none hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] transition-colors"
+                                    className="w-full flex items-center justify-between p-5 text-left focus:outline-none hover:bg-[#F7F8FA] dark:hover:bg-[#121921] transition-colors"
                                 >
-                                    <span className="font-bold text-[#263238] dark:text-[#F7F5EF]">{faq.q}</span>
+                                    <span className="font-bold text-[#263238] dark:text-[#F7F8FA]">{faq.q}</span>
                                     {openFaq === idx ? <ChevronUp className="w-5 h-5 text-[#D96C4F]" /> : <ChevronDown className="w-5 h-5 text-[#66736F] dark:text-[#A3B0AB]" />}
                                 </button>
                                 <AnimatePresence>
@@ -368,7 +368,7 @@ export default function SupportPage() {
                                             exit={{ height: 0, opacity: 0 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="p-5 pt-0 text-[#66736F] dark:text-[#A3B0AB] text-sm leading-relaxed border-t border-[#E3DED2] dark:border-[#2A403A] mt-2">
+                                            <div className="p-5 pt-0 text-[#66736F] dark:text-[#A3B0AB] text-sm leading-relaxed border-t border-[#E3E7EA] dark:border-[#293644] mt-2">
                                                 {faq.a}
                                             </div>
                                         </motion.div>

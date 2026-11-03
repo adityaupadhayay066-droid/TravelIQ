@@ -418,7 +418,7 @@ export default function AdminChatbotManager() {
 
                 {/* Simulated build logs console output */}
                 {(rebuildLogs || isRebuilding) && (
-                  <div className="mt-2 flex-1 min-h-[90px] bg-[#263238] rounded-lg p-3 font-mono text-[9px] text-[#EEF2ED] overflow-y-auto whitespace-pre-wrap leading-tight shadow-inner">
+                  <div className="mt-2 flex-1 min-h-[90px] bg-[#263238] rounded-lg p-3 font-mono text-[9px] text-[#F0F4F7] overflow-y-auto whitespace-pre-wrap leading-tight shadow-inner">
                     {rebuildLogs}
                   </div>
                 )}

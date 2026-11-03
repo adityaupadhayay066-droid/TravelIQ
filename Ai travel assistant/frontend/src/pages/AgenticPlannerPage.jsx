@@ -162,20 +162,20 @@ export default function AgenticPlannerPage() {
   });
 
   return (
-    <div className="flex-1 w-full p-4 lg:p-8 space-y-6 max-w-7xl mx-auto pt-6 bg-[#F7F5EF] dark:bg-[#12201D] min-h-screen font-[Inter]">
+    <div className="flex-1 w-full p-4 lg:p-8 space-y-6 max-w-7xl mx-auto pt-6 bg-[#F7F8FA] dark:bg-[#121921] min-h-screen font-[Inter]">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-2">
         <div className="flex items-center gap-3">
-          <Link to="/dashboard/ai-workspace" className="p-2.5 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl transition-colors hover:bg-[#EEF2ED] dark:hover:bg-[#213530]">
-            <ArrowLeft className="w-5 h-5 text-[#263238] dark:text-[#F7F5EF]" />
+          <Link to="/dashboard/ai-workspace" className="p-2.5 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl transition-colors hover:bg-[#F0F4F7] dark:hover:bg-[#233240]">
+            <ArrowLeft className="w-5 h-5 text-[#263238] dark:text-[#F7F8FA]" />
           </Link>
-          <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl">
-            <Cpu className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+          <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl">
+            <Cpu className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
           </div>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-[#263238] dark:text-[#F7F5EF] font-[Manrope] flex items-center gap-2">
+            <h1 className="text-2xl lg:text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] font-[Manrope] flex items-center gap-2">
               Agentic Travel Planner
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded bg-[#EEF2ED] dark:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A]">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644]">
                 8 Autonomous AI Agents
               </span>
             </h1>
@@ -187,7 +187,7 @@ export default function AgenticPlannerPage() {
       </div>
 
       {/* Configuration Bar */}
-      <div className="p-5 lg:p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] relative overflow-visible">
+      <div className="p-5 lg:p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-[0_4px_16px_rgba(23,63,58,0.06)] relative overflow-visible">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
           {/* Source Station */}
           <div className="md:col-span-4 space-y-1">
@@ -210,7 +210,7 @@ export default function AgenticPlannerPage() {
               onClick={handleSwapStations}
               type="button"
               title="Swap Stations"
-              className="h-[46px] w-[46px] flex items-center justify-center rounded-lg bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] hover:bg-[#EEF2ED] dark:hover:bg-[#213530] transition-colors"
+              className="h-[46px] w-[46px] flex items-center justify-center rounded-lg bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] hover:bg-[#F0F4F7] dark:hover:bg-[#233240] transition-colors"
             >
               <ArrowRightLeft className="w-4 h-4" />
             </button>
@@ -219,7 +219,7 @@ export default function AgenticPlannerPage() {
           {/* Destination Station */}
           <div className="md:col-span-4 space-y-1">
             <label className="text-xs font-bold text-[#66736F] dark:text-[#A3B0AB] uppercase tracking-wider flex items-center gap-1.5 h-5">
-              <Navigation className="w-3.5 h-3.5 text-[#173F3A] dark:text-[#EEF2ED]" /> Destination Station
+              <Navigation className="w-3.5 h-3.5 text-[#244C66] dark:text-[#F0F4F7]" /> Destination Station
             </label>
             <div className="relative">
               <StationAutocomplete 
@@ -257,14 +257,14 @@ export default function AgenticPlannerPage() {
                   }
                 }}
                 placeholder="Enter budget (e.g. 5000)"
-                className="w-full px-3.5 py-3 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg text-[#263238] dark:text-[#F7F5EF] text-sm focus:border-[#173F3A] dark:focus:border-[#EEF2ED] focus:ring-1 focus:ring-[#173F3A] dark:focus:ring-[#EEF2ED] outline-none transition-all placeholder:text-[#66736F] dark:placeholder:text-[#A3B0AB]"
+                className="w-full px-3.5 py-3 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg text-[#263238] dark:text-[#F7F8FA] text-sm focus:border-[#244C66] dark:focus:border-[#F0F4F7] focus:ring-1 focus:ring-[#244C66] dark:focus:ring-[#F0F4F7] outline-none transition-all placeholder:text-[#66736F] dark:placeholder:text-[#A3B0AB]"
               />
             </div>
           </div>
         </div>
 
         {/* Quick Budget Chips + Action Button */}
-        <div className="mt-4 pt-4 border-t border-[#E3DED2] dark:border-[#2A403A] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-4 pt-4 border-t border-[#E3E7EA] dark:border-[#293644] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium">Quick Budget:</span>
             {[0, 2500, 5000, 10000, 15000, 25000].map(val => (
@@ -274,8 +274,8 @@ export default function AgenticPlannerPage() {
                 onClick={() => setBudget(val)}
                 className={`text-xs px-2.5 py-1 rounded border transition-colors font-medium ${
                   Number(budget) === val
-                    ? 'bg-[#173F3A] border-[#173F3A] text-[#FFFFFF] dark:bg-[#EEF2ED] dark:border-[#EEF2ED] dark:text-[#1B2C28]'
-                    : 'bg-[#F7F5EF] dark:bg-[#12201D] border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'
+                    ? 'bg-[#244C66] border-[#244C66] text-[#FFFFFF] dark:bg-[#F0F4F7] dark:border-[#F0F4F7] dark:text-[#1B242E]'
+                    : 'bg-[#F7F8FA] dark:bg-[#121921] border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
                 }`}
               >
                 ₹{val.toLocaleString()}
@@ -286,7 +286,7 @@ export default function AgenticPlannerPage() {
           <button
             onClick={runSimulation}
             disabled={running}
-            className="w-full sm:w-auto px-6 py-3 bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] disabled:opacity-50 text-[#FFFFFF] dark:text-[#1B2C28] font-bold rounded-lg flex items-center justify-center gap-2 transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] disabled:opacity-50 text-[#FFFFFF] dark:text-[#1B242E] font-bold rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
             {running ? <Activity className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {running ? 'Agents Processing...' : 'Launch 8 AI Agents'}
@@ -295,18 +295,18 @@ export default function AgenticPlannerPage() {
 
         {/* Simulation Progress Bar */}
         {running && (
-          <div className="mt-4 pt-3 border-t border-[#E3DED2] dark:border-[#2A403A]">
+          <div className="mt-4 pt-3 border-t border-[#E3E7EA] dark:border-[#293644]">
             <div className="flex justify-between text-xs text-[#66736F] dark:text-[#A3B0AB] font-medium mb-1.5">
               <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#173F3A] dark:text-[#EEF2ED] animate-spin" />
+                <Sparkles className="w-3.5 h-3.5 text-[#244C66] dark:text-[#F0F4F7] animate-spin" />
                 Executing agent reasoning pipeline...
               </span>
-              <span className="font-mono text-[#173F3A] dark:text-[#EEF2ED] font-bold">{completedCount}/8 agents finished</span>
+              <span className="font-mono text-[#244C66] dark:text-[#F0F4F7] font-bold">{completedCount}/8 agents finished</span>
             </div>
-            <div className="w-full h-2.5 bg-[#EEF2ED] dark:bg-[#213530] rounded overflow-hidden">
+            <div className="w-full h-2.5 bg-[#F0F4F7] dark:bg-[#233240] rounded overflow-hidden">
               <motion.div 
                 animate={{ width: `${(completedCount / 8) * 100}%` }} 
-                className="h-full bg-[#173F3A] dark:bg-[#EEF2ED]"
+                className="h-full bg-[#244C66] dark:bg-[#F0F4F7]"
                 transition={{ duration: 0.3 }}
               />
             </div>
@@ -335,14 +335,14 @@ export default function AgenticPlannerPage() {
               }}
               className={`px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap flex items-center gap-2 border transition-colors ${
                 activeCategoryFilter === tab.id
-                  ? 'bg-[#173F3A] text-[#FFFFFF] border-[#173F3A] dark:bg-[#EEF2ED] dark:text-[#1B2C28] dark:border-[#EEF2ED]'
-                  : 'bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#F7F5EF] dark:hover:bg-[#213530]'
+                  ? 'bg-[#244C66] text-[#FFFFFF] border-[#244C66] dark:bg-[#F0F4F7] dark:text-[#1B242E] dark:border-[#F0F4F7]'
+                  : 'bg-[#FFFFFF] dark:bg-[#1B242E] border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:bg-[#F7F8FA] dark:hover:bg-[#233240]'
               }`}
             >
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
               {tab.badge && (
-                <span className="text-[10px] px-1.5 py-0.5 bg-[#F7F5EF] dark:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] rounded font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 bg-[#F7F8FA] dark:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] rounded font-mono">
                   {tab.badge}
                 </span>
               )}
@@ -367,24 +367,24 @@ export default function AgenticPlannerPage() {
               }}
               className={`p-5 rounded-xl border transition-colors relative group flex flex-col justify-between ${
                 isDone 
-                  ? 'bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] hover:border-[#173F3A] dark:hover:border-[#EEF2ED] shadow-[0_4px_16px_rgba(23,63,58,0.06)] cursor-pointer' 
+                  ? 'bg-[#FFFFFF] dark:bg-[#1B242E] border-[#E3E7EA] dark:border-[#293644] hover:border-[#244C66] dark:hover:border-[#F0F4F7] shadow-[0_4px_16px_rgba(23,63,58,0.06)] cursor-pointer' 
                   : isThinking 
-                    ? 'bg-[#EEF2ED] dark:bg-[#213530] border-[#E3DED2] dark:border-[#2A403A]' 
-                    : 'bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] opacity-70'
+                    ? 'bg-[#F0F4F7] dark:bg-[#233240] border-[#E3E7EA] dark:border-[#293644]' 
+                    : 'bg-[#FFFFFF] dark:bg-[#1B242E] border-[#E3E7EA] dark:border-[#293644] opacity-70'
               }`}
             >
               <div>
                 {/* Agent Header */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-xl">
+                    <div className="w-10 h-10 rounded-lg bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-xl">
                       {AGENT_ICONS[agent.id]}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] font-[Manrope]">{agent.name}</span>
+                        <span className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] font-[Manrope]">{agent.name}</span>
                         {isDone && (
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3DED2] dark:border-[#2A403A]">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3E7EA] dark:border-[#293644]">
                             {agent.tag}
                           </span>
                         )}
@@ -404,10 +404,10 @@ export default function AgenticPlannerPage() {
                   
                   <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${
                     isDone 
-                      ? 'bg-[#EEF2ED] text-[#4F7D62] border-[#E3DED2] dark:bg-[#213530] dark:border-[#2A403A]'
+                      ? 'bg-[#F0F4F7] text-[#4F7D62] border-[#E3E7EA] dark:bg-[#233240] dark:border-[#293644]'
                       : isThinking 
-                        ? 'bg-[#F7F5EF] text-[#D96C4F] border-[#E3DED2] dark:bg-[#12201D] dark:border-[#2A403A]'
-                        : 'bg-[#F7F5EF] text-[#66736F] border-[#E3DED2] dark:bg-[#12201D] dark:border-[#2A403A]'
+                        ? 'bg-[#F7F8FA] text-[#D96C4F] border-[#E3E7EA] dark:bg-[#121921] dark:border-[#293644]'
+                        : 'bg-[#F7F8FA] text-[#66736F] border-[#E3E7EA] dark:bg-[#121921] dark:border-[#293644]'
                   }`}>
                     {agent.status}
                   </span>
@@ -415,21 +415,21 @@ export default function AgenticPlannerPage() {
 
                 {/* Progress bar */}
                 {(isThinking || isDone) && (
-                  <div className="w-full h-1.5 bg-[#E3DED2] dark:bg-[#2A403A] rounded overflow-hidden mb-3">
+                  <div className="w-full h-1.5 bg-[#E3E7EA] dark:bg-[#293644] rounded overflow-hidden mb-3">
                     <motion.div 
                       initial={{ width: 0 }} 
                       animate={{ width: `${agent.progress}%` }} 
-                      className={`h-full ${isDone ? 'bg-[#4F7D62]' : 'bg-[#173F3A] dark:bg-[#EEF2ED]'}`} 
+                      className={`h-full ${isDone ? 'bg-[#4F7D62]' : 'bg-[#244C66] dark:bg-[#F0F4F7]'}`} 
                     />
                   </div>
                 )}
 
                 {/* Live Reasoning Logs */}
                 {agent.logs.length > 0 && (
-                  <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono bg-[#F7F5EF] dark:bg-[#12201D] p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] space-y-1 mb-3 max-h-[100px] overflow-y-auto">
+                  <div className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-mono bg-[#F7F8FA] dark:bg-[#121921] p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] space-y-1 mb-3 max-h-[100px] overflow-y-auto">
                     {agent.logs.map((log, i) => (
                       <div key={i} className="flex items-start gap-1.5">
-                        <span className="text-[#173F3A] dark:text-[#EEF2ED] select-none">❯</span>
+                        <span className="text-[#244C66] dark:text-[#F0F4F7] select-none">❯</span>
                         <span>{log}</span>
                       </div>
                     ))}
@@ -438,18 +438,18 @@ export default function AgenticPlannerPage() {
 
                 {/* Summary Reasoning */}
                 {isDone && agent.reasoning && (
-                  <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] leading-relaxed mb-3 italic bg-[#F7F5EF] dark:bg-[#12201D] p-2.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                  <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] leading-relaxed mb-3 italic bg-[#F7F8FA] dark:bg-[#121921] p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                     "{agent.reasoning}"
                   </p>
                 )}
 
                 {/* Output Snippets */}
                 {isDone && agent.result && (
-                  <div className="text-xs bg-[#EEF2ED] dark:bg-[#213530] p-3 rounded-lg border border-[#E3DED2] dark:border-[#2A403A] text-[#263238] dark:text-[#F7F5EF] space-y-1.5">
+                  <div className="text-xs bg-[#F0F4F7] dark:bg-[#233240] p-3 rounded-lg border border-[#E3E7EA] dark:border-[#293644] text-[#263238] dark:text-[#F7F8FA] space-y-1.5">
                     {agent.id === 'route' && (
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <p className="font-semibold">🏆 {agent.result.primaryRoute}</p>
-                        <span className="text-[#173F3A] dark:text-[#EEF2ED] font-mono text-[11px]">{agent.result.travelDuration}</span>
+                        <span className="text-[#244C66] dark:text-[#F0F4F7] font-mono text-[11px]">{agent.result.travelDuration}</span>
                       </div>
                     )}
                     {agent.id === 'booking' && (
@@ -470,7 +470,7 @@ export default function AgenticPlannerPage() {
                     )}
                     {agent.id === 'hotel' && (
                       <div>
-                        <p className="text-[#173F3A] dark:text-[#EEF2ED] font-semibold mb-1">
+                        <p className="text-[#244C66] dark:text-[#F0F4F7] font-semibold mb-1">
                           🏨 {agent.result.hotels?.length || 0} Stays Near Station (Hotels & Hostels):
                         </p>
                         <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] truncate">
@@ -482,7 +482,7 @@ export default function AgenticPlannerPage() {
                       <div className="flex items-center justify-between text-[11px] flex-wrap gap-2">
                         <span>Total: <strong>₹{agent.result.totalEstCost?.toLocaleString()}</strong></span>
                         <span>Saved: <strong className="text-[#4F7D62]">{agent.result.savingsPercent}%</strong></span>
-                        <span>Buffer: <strong className="text-[#173F3A] dark:text-[#EEF2ED]">₹{agent.result.remainingBudget?.toLocaleString()}</strong></span>
+                        <span>Buffer: <strong className="text-[#244C66] dark:text-[#F0F4F7]">₹{agent.result.remainingBudget?.toLocaleString()}</strong></span>
                       </div>
                     )}
                     {agent.id === 'weather' && (
@@ -500,7 +500,7 @@ export default function AgenticPlannerPage() {
 
               {/* Action Trigger for Interactive details */}
               {isDone && (
-                <div className="mt-3 pt-3 border-t border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between text-xs font-semibold text-[#173F3A] dark:text-[#EEF2ED] group-hover:text-[#0F332F] dark:group-hover:text-[#FFFFFF] transition-colors">
+                <div className="mt-3 pt-3 border-t border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between text-xs font-semibold text-[#244C66] dark:text-[#F0F4F7] group-hover:text-[#193B51] dark:group-hover:text-[#FFFFFF] transition-colors">
                   <span className="flex items-center gap-1">
                     <Eye className="w-3.5 h-3.5" /> 
                     {isFood ? 'Explore Restaurants & Menu' : isHotel ? 'Browse Hotels & Hostels' : 'View Deep Intelligence'}
@@ -518,21 +518,21 @@ export default function AgenticPlannerPage() {
       {/* ========================================================================= */}
       <AnimatePresence>
         {activeModalAgent && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#263238]/60 dark:bg-[#12201D]/80">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#263238]/60 dark:bg-[#121921]/80">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
+              className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_4px_16px_rgba(23,63,58,0.06)]"
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-between bg-[#F7F5EF] dark:bg-[#12201D]">
+              <div className="p-6 border-b border-[#E3E7EA] dark:border-[#293644] flex items-center justify-between bg-[#F7F8FA] dark:bg-[#121921]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] flex items-center justify-center text-2xl">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] flex items-center justify-center text-2xl">
                     {AGENT_ICONS[activeModalAgent]}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] font-[Manrope] flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] font-[Manrope] flex items-center gap-2">
                       {activeModalAgent === 'food' && '🍲 Nearby Restaurants & Local Specialties'}
                       {activeModalAgent === 'hotel' && '🏨 Hotels & Backpacker Hostels'}
                       {activeModalAgent === 'budget' && '💰 Budget Maximization & Expense Breakdown'}
@@ -543,26 +543,26 @@ export default function AgenticPlannerPage() {
                       {activeModalAgent === 'carbon' && '🌿 Carbon Footprint & Eco Savings'}
                     </h2>
                     <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] mt-1">
-                      Destination: <span className="text-[#173F3A] dark:text-[#EEF2ED] font-bold">{getStationName(destination)} ({getStationCode(destination)})</span> • Budget Cap: <span className="text-[#4F7D62] font-bold">₹{Number(budget).toLocaleString()}</span>
+                      Destination: <span className="text-[#244C66] dark:text-[#F0F4F7] font-bold">{getStationName(destination)} ({getStationCode(destination)})</span> • Budget Cap: <span className="text-[#4F7D62] font-bold">₹{Number(budget).toLocaleString()}</span>
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setActiveModalAgent(null)}
-                  className="p-2 hover:bg-[#EEF2ED] dark:hover:bg-[#213530] rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] transition-colors"
+                  className="p-2 hover:bg-[#F0F4F7] dark:hover:bg-[#233240] rounded-lg text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FFFFFF] dark:bg-[#1B2C28]">
+              <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FFFFFF] dark:bg-[#1B242E]">
                 {/* ----------------- FOOD MODAL VIEW ----------------- */}
                 {activeModalAgent === 'food' && (
                   <div className="space-y-6">
                     {/* Filters Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F7F5EF] dark:bg-[#12201D] p-3.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F7F8FA] dark:bg-[#121921] p-3.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                       {/* Diet Filter */}
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] mr-1 flex items-center gap-1">
@@ -574,8 +574,8 @@ export default function AgenticPlannerPage() {
                             onClick={() => setFoodFilterVeg(mode)}
                             className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-colors ${
                               foodFilterVeg === mode
-                                ? 'bg-[#173F3A] text-[#FFFFFF] dark:bg-[#EEF2ED] dark:text-[#1B2C28]'
-                                : 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] border border-[#E3DED2] dark:border-[#2A403A]'
+                                ? 'bg-[#244C66] text-[#FFFFFF] dark:bg-[#F0F4F7] dark:text-[#1B242E]'
+                                : 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] border border-[#E3E7EA] dark:border-[#293644]'
                             }`}
                           >
                             {mode === 'all' ? 'All Meals' : mode === 'veg' ? '🌱 Pure Veg' : '🍗 Non-Veg'}
@@ -597,8 +597,8 @@ export default function AgenticPlannerPage() {
                             onClick={() => setFoodBudgetTier(tier.id)}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
                               foodBudgetTier === tier.id
-                                ? 'bg-[#173F3A] text-[#FFFFFF] dark:bg-[#EEF2ED] dark:text-[#1B2C28]'
-                                : 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] border border-[#E3DED2] dark:border-[#2A403A]'
+                                ? 'bg-[#244C66] text-[#FFFFFF] dark:bg-[#F0F4F7] dark:text-[#1B242E]'
+                                : 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] border border-[#E3E7EA] dark:border-[#293644]'
                             }`}
                           >
                             {tier.label}
@@ -612,23 +612,23 @@ export default function AgenticPlannerPage() {
                       {filteredRestaurants.map((dish) => (
                         <div
                           key={dish.id}
-                          className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-4 flex flex-col justify-between hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-colors group"
+                          className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 flex flex-col justify-between hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-colors group"
                         >
                           <div>
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <div>
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded inline-block mb-1.5 border ${
                                   dish.isVeg 
-                                    ? 'bg-[#EEF2ED] text-[#4F7D62] border-[#4F7D62]/30 dark:bg-[#213530]' 
-                                    : 'bg-[#F7F5EF] text-[#D96C4F] border-[#D96C4F]/30 dark:bg-[#12201D]'
+                                    ? 'bg-[#F0F4F7] text-[#4F7D62] border-[#4F7D62]/30 dark:bg-[#233240]' 
+                                    : 'bg-[#F7F8FA] text-[#D96C4F] border-[#D96C4F]/30 dark:bg-[#121921]'
                                 }`}>
                                   {dish.isVeg ? '🌱 Pure Veg' : '🍗 Non-Veg'}
                                 </span>
-                                <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF] group-hover:text-[#173F3A] dark:group-hover:text-[#EEF2ED] transition-colors">
+                                <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] group-hover:text-[#244C66] dark:group-hover:text-[#F0F4F7] transition-colors">
                                   {dish.name || dish.item}
                                 </h3>
                                 <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-1 mt-0.5">
-                                  <Utensils className="w-3 h-3 text-[#173F3A] dark:text-[#EEF2ED]" />
+                                  <Utensils className="w-3 h-3 text-[#244C66] dark:text-[#F0F4F7]" />
                                   {dish.restaurant || dish.vendor}
                                 </p>
                               </div>
@@ -644,7 +644,7 @@ export default function AgenticPlannerPage() {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 text-[11px] text-[#66736F] dark:text-[#A3B0AB] py-2 border-y border-[#E3DED2] dark:border-[#2A403A] my-2">
+                            <div className="flex items-center gap-3 text-[11px] text-[#66736F] dark:text-[#A3B0AB] py-2 border-y border-[#E3E7EA] dark:border-[#293644] my-2">
                               <span>📍 {dish.distance || '0.5 km from station'}</span>
                               <span>⏱ {dish.deliveryTime || '15 min delivery'}</span>
                               <span>🍽 {dish.cuisine || 'Regional'}</span>
@@ -652,20 +652,20 @@ export default function AgenticPlannerPage() {
 
                             {/* Platform Price Comparison */}
                             {dish.platformPrices && (
-                              <div className="bg-[#F7F5EF] dark:bg-[#12201D] p-2 rounded-lg text-[10px] space-y-1 mb-3 border border-[#E3DED2] dark:border-[#2A403A]">
+                              <div className="bg-[#F7F8FA] dark:bg-[#121921] p-2 rounded-lg text-[10px] space-y-1 mb-3 border border-[#E3E7EA] dark:border-[#293644]">
                                 <span className="text-[#66736F] dark:text-[#A3B0AB] font-bold block mb-1">Multi-Platform Comparison:</span>
                                 <div className="grid grid-cols-3 gap-2 text-center">
-                                  <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-1 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                                  <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-1 rounded border border-[#E3E7EA] dark:border-[#293644]">
                                     <span className="text-[#66736F] dark:text-[#A3B0AB] block font-semibold">IRCTC</span>
-                                    <strong className="text-[#263238] dark:text-[#F7F5EF]">₹{dish.platformPrices.irctc}</strong>
+                                    <strong className="text-[#263238] dark:text-[#F7F8FA]">₹{dish.platformPrices.irctc}</strong>
                                   </div>
-                                  <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-1 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                                  <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-1 rounded border border-[#E3E7EA] dark:border-[#293644]">
                                     <span className="text-[#66736F] dark:text-[#A3B0AB] block font-semibold">Zomato</span>
-                                    <strong className="text-[#263238] dark:text-[#F7F5EF]">₹{dish.platformPrices.zomato}</strong>
+                                    <strong className="text-[#263238] dark:text-[#F7F8FA]">₹{dish.platformPrices.zomato}</strong>
                                   </div>
-                                  <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-1 rounded border border-[#E3DED2] dark:border-[#2A403A]">
+                                  <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-1 rounded border border-[#E3E7EA] dark:border-[#293644]">
                                     <span className="text-[#66736F] dark:text-[#A3B0AB] block font-semibold">Swiggy</span>
-                                    <strong className="text-[#263238] dark:text-[#F7F5EF]">₹{dish.platformPrices.swiggy}</strong>
+                                    <strong className="text-[#263238] dark:text-[#F7F8FA]">₹{dish.platformPrices.swiggy}</strong>
                                   </div>
                                 </div>
                               </div>
@@ -680,7 +680,7 @@ export default function AgenticPlannerPage() {
                             className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
                               orderConfirmedFood === (dish.name || dish.item)
                                 ? 'bg-[#4F7D62] text-[#FFFFFF]'
-                                : 'bg-[#F7F5EF] hover:bg-[#EEF2ED] dark:bg-[#12201D] dark:hover:bg-[#213530] text-[#173F3A] dark:text-[#EEF2ED] border border-[#E3DED2] dark:border-[#2A403A]'
+                                : 'bg-[#F7F8FA] hover:bg-[#F0F4F7] dark:bg-[#121921] dark:hover:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#E3E7EA] dark:border-[#293644]'
                             }`}
                           >
                             {orderConfirmedFood === (dish.name || dish.item) ? (
@@ -710,7 +710,7 @@ export default function AgenticPlannerPage() {
                 {activeModalAgent === 'hotel' && (
                   <div className="space-y-6">
                     {/* Stay Type Toggle */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F7F5EF] dark:bg-[#12201D] p-3.5 rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                    <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F7F8FA] dark:bg-[#121921] p-3.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-1">
                           <Filter className="w-3 h-3" /> Accommodation Category:
@@ -725,8 +725,8 @@ export default function AgenticPlannerPage() {
                             onClick={() => setHotelTypeFilter(type.id)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                               hotelTypeFilter === type.id
-                                ? 'bg-[#173F3A] text-[#FFFFFF] dark:bg-[#EEF2ED] dark:text-[#1B2C28]'
-                                : 'bg-[#FFFFFF] dark:bg-[#1B2C28] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] border border-[#E3DED2] dark:border-[#2A403A]'
+                                ? 'bg-[#244C66] text-[#FFFFFF] dark:bg-[#F0F4F7] dark:text-[#1B242E]'
+                                : 'bg-[#FFFFFF] dark:bg-[#1B242E] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] border border-[#E3E7EA] dark:border-[#293644]'
                             }`}
                           >
                             {type.label}
@@ -735,7 +735,7 @@ export default function AgenticPlannerPage() {
                       </div>
 
                       <div className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-mono">
-                        Showing <strong className="text-[#263238] dark:text-[#F7F5EF]">{filteredAccommodations.length}</strong> verified properties
+                        Showing <strong className="text-[#263238] dark:text-[#F7F8FA]">{filteredAccommodations.length}</strong> verified properties
                       </div>
                     </div>
 
@@ -748,7 +748,7 @@ export default function AgenticPlannerPage() {
                         return (
                           <div
                             key={stay.id}
-                            className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl p-5 flex flex-col justify-between hover:border-[#173F3A] dark:hover:border-[#EEF2ED] transition-colors group"
+                            className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-5 flex flex-col justify-between hover:border-[#244C66] dark:hover:border-[#F0F4F7] transition-colors group"
                           >
                             <div>
                               <div className="flex items-start justify-between gap-2 mb-2">
@@ -756,23 +756,23 @@ export default function AgenticPlannerPage() {
                                   <div className="flex items-center gap-2 mb-1.5">
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                                       isHostel 
-                                        ? 'bg-[#EEF2ED] text-[#4F7D62] border-[#4F7D62]/30 dark:bg-[#213530]' 
-                                        : 'bg-[#F7F5EF] text-[#173F3A] border-[#173F3A]/30 dark:bg-[#12201D] dark:text-[#EEF2ED]'
+                                        ? 'bg-[#F0F4F7] text-[#4F7D62] border-[#4F7D62]/30 dark:bg-[#233240]' 
+                                        : 'bg-[#F7F8FA] text-[#244C66] border-[#244C66]/30 dark:bg-[#121921] dark:text-[#F0F4F7]'
                                     }`}>
                                       {isHostel ? '🎒 Backpacker Hostel' : '🏨 Hotel & Suites'}
                                     </span>
                                     {stay.tag && (
-                                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3DED2] dark:border-[#2A403A]">
+                                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] font-medium border border-[#E3E7EA] dark:border-[#293644]">
                                         {stay.tag}
                                       </span>
                                     )}
                                   </div>
 
-                                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] group-hover:text-[#173F3A] dark:group-hover:text-[#EEF2ED] transition-colors">
+                                  <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] group-hover:text-[#244C66] dark:group-hover:text-[#F0F4F7] transition-colors">
                                     {stay.name}
                                   </h3>
                                   <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] flex items-center gap-1 mt-0.5">
-                                    <MapPin className="w-3 h-3 text-[#173F3A] dark:text-[#EEF2ED]" />
+                                    <MapPin className="w-3 h-3 text-[#244C66] dark:text-[#F0F4F7]" />
                                     {stay.address}
                                   </p>
                                 </div>
@@ -789,8 +789,8 @@ export default function AgenticPlannerPage() {
                                 </div>
                               </div>
 
-                              <div className="text-xs text-[#263238] dark:text-[#F7F5EF] font-medium py-2 border-y border-[#E3DED2] dark:border-[#2A403A] my-3 flex items-center justify-between">
-                                <span>🚉 Distance to Station: <strong className="text-[#173F3A] dark:text-[#EEF2ED]">{stay.distanceToStation}</strong></span>
+                              <div className="text-xs text-[#263238] dark:text-[#F7F8FA] font-medium py-2 border-y border-[#E3E7EA] dark:border-[#293644] my-3 flex items-center justify-between">
+                                <span>🚉 Distance to Station: <strong className="text-[#244C66] dark:text-[#F0F4F7]">{stay.distanceToStation}</strong></span>
                                 {stay.freeCancellation && (
                                   <span className="text-[#4F7D62] text-[11px] font-semibold">✓ Free Cancellation</span>
                                 )}
@@ -802,7 +802,7 @@ export default function AgenticPlannerPage() {
                                   {stay.amenities.map((amenity, i) => (
                                     <span
                                       key={i}
-                                      className="text-[10px] px-2 py-0.5 rounded-md bg-[#F7F5EF] dark:bg-[#12201D] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3DED2] dark:border-[#2A403A]"
+                                      className="text-[10px] px-2 py-0.5 rounded-md bg-[#F7F8FA] dark:bg-[#121921] text-[#66736F] dark:text-[#A3B0AB] border border-[#E3E7EA] dark:border-[#293644]"
                                     >
                                       {amenity}
                                     </span>
@@ -819,7 +819,7 @@ export default function AgenticPlannerPage() {
                               className={`w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 ${
                                 isConfirmed
                                   ? 'bg-[#4F7D62] text-[#FFFFFF]'
-                                  : 'bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#1B2C28]'
+                                  : 'bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#1B242E]'
                               }`}
                             >
                               {isConfirmed ? (
@@ -843,39 +843,39 @@ export default function AgenticPlannerPage() {
                 {activeModalAgent === 'budget' && budgetAgent?.result && (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="bg-[#F7F5EF] dark:bg-[#12201D] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] text-center">
+                      <div className="bg-[#F7F8FA] dark:bg-[#121921] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] text-center">
                         <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-semibold block mb-1">Total Estimated Cost</span>
-                        <span className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF]">₹{budgetAgent.result.totalEstCost?.toLocaleString()}</span>
+                        <span className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA]">₹{budgetAgent.result.totalEstCost?.toLocaleString()}</span>
                       </div>
-                      <div className="bg-[#EEF2ED] dark:bg-[#213530] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] text-center">
+                      <div className="bg-[#F0F4F7] dark:bg-[#233240] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] text-center">
                         <span className="text-xs text-[#4F7D62] font-semibold block mb-1">Safety Buffer / Savings</span>
                         <span className="text-2xl font-bold text-[#4F7D62]">₹{budgetAgent.result.remainingBudget?.toLocaleString()}</span>
                       </div>
-                      <div className="bg-[#F7F5EF] dark:bg-[#12201D] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] text-center">
-                        <span className="text-xs text-[#173F3A] dark:text-[#EEF2ED] font-semibold block mb-1">Max Allowance Cap</span>
-                        <span className="text-2xl font-bold text-[#173F3A] dark:text-[#EEF2ED]">₹{Number(budget).toLocaleString()}</span>
+                      <div className="bg-[#F7F8FA] dark:bg-[#121921] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] text-center">
+                        <span className="text-xs text-[#244C66] dark:text-[#F0F4F7] font-semibold block mb-1">Max Allowance Cap</span>
+                        <span className="text-2xl font-bold text-[#244C66] dark:text-[#F0F4F7]">₹{Number(budget).toLocaleString()}</span>
                       </div>
                     </div>
 
                     {budgetAgent.result.allocation && (
-                      <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-5 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] space-y-3 shadow-sm">
-                        <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F5EF]">Intelligent Fund Allocation</h3>
+                      <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] space-y-3 shadow-sm">
+                        <h3 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">Intelligent Fund Allocation</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                          <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] block">🎫 Transit / Train</span>
-                            <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">₹{budgetAgent.result.allocation.ticket}</strong>
+                            <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">₹{budgetAgent.result.allocation.ticket}</strong>
                           </div>
-                          <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                          <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] block">🏨 Hotel / Hostel</span>
-                            <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">₹{budgetAgent.result.allocation.stay}</strong>
+                            <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">₹{budgetAgent.result.allocation.stay}</strong>
                           </div>
-                          <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                          <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] block">🍲 Meals & Dining</span>
-                            <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">₹{budgetAgent.result.allocation.meals}</strong>
+                            <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">₹{budgetAgent.result.allocation.meals}</strong>
                           </div>
-                          <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg border border-[#E3DED2] dark:border-[#2A403A]">
+                          <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg border border-[#E3E7EA] dark:border-[#293644]">
                             <span className="text-xs text-[#66736F] dark:text-[#A3B0AB] block">🛡 Contingency Fund</span>
-                            <strong className="text-[#263238] dark:text-[#F7F5EF] text-sm">₹{budgetAgent.result.allocation.contingency}</strong>
+                            <strong className="text-[#263238] dark:text-[#F7F8FA] text-sm">₹{budgetAgent.result.allocation.contingency}</strong>
                           </div>
                         </div>
                       </div>
@@ -886,28 +886,28 @@ export default function AgenticPlannerPage() {
                 {/* ----------------- ROUTE MODAL VIEW ----------------- */}
                 {activeModalAgent === 'route' && routeAgent?.result && (
                   <div className="space-y-4">
-                    <div className="bg-[#FFFFFF] dark:bg-[#1B2C28] p-5 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] space-y-3 shadow-sm">
+                    <div className="bg-[#FFFFFF] dark:bg-[#1B242E] p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] space-y-3 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF]">Direct Railway Track Simulation</h3>
-                        <span className="text-xs px-2.5 py-1 rounded bg-[#EEF2ED] dark:bg-[#213530] text-[#4F7D62] font-bold border border-[#E3DED2] dark:border-[#2A403A]">
+                        <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA]">Direct Railway Track Simulation</h3>
+                        <span className="text-xs px-2.5 py-1 rounded bg-[#F0F4F7] dark:bg-[#233240] text-[#4F7D62] font-bold border border-[#E3E7EA] dark:border-[#293644]">
                           Optimal Speed
                         </span>
                       </div>
-                      <p className="text-sm text-[#173F3A] dark:text-[#EEF2ED] font-mono font-bold">
+                      <p className="text-sm text-[#244C66] dark:text-[#F0F4F7] font-mono font-bold">
                         {routeAgent.result.primaryRoute}
                       </p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                        <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg text-xs border border-[#E3DED2] dark:border-[#2A403A]">
+                        <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg text-xs border border-[#E3E7EA] dark:border-[#293644]">
                           <span className="text-[#66736F] dark:text-[#A3B0AB] block">Travel Duration</span>
-                          <strong className="text-[#263238] dark:text-[#F7F5EF]">{routeAgent.result.travelDuration}</strong>
+                          <strong className="text-[#263238] dark:text-[#F7F8FA]">{routeAgent.result.travelDuration}</strong>
                         </div>
-                        <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg text-xs border border-[#E3DED2] dark:border-[#2A403A]">
+                        <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg text-xs border border-[#E3E7EA] dark:border-[#293644]">
                           <span className="text-[#66736F] dark:text-[#A3B0AB] block">Track Distance</span>
-                          <strong className="text-[#263238] dark:text-[#F7F5EF]">{routeAgent.result.distanceKm}</strong>
+                          <strong className="text-[#263238] dark:text-[#F7F8FA]">{routeAgent.result.distanceKm}</strong>
                         </div>
-                        <div className="p-3 bg-[#F7F5EF] dark:bg-[#12201D] rounded-lg text-xs border border-[#E3DED2] dark:border-[#2A403A]">
+                        <div className="p-3 bg-[#F7F8FA] dark:bg-[#121921] rounded-lg text-xs border border-[#E3E7EA] dark:border-[#293644]">
                           <span className="text-[#66736F] dark:text-[#A3B0AB] block">Alternative Corridors</span>
-                          <strong className="text-[#263238] dark:text-[#F7F5EF]">{routeAgent.result.alternativesCount} tracks traced</strong>
+                          <strong className="text-[#263238] dark:text-[#F7F8FA]">{routeAgent.result.alternativesCount} tracks traced</strong>
                         </div>
                       </div>
                     </div>
@@ -916,10 +916,10 @@ export default function AgenticPlannerPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 border-t border-[#E3DED2] dark:border-[#2A403A] bg-[#F7F5EF] dark:bg-[#12201D] flex items-center justify-end">
+              <div className="p-4 border-t border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#121921] flex items-center justify-end">
                 <button
                   onClick={() => setActiveModalAgent(null)}
-                  className="px-5 py-2 rounded-lg bg-[#173F3A] hover:bg-[#0F332F] dark:bg-[#EEF2ED] dark:hover:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#1B2C28] text-xs font-bold transition-colors"
+                  className="px-5 py-2 rounded-lg bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] text-[#FFFFFF] dark:text-[#1B242E] text-xs font-bold transition-colors"
                 >
                   Done
                 </button>

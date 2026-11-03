@@ -86,13 +86,13 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#263238]/50 animate-fade-in">
-      <div className="relative w-full max-w-lg bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl shadow-sm p-6 text-center max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl shadow-sm p-6 text-center max-h-[90vh] overflow-y-auto">
         
         {/* Close key */}
         {step !== 'dispatching' && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF] px-2 py-1 rounded-lg text-base transition-colors"
+            className="absolute top-4 right-4 text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA] px-2 py-1 rounded-lg text-base transition-colors"
           >
             ✕
           </button>
@@ -104,14 +104,14 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
               🆘
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF]">Emergency SOS Dispatch</h3>
+              <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA]">Emergency SOS Dispatch</h3>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs mt-2 leading-relaxed max-w-sm mx-auto">
                 Warning: This is an active GPS emergency notification system. Triggering this alert will notify the **Railway Protection Force (RPF)** and dispatch local emergency responders.
               </p>
             </div>
 
             {/* Select category */}
-            <div className="text-left bg-[#F7F5EF] dark:bg-[#12201D] p-4 rounded-xl border border-[#E3DED2] dark:border-[#2A403A] space-y-3">
+            <div className="text-left bg-[#F7F8FA] dark:bg-[#121921] p-4 rounded-xl border border-[#E3E7EA] dark:border-[#293644] space-y-3">
               <label className="text-[10px] uppercase font-semibold text-[#66736F] dark:text-[#A3B0AB] block tracking-wider">Select Nature of Emergency</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -125,7 +125,7 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
                     className={`p-3 rounded-lg flex flex-col items-center gap-1.5 transition-all text-center cursor-pointer border ${
                       emergencyType === item.label
                         ? 'bg-[#B94A48]/10 border-[#B94A48] text-[#B94A48] font-medium'
-                        : 'bg-[#FFFFFF] dark:bg-[#1B2C28] border-[#E3DED2] dark:border-[#2A403A] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F5EF]'
+                        : 'bg-[#FFFFFF] dark:bg-[#1B242E] border-[#E3E7EA] dark:border-[#293644] text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
                     }`}
                   >
                     <span className="text-lg">{item.icon}</span>
@@ -136,10 +136,10 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
             </div>
 
             {/* GPS coordinates locking status */}
-            <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] px-4 py-3 rounded-xl flex items-center justify-between text-xs text-left">
+            <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] px-4 py-3 rounded-xl flex items-center justify-between text-xs text-left">
               <div>
                 <span className="text-[10px] uppercase font-semibold text-[#66736F] dark:text-[#A3B0AB] block tracking-wider">Live GPS Telemetry</span>
-                <span className="text-[#263238] dark:text-[#F7F5EF] font-mono font-semibold mt-0.5 block">
+                <span className="text-[#263238] dark:text-[#F7F8FA] font-mono font-semibold mt-0.5 block">
                   {isLockingGps ? (
                     <span className="text-[#66736F] dark:text-[#A3B0AB]">Locking satellite GPS...</span>
                   ) : coords ? (
@@ -151,7 +151,7 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
               </div>
               <button
                 onClick={lockGpsCoordinates}
-                className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] px-3 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer"
+                className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] px-3 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer"
               >
                 🔄 Refresh
               </button>
@@ -160,7 +160,7 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={onClose}
-                className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] font-medium py-3 rounded-lg text-xs transition-colors border border-[#E3DED2] dark:border-[#2A403A]"
+                className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] font-medium py-3 rounded-lg text-xs transition-colors border border-[#E3E7EA] dark:border-[#293644]"
               >
                 Cancel Alert
               </button>
@@ -185,7 +185,7 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
               <span className="text-2xl">📡</span>
             </div>
             <div>
-              <h3 className="text-[#263238] dark:text-[#F7F5EF] font-bold text-base mb-1">Connecting to Satellite...</h3>
+              <h3 className="text-[#263238] dark:text-[#F7F8FA] font-bold text-base mb-1">Connecting to Satellite...</h3>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">Syncing real-time active rescue GIS networks.</p>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
               <span className="bg-[#B94A48]/10 text-[#B94A48] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
                 Active Rescue Alarm
               </span>
-              <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F5EF] mt-4">RPF Dispatch Unit Confirmed</h3>
+              <h3 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] mt-4">RPF Dispatch Unit Confirmed</h3>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs mt-1.5 max-w-sm mx-auto">
                 Local Railway Protection Force responder team has locked onto your GPS coordinates and is **En Route / Dispatched**.
               </p>
@@ -210,23 +210,23 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
 
             {/* GPS Telemetry Grid */}
             <div className="grid grid-cols-2 gap-3 text-left">
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] p-3 rounded-xl">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] p-3 rounded-xl">
                 <span className="text-[9px] uppercase font-bold text-[#66736F] dark:text-[#A3B0AB] block">GPS Coordinates</span>
-                <span className="text-[#263238] dark:text-[#F7F5EF] font-mono font-semibold text-[11px] mt-0.5 block">
+                <span className="text-[#263238] dark:text-[#F7F8FA] font-mono font-semibold text-[11px] mt-0.5 block">
                   {coords?.latitude}, {coords?.longitude}
                 </span>
               </div>
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] p-3 rounded-xl">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] p-3 rounded-xl">
                 <span className="text-[9px] uppercase font-bold text-[#66736F] dark:text-[#A3B0AB] block">Emergency Nature</span>
                 <span className="text-[#B94A48] font-bold text-[11px] mt-0.5 block">{emergencyType}</span>
               </div>
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] p-3 rounded-xl">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] p-3 rounded-xl">
                 <span className="text-[9px] uppercase font-bold text-[#66736F] dark:text-[#A3B0AB] block">Estimated Arrival</span>
-                <span className="text-[#263238] dark:text-[#F7F5EF] font-mono font-semibold text-[11px] mt-0.5 block">
+                <span className="text-[#263238] dark:text-[#F7F8FA] font-mono font-semibold text-[11px] mt-0.5 block">
                   {countdown > 0 ? `${countdown} Seconds` : 'Responder Present'}
                 </span>
               </div>
-              <div className="bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] p-3 rounded-xl">
+              <div className="bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] p-3 rounded-xl">
                 <span className="text-[9px] uppercase font-bold text-[#66736F] dark:text-[#A3B0AB] block">Incident Status</span>
                 <span className="text-[#4F7D62] font-bold text-[11px] mt-0.5 block">Active Tracking</span>
               </div>
@@ -236,22 +236,22 @@ export default function EmergencySOSModal({ isOpen, onClose }) {
             <div className="bg-[#B94A48]/5 border border-[#B94A48]/20 p-4 rounded-xl text-left text-xs text-[#B94A48] space-y-2">
               <span className="font-bold text-[10px] uppercase text-[#B94A48] block">Emergency Contacts:</span>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#263238] dark:text-[#F7F5EF]">👮 Police:</span>
-                <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">📞 100 / 112</span>
+                <span className="text-[#263238] dark:text-[#F7F8FA]">👮 Police:</span>
+                <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">📞 100 / 112</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#263238] dark:text-[#F7F5EF]">🚑 Ambulance:</span>
-                <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">📞 108</span>
+                <span className="text-[#263238] dark:text-[#F7F8FA]">🚑 Ambulance:</span>
+                <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">📞 108</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#263238] dark:text-[#F7F5EF]">🚆 Railway Helpline:</span>
-                <span className="font-semibold text-[#263238] dark:text-[#F7F5EF]">📞 139 / 182</span>
+                <span className="text-[#263238] dark:text-[#F7F8FA]">🚆 Railway Helpline:</span>
+                <span className="font-semibold text-[#263238] dark:text-[#F7F8FA]">📞 139 / 182</span>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="w-full bg-[#FFFFFF] dark:bg-[#1B2C28] hover:bg-[#F7F5EF] dark:hover:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] font-bold py-3 rounded-lg text-xs uppercase tracking-widest cursor-pointer border border-[#E3DED2] dark:border-[#2A403A] active:scale-95 transition-all"
+              className="w-full bg-[#FFFFFF] dark:bg-[#1B242E] hover:bg-[#F7F8FA] dark:hover:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] font-bold py-3 rounded-lg text-xs uppercase tracking-widest cursor-pointer border border-[#E3E7EA] dark:border-[#293644] active:scale-95 transition-all"
             >
               Close HUD Panel
             </button>

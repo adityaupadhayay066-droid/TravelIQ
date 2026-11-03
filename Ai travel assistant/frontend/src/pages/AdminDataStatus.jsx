@@ -32,8 +32,8 @@ const AdminDataStatus = () => {
     if (loading) {
         return (
             <Container className="mt-5 text-center flex flex-col items-center justify-center min-h-[50vh]">
-                <Spinner animation="border" className="text-[#173F3A] dark:text-[#EEF2ED] animate-spin" />
-                <h5 className="mt-4 text-[#263238] dark:text-[#F7F5EF] font-manrope font-medium">Analyzing Dataset Telemetry...</h5>
+                <Spinner animation="border" className="text-[#244C66] dark:text-[#F0F4F7] animate-spin" />
+                <h5 className="mt-4 text-[#263238] dark:text-[#F7F8FA] font-manrope font-medium">Analyzing Dataset Telemetry...</h5>
             </Container>
         );
     }
@@ -49,9 +49,9 @@ const AdminDataStatus = () => {
     }
 
     return (
-        <Container fluid className="py-12 bg-[#F7F5EF] dark:bg-[#12201D] text-[#263238] dark:text-[#F7F5EF] min-h-screen font-inter transition-colors duration-300">
+        <Container fluid className="py-12 bg-[#F7F8FA] dark:bg-[#121921] text-[#263238] dark:text-[#F7F8FA] min-h-screen font-inter transition-colors duration-300">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-7xl mx-auto px-4">
-                <h2 className="mb-4 text-center font-bold text-3xl font-manrope text-[#173F3A] dark:text-[#EEF2ED]">
+                <h2 className="mb-4 text-center font-bold text-3xl font-manrope text-[#244C66] dark:text-[#F0F4F7]">
                     <i className="bi bi-database-check me-2"></i> Data Integration & Validation Admin
                 </h2>
                 <p className="text-center text-[#66736F] dark:text-[#A3B0AB] mb-12 max-w-2xl mx-auto">
@@ -60,13 +60,13 @@ const AdminDataStatus = () => {
 
                 <Row className="g-6 mb-4">
                     <Col md={4} className="mb-6 md:mb-0">
-                        <Card className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <Card className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
                             <Card.Body className="text-center p-6">
-                                <h5 className="text-[#173F3A] dark:text-[#EEF2ED] mb-4 font-manrope font-semibold"><i className="bi bi-train-freight-front me-2"></i> Records Loaded</h5>
+                                <h5 className="text-[#244C66] dark:text-[#F0F4F7] mb-4 font-manrope font-semibold"><i className="bi bi-train-freight-front me-2"></i> Records Loaded</h5>
                                 <div className="text-5xl font-bold text-[#D96C4F] dark:text-[#E5B85C] mb-2">{statusData?.records_loaded?.trains || 0}</div>
                                 <div className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Total Trains Indexed</div>
-                                <hr className="border-[#E3DED2] dark:border-[#2A403A] my-4" />
-                                <div className="flex justify-between text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">
+                                <hr className="border-[#E3E7EA] dark:border-[#293644] my-4" />
+                                <div className="flex justify-between text-[#263238] dark:text-[#F7F8FA] text-sm font-medium">
                                     <span>Stations: {statusData?.records_loaded?.stations || 0}</span>
                                     <span>Schedules: {statusData?.records_loaded?.schedules || 0}</span>
                                 </div>
@@ -75,13 +75,13 @@ const AdminDataStatus = () => {
                     </Col>
                     
                     <Col md={4} className="mb-6 md:mb-0">
-                        <Card className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <Card className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
                             <Card.Body className="text-center p-6">
-                                <h5 className="text-[#173F3A] dark:text-[#EEF2ED] mb-4 font-manrope font-semibold"><i className="bi bi-diagram-3 me-2"></i> RAG Knowledge Status</h5>
+                                <h5 className="text-[#244C66] dark:text-[#F0F4F7] mb-4 font-manrope font-semibold"><i className="bi bi-diagram-3 me-2"></i> RAG Knowledge Status</h5>
                                 <div className="text-5xl font-bold text-[#D96C4F] dark:text-[#E5B85C] mb-2">{statusData?.rag_status?.documents_indexed || 0}</div>
                                 <div className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Documents Indexed</div>
-                                <hr className="border-[#E3DED2] dark:border-[#2A403A] my-4" />
-                                <div className="flex justify-between text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">
+                                <hr className="border-[#E3E7EA] dark:border-[#293644] my-4" />
+                                <div className="flex justify-between text-[#263238] dark:text-[#F7F8FA] text-sm font-medium">
                                     <span>Vector Embeddings: {statusData?.rag_status?.embeddings || 0}</span>
                                     <span>Text Chunks: {statusData?.rag_status?.chunks || 0}</span>
                                 </div>
@@ -90,13 +90,13 @@ const AdminDataStatus = () => {
                     </Col>
 
                     <Col md={4}>
-                        <Card className="bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <Card className="bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] h-full rounded-xl shadow-sm hover:shadow-md transition-shadow">
                             <Card.Body className="text-center p-6">
-                                <h5 className="text-[#173F3A] dark:text-[#EEF2ED] mb-4 font-manrope font-semibold"><i className="bi bi-cpu me-2"></i> AI Search Accuracy</h5>
+                                <h5 className="text-[#244C66] dark:text-[#F0F4F7] mb-4 font-manrope font-semibold"><i className="bi bi-cpu me-2"></i> AI Search Accuracy</h5>
                                 <div className="text-5xl font-bold text-[#D96C4F] dark:text-[#E5B85C] mb-2">{statusData?.search_accuracy || 'N/A'}</div>
                                 <div className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Avg Model Confidence Score</div>
-                                <hr className="border-[#E3DED2] dark:border-[#2A403A] my-4" />
-                                <div className="flex justify-between items-center text-[#263238] dark:text-[#F7F5EF] text-sm font-medium">
+                                <hr className="border-[#E3E7EA] dark:border-[#293644] my-4" />
+                                <div className="flex justify-between items-center text-[#263238] dark:text-[#F7F8FA] text-sm font-medium">
                                     <span>Dataset Integration:</span>
                                     <Badge className={`${statusData?.dataset_status === 'Active' ? 'bg-[#4F7D62] text-white' : 'bg-[#B94A48] text-white'} px-3 py-1 rounded-full font-normal`}>
                                         {statusData?.dataset_status || 'Empty'}

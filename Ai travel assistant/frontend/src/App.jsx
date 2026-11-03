@@ -72,7 +72,7 @@ const AdminApiKeysPage = lazy(() => import('./pages/admin/AdminApiKeysPage'));
 function Loader() {
   return (
     <div className="flex-1 flex items-center justify-center p-12">
-      <div className="w-9 h-9 border-[3px] border-[#E3DED2] dark:border-[#2A403A] border-t-[#173F3A] dark:border-t-[#EEF2ED] rounded-full animate-spin" />
+      <div className="w-9 h-9 border-[3px] border-[#E3E7EA] dark:border-[#293644] border-t-[#244C66] dark:border-t-[#F0F4F7] rounded-full animate-spin" />
     </div>
   );
 }
@@ -260,7 +260,7 @@ function AnimatedRoutes() {
             <Navbar />
             <div className="flex-1 flex items-center justify-center py-24 px-4">
               <div className="text-center space-y-3">
-                <h1 className="text-7xl font-extrabold font-heading text-[#173F3A] dark:text-[#F7F5EF]">404</h1>
+                <h1 className="text-7xl font-extrabold font-heading text-[#244C66] dark:text-[#F7F8FA]">404</h1>
                 <p className="text-lg text-[#66736F] dark:text-[#A3B0AB]">Page not found</p>
                 <div className="pt-2">
                   <a href="/" className="btn-primary inline-flex">Return Home</a>

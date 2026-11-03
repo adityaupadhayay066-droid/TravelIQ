@@ -77,14 +77,14 @@ export default function AIWorkspace() {
   return (
     <div className="flex-1 w-full p-4 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Hero Header */}
-      <div className="p-8 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl relative overflow-hidden">
+      <div className="p-8 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg">
-              <Brain className="w-7 h-7 text-[#173F3A] dark:text-[#EEF2ED]" />
+            <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg">
+              <Brain className="w-7 h-7 text-[#244C66] dark:text-[#F0F4F7]" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-[#263238] dark:text-[#F7F5EF] font-manrope">AI Workspace</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-[#263238] dark:text-[#F7F8FA] font-manrope">AI Workspace</h1>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm font-inter">Your central hub for all AI-powered travel intelligence features.</p>
             </div>
           </div>
@@ -97,11 +97,11 @@ export default function AIWorkspace() {
               { icon: Cpu, label: 'AI Agents', value: '8 Ready' },
               { icon: ShieldCheck, label: 'Security', value: 'Shield Active' }
             ].map((stat, i) => (
-              <div key={i} className="px-4 py-2.5 bg-[#F7F5EF] dark:bg-[#12201D] border border-[#E3DED2] dark:border-[#2A403A] rounded-lg flex items-center gap-3">
+              <div key={i} className="px-4 py-2.5 bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-lg flex items-center gap-3">
                 <stat.icon className="w-4 h-4 text-[#D96C4F] dark:text-[#C75D43]" />
                 <div>
                   <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-bold uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-xs font-bold text-[#263238] dark:text-[#F7F5EF]">{stat.value}</p>
+                  <p className="text-xs font-bold text-[#263238] dark:text-[#F7F8FA]">{stat.value}</p>
                 </div>
               </div>
             ))}
@@ -116,22 +116,22 @@ export default function AIWorkspace() {
             <motion.div
               whileHover={{ y: -4 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="group h-full p-6 bg-[#FFFFFF] dark:bg-[#1B2C28] border border-[#E3DED2] dark:border-[#2A403A] rounded-xl cursor-pointer transition-shadow shadow-sm hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] dark:hover:shadow-none flex flex-col"
+              className="group h-full p-6 bg-[#FFFFFF] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded-xl cursor-pointer transition-shadow shadow-sm hover:shadow-[0_4px_16px_rgba(23,63,58,0.06)] dark:hover:shadow-none flex flex-col"
             >
               {/* Emoji Badge */}
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-lg">
-                  <feature.icon className="w-5 h-5 text-[#173F3A] dark:text-[#EEF2ED]" />
+                <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-lg">
+                  <feature.icon className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                 </div>
                 <span className="text-2xl">{feature.emoji}</span>
               </div>
 
               {/* Content */}
-              <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F5EF] font-manrope mb-1.5 group-hover:text-[#173F3A] dark:group-hover:text-[#FFFFFF] transition-colors">{feature.title}</h3>
+              <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope mb-1.5 group-hover:text-[#244C66] dark:group-hover:text-[#FFFFFF] transition-colors">{feature.title}</h3>
               <p className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-inter leading-relaxed mb-4 flex-grow">{feature.desc}</p>
 
               {/* Footer */}
-              <div className="flex items-center justify-between mt-auto pt-2 border-t border-[#E3DED2]/50 dark:border-[#2A403A]/50">
+              <div className="flex items-center justify-between mt-auto pt-2 border-t border-[#E3E7EA]/50 dark:border-[#293644]/50">
                 <span className="text-[10px] text-[#66736F] dark:text-[#A3B0AB] font-semibold">{feature.stats}</span>
                 <div className="flex items-center gap-1 text-[10px] text-[#D96C4F] dark:text-[#D96C4F] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                   Open <ArrowRight className="w-3 h-3" />

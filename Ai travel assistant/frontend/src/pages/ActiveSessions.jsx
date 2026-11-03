@@ -34,7 +34,7 @@ export default function ActiveSessions() {
   };
 
   const getDeviceIcon = (type) => {
-    const iconClass = "w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]";
+    const iconClass = "w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]";
     switch (type) {
       case 'mobile': return <Smartphone className={iconClass} />;
       case 'tablet': return <Tablet className={iconClass} />;
@@ -45,7 +45,7 @@ export default function ActiveSessions() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="w-8 h-8 border-4 border-[#173F3A] dark:border-[#EEF2ED] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#244C66] dark:border-[#F0F4F7] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -53,11 +53,11 @@ export default function ActiveSessions() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8 flex items-center gap-3">
-        <div className="p-3 bg-[#EEF2ED] dark:bg-[#213530] rounded-xl">
-          <ShieldCheck className="w-6 h-6 text-[#173F3A] dark:text-[#EEF2ED]" />
+        <div className="p-3 bg-[#F0F4F7] dark:bg-[#233240] rounded-xl">
+          <ShieldCheck className="w-6 h-6 text-[#244C66] dark:text-[#F0F4F7]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F5EF] font-['Manrope']">Active Sessions</h1>
+          <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] font-['Manrope']">Active Sessions</h1>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm mt-1">
             Manage your signed-in devices. Log out of unrecognized sessions immediately.
           </p>
@@ -73,19 +73,19 @@ export default function ActiveSessions() {
             transition={{ delay: i * 0.05 }}
             className={`p-5 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all ${
               session.isCurrent 
-                ? 'bg-[#EEF2ED] border-[#173F3A] dark:bg-[#213530] dark:border-[#EEF2ED]' 
-                : 'bg-[#FFFFFF] border-[#E3DED2] dark:bg-[#1B2C28] dark:border-[#2A403A] shadow-sm'
+                ? 'bg-[#F0F4F7] border-[#244C66] dark:bg-[#233240] dark:border-[#F0F4F7]' 
+                : 'bg-[#FFFFFF] border-[#E3E7EA] dark:bg-[#1B242E] dark:border-[#293644] shadow-sm'
             }`}
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-[#F7F5EF] dark:bg-[#12201D]">
+              <div className="p-3 rounded-xl bg-[#F7F8FA] dark:bg-[#121921]">
                 {getDeviceIcon(session.device_type)}
               </div>
               <div>
-                <h3 className="font-bold text-[#263238] dark:text-[#F7F5EF] flex items-center gap-2 font-['Manrope']">
+                <h3 className="font-bold text-[#263238] dark:text-[#F7F8FA] flex items-center gap-2 font-['Manrope']">
                   {session.device_name || 'Unknown Device'}
                   {session.isCurrent && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-[#173F3A] text-[#F7F5EF] dark:bg-[#EEF2ED] dark:text-[#12201D] px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-[#244C66] text-[#F7F8FA] dark:bg-[#F0F4F7] dark:text-[#121921] px-2 py-0.5 rounded-full">
                       Current
                     </span>
                   )}

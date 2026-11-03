@@ -548,8 +548,8 @@ export default function Travel3DHeroScene() {
 
   if (!hasWebGL) {
     return (
-      <div className="w-full h-full min-h-[420px] rounded-2xl bg-[#F7F5EF] dark:bg-[#172722] border border-[#E3DED2] dark:border-[#273E36] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 rounded-full bg-[#14532D]/10 dark:bg-white/10 flex items-center justify-center text-[#14532D] dark:text-[#EEF2ED] mb-3">
+      <div className="w-full h-full min-h-[420px] rounded-2xl bg-[#F7F8FA] dark:bg-[#172722] border border-[#E3E7EA] dark:border-[#293644] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#14532D]/10 dark:bg-white/10 flex items-center justify-center text-[#14532D] dark:text-[#F0F4F7] mb-3">
           🚆
         </div>
         <h3 className="font-bold text-lg text-[#14532D] dark:text-white">Interactive 3D Travel World</h3>
@@ -561,14 +561,14 @@ export default function Travel3DHeroScene() {
   }
 
   return (
-    <div className="relative w-full h-[460px] sm:h-[520px] lg:h-[580px] rounded-2xl overflow-hidden select-none bg-gradient-to-b from-[#FFFDF7]/60 via-[#F7F5EF]/40 to-[#E8D5B5]/30 dark:from-[#172722]/80 dark:to-[#101B17] border border-[#E3DED2] dark:border-[#273E36]">
+    <div className="relative w-full h-[460px] sm:h-[520px] lg:h-[580px] rounded-2xl overflow-hidden select-none bg-gradient-to-b from-[#FFFDF7]/60 via-[#F7F8FA]/40 to-[#E8D5B5]/30 dark:from-[#172722]/80 dark:to-[#121921] border border-[#E3E7EA] dark:border-[#293644]">
       {/* Floating Info Badges */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white/90 dark:bg-[#172722]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E3DED2] dark:border-[#273E36] shadow-sm text-xs font-semibold text-[#14532D] dark:text-[#EEF2ED]">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white/90 dark:bg-[#172722]/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E3E7EA] dark:border-[#293644] shadow-sm text-xs font-semibold text-[#14532D] dark:text-[#F0F4F7]">
         <span className="w-2 h-2 rounded-full bg-[#2F7D32] animate-pulse" />
         <span>Live 3D Travel Engine</span>
       </div>
 
-      <div className="absolute bottom-4 right-4 z-10 hidden sm:flex items-center gap-2 bg-white/90 dark:bg-[#172722]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[#E3DED2] dark:border-[#273E36] shadow-sm text-xs text-[#1F2933] dark:text-[#F7F5EF]">
+      <div className="absolute bottom-4 right-4 z-10 hidden sm:flex items-center gap-2 bg-white/90 dark:bg-[#172722]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[#E3E7EA] dark:border-[#293644] shadow-sm text-xs text-[#1F2933] dark:text-[#F7F8FA]">
         <div className="flex items-center gap-1.5 font-medium">
           <span className="text-[#E58A3A] font-bold">10,000+</span> Indian Routes Visualized
         </div>
@@ -582,7 +582,7 @@ export default function Travel3DHeroScene() {
         style={{ width: '100%', height: '100%' }}
       >
         {/* Soft Natural Daylight & Sun Angle */}
-        <ambientLight intensity={0.7} color="#F7F5EF" />
+        <ambientLight intensity={0.7} color="#F7F8FA" />
         <directionalLight
           position={[6, 9, 4]}
           intensity={1.5}
