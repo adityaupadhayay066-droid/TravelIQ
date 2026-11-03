@@ -190,32 +190,32 @@ load_all_models()
 # ─── Pydantic Request Models ───
 class DelayRequest(BaseModel):
     train_number: str
-    route: str
-    day_of_week: int
-    month: int
-    season: int
-    weather: str
+    route: str = "ALL"
+    day_of_week: int = 1
+    month: int = 1
+    season: int = 1
+    weather: str = "Clear"
 
 class FareForecastRequest(BaseModel):
     source: str
     destination: str
-    class_code: str
-    month: int
-    season_code: int
-    demand_score: float
-    current_fare: float
+    class_code: str = "SL"
+    month: int = 1
+    season_code: int = 2
+    demand_score: float = 0.65
+    current_fare: float = 1200.0
 
 class CrowdRequest(BaseModel):
     station_code: str
-    day_of_week: int
-    hour_of_day: int
+    day_of_week: int = 1
+    hour_of_day: int = 12
 
 class OccupancyRequest(BaseModel):
     train_number: str
-    class_code: str
-    month: int
-    day_of_week: int
-    season_code: int
+    class_code: str = "SL"
+    month: int = 1
+    day_of_week: int = 1
+    season_code: int = 2
 
 class RouteRecommendRequest(BaseModel):
     user_id: int

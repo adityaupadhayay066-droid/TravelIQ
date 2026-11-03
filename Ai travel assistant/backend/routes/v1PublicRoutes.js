@@ -29,19 +29,29 @@ router.get('/ping', (req, res) => {
 router.post('/predict-delay', async (req, res) => {
   try {
     const trainNumber = req.body.train_number || req.body.trainNumber;
-    const route = req.body.route;
-    const weather = req.body.weather;
-    const dayOfWeek = req.body.day_of_week || req.body.dayOfWeek;
+    const stationCode = req.body.station_code || req.body.stationCode;
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentDayOfWeek = (now.getDay() % 7) + 1;
+    const currentSeason = [12, 1, 2].includes(currentMonth) ? 1 : [3, 4, 5].includes(currentMonth) ? 2 : [6, 7, 8, 9].includes(currentMonth) ? 3 : 4;
 
     if (!trainNumber) {
       return res.status(400).json({ success: false, error: 'Missing required field: train_number' });
     }
 
+    const route = req.body.route || (stationCode ? `${stationCode}-NEXT` : 'ALL');
+    const weather = req.body.weather || 'Clear';
+    const dayOfWeek = parseInt(req.body.day_of_week || req.body.dayOfWeek) || currentDayOfWeek;
+    const month = parseInt(req.body.month) || currentMonth;
+    const season = parseInt(req.body.season) || currentSeason;
+
     const payload = {
-      train_number: trainNumber,
+      train_number: String(trainNumber),
       route,
       weather,
-      day_of_week: dayOfWeek
+      day_of_week: dayOfWeek,
+      month,
+      season
     };
 
     const prediction = await aiService.predictDelay(payload);
@@ -61,20 +71,25 @@ router.post('/predict-delay', async (req, res) => {
  */
 router.post('/predict-fare', async (req, res) => {
   try {
-    const source = req.body.source;
-    const destination = req.body.destination;
-    const travelClass = req.body.travel_class || req.body.travelClass;
-    const travelDate = req.body.travel_date || req.body.travelDate;
+    const source = req.body.source || req.body.origin;
+    const destination = req.body.destination || req.body.dest;
+    const travelClass = req.body.travel_class || req.body.travelClass || req.body.class_code || 'SL';
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentSeason = [12, 1, 2].includes(currentMonth) ? 1 : [3, 4, 5].includes(currentMonth) ? 2 : [6, 7, 8, 9].includes(currentMonth) ? 3 : 4;
 
     if (!source || !destination) {
       return res.status(400).json({ success: false, error: 'Missing required fields: source, destination' });
     }
 
     const payload = {
-      source,
-      destination,
-      travel_class: travelClass,
-      travel_date: travelDate
+      source: String(source).toUpperCase(),
+      destination: String(destination).toUpperCase(),
+      class_code: travelClass,
+      month: parseInt(req.body.month) || currentMonth,
+      season_code: parseInt(req.body.season_code || req.body.seasonCode) || currentSeason,
+      demand_score: parseFloat(req.body.demand_score || req.body.demandScore) || 0.65,
+      current_fare: parseFloat(req.body.current_fare || req.body.currentFare || req.body.fare) || 1200.0
     };
 
     const forecast = await aiService.predictFare(payload);
@@ -96,16 +111,18 @@ router.post('/predict-crowd', async (req, res) => {
   try {
     const stationCode = req.body.station_code || req.body.stationCode;
     const trainNumber = req.body.train_number || req.body.trainNumber;
-    const timeSlot = req.body.time_slot || req.body.timeSlot;
+    const now = new Date();
+    const currentDayOfWeek = (now.getDay() % 7) + 1;
+    const currentHour = now.getHours();
 
     if (!stationCode && !trainNumber) {
       return res.status(400).json({ success: false, error: 'Must provide either station_code or train_number' });
     }
 
     const payload = {
-      station_code: stationCode,
-      train_number: trainNumber,
-      time_slot: timeSlot
+      station_code: String(stationCode || 'NDLS').toUpperCase(),
+      day_of_week: parseInt(req.body.day_of_week || req.body.dayOfWeek) || currentDayOfWeek,
+      hour_of_day: parseInt(req.body.hour_of_day || req.body.hourOfDay || req.body.time_slot || req.body.timeSlot) || currentHour
     };
 
     const prediction = await aiService.predictCrowd(payload);
