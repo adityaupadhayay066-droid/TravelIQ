@@ -696,28 +696,24 @@ const createBooking = async (req, res) => {
     if (fareRow && fareRow.fare > 0) {
       farePerPassenger = fareRow.fare;
     } else if (isConnectingTrain) {
-      // Authoritative connecting route fare calculation across journey legs
-      const payablePassengers = Math.max(1, derivedAdults + derivedSeniors + derivedChildren);
-      if (ticket_fare && Number(ticket_fare) > 0) {
-        farePerPassenger = Number(ticket_fare) / payablePassengers;
-      } else {
-        const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
-        let legsSum = 0;
-        for (const legTrainNo of legs) {
-          const legFareRow = await TrainFare.findOne({
-            where: {
-              train_number: legTrainNo,
-              ...(normalizedClass !== 'COMBINED' && normalizedClass !== 'STANDARD' ? { class_code: normalizedClass } : {})
-            }
-          });
-          if (legFareRow && legFareRow.fare > 0) {
-            legsSum += legFareRow.fare;
-          } else {
-            legsSum += 850;
+      // Authoritative connecting route fare calculation strictly across journey legs
+      // Never trust client-supplied ticket_fare to prevent parameter tampering
+      const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
+      let legsSum = 0;
+      for (const legTrainNo of legs) {
+        const legFareRow = await TrainFare.findOne({
+          where: {
+            train_number: legTrainNo,
+            ...(normalizedClass !== 'COMBINED' && normalizedClass !== 'STANDARD' ? { class_code: normalizedClass } : {})
           }
+        });
+        if (legFareRow && legFareRow.fare > 0) {
+          legsSum += legFareRow.fare;
+        } else {
+          legsSum += 850;
         }
-        farePerPassenger = legsSum;
       }
+      farePerPassenger = legsSum;
     } else {
       // Dynamic distance-based IRCTC telescopic fare calculation
       // Must NEVER substitute a fabricated 650 km default if stations lack coordinates
