@@ -148,8 +148,11 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
         try {
           console.log('[Demo Payment]: Committing reservation and verifying payment with backend...');
           
-          // 1. Book the ticket
-          const bookingRes = await api.post('/profile/bookings', bookingPayload);
+          // 1. Book the ticket with Idempotency-Key
+          const idemKey = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `demo_${Date.now()}`;
+          const bookingRes = await api.post('/profile/bookings', bookingPayload, {
+            headers: { 'Idempotency-Key': idemKey }
+          });
           const booking = bookingRes.data.booking;
 
           // 2. Create authoritative payment order bound to booking

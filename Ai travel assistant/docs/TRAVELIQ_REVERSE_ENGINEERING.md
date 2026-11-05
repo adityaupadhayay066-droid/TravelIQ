@@ -74,13 +74,14 @@ flowchart TD
 | `/api/profile/bookings` | `POST` | `authMiddleware` | Authoritative transactional booking creation with server-calculated fares. |
 | `/api/profile/bookings` | `GET` | `authMiddleware` | User booking history (strictly isolated by `req.user.id`). |
 | `/api/profile/bookings/:id` | `GET` | `authMiddleware` | Single booking detail with strict ownership verification. |
-| `/api/profile/bookings/:id/ticket` | `GET` | `authMiddleware` | Binary PDF ticket generation with authentic QR and PNR details. |
-| `/api/payments/order` | `POST` | `authMiddleware` | Authoritative payment gateway order generation bound to booking ID. |
-| `/api/payments/verify` | `POST` | `authMiddleware` | Cryptographic HMAC webhook/signature verification for payment completion. |
-| `/api/payments/refund` | `POST` | `authMiddleware` | Transaction-safe refund processing for confirmed, paid bookings only. |
+| `/api/payment/ticket/:bookingId/pdf` | `GET` | `authMiddleware` | Binary PDF ticket generation with authentic QR and PNR details (`?format=html` also supported). |
+| `/api/payment/order` | `POST` | `authMiddleware` | Authoritative payment gateway order generation bound to booking ID. |
+| `/api/payment/transaction` | `POST` | `authMiddleware` | Cryptographic HMAC signature verification and payment capture. |
+| `/api/payment/webhook` | `POST` | None (HMAC Signature Verified) | Provider webhook callback verifying capture events against server orders. |
+| `/api/payment/refund` | `POST` | `authMiddleware` | Transaction-safe refund processing for confirmed, paid bookings only. |
 | `/api/auth/register` | `POST` | None | User onboarding with bcrypt password hashing and default roles. |
 | `/api/auth/login` | `POST` | None | Authentication returning HTTP-only JWT cookies and optional MFA/passkeys. |
-| `/api/stations/search` | `GET` | None | Fast prefix and fuzzy search over Indian Railway stations. |
+| `/api/station/search` | `GET` | None | Fast prefix and fuzzy search over Indian Railway stations. |
 | `/health` (FastAPI) | `GET` | None | Health check and ML model readiness reporting. |
 | `/predict-fare` (FastAPI) | `POST` | `verify_service_key` | PyTorch neural network fare estimation (for non-authoritative forecasting). |
 | `/chat` (FastAPI) | `POST` | `verify_service_key` | Grounded transit assistant responding strictly to verified transit context. |

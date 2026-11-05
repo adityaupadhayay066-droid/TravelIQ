@@ -797,8 +797,8 @@ export default function Dashboard() {
                               const serviceTitle = leg.service_name || leg.train_name || leg.name || (leg.service_number ? `Train #${leg.service_number}` : (leg.mode || 'Service'));
                               const originStn = leg.from_station || leg.from || leg.origin || 'Origin';
                               const destStn = leg.to_station || leg.to || leg.destination || 'Destination';
-                              const depTime = leg.departure_time_clock || leg.departure || leg.dep_time || '08:00 AM';
-                              const arrTime = leg.arrival_time_clock || leg.arrival || leg.arr_time || '06:00 PM';
+                              const depTime = leg.departure_time_clock || leg.departure || leg.dep_time || 'Time unavailable';
+                              const arrTime = leg.arrival_time_clock || leg.arrival || leg.arr_time || 'Time unavailable';
                               const serviceNo = leg.service_number || leg.train_number || leg.number;
 
                               return (
@@ -829,19 +829,25 @@ export default function Dashboard() {
                             })}
                           </div>
 
-                          {/* Alternative Action & Notes */}
+                          {/* Alternative Action & Notes (Option B: Search-Only for Multi-Leg Routes) */}
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                             <div className="flex items-center gap-1.5 text-slate-500">
                               <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               <span>Separate tickets required for each journey leg.</span>
                             </div>
 
-                            <button
-                              onClick={() => setSelectedTrainForBooking(conn)}
-                              className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold transition-colors cursor-pointer self-end sm:self-auto"
-                            >
-                              Select Alternative Journey
-                            </button>
+                            <div className="flex items-center gap-2 self-end sm:self-auto">
+                              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/40">
+                                Multi-Leg (Search Only)
+                              </span>
+                              <button
+                                disabled
+                                title="Direct single-ticket booking is unavailable for multi-leg itineraries. Please search and book each leg individually."
+                                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold text-xs cursor-not-allowed opacity-75"
+                              >
+                                Book Legs Individually
+                              </button>
+                            </div>
                           </div>
 
                         </div>
@@ -910,7 +916,7 @@ export default function Dashboard() {
             {/* Schedule Overview */}
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between text-xs">
               <div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">{detailModalItem.depTime || detailModalItem.source_departure || '06:00 AM'}</p>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">{detailModalItem.depTime || detailModalItem.source_departure || 'Time unavailable'}</p>
                 <p className="text-slate-500">{detailModalItem.depStation || getStationName(source)}</p>
               </div>
               <div className="text-center">

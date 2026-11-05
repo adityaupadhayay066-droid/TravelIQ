@@ -11,8 +11,10 @@ const { seedStations } = require('./seeders/stationSeeder');
 const { seedFoodRecommendations } = require('./seeders/foodSeeder');
 const { seedAdmin } = require('./seeders/adminSeeder');
 const { seedTrains } = require('./seeders/trainSeeder');
+const { seedFares } = require('./seeders/seed_fares');
 const { seedChatbotKnowledge } = require('./seeders/chatbotSeeder');
 const { seedAdminPanelData } = require('./seeders/adminPanelSeeder');
+const { expirePendingBookings } = require('./services/bookingLifecycleService');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const { antiScrapingShield, honeypotTrapHandler } = require('./middleware/antiScrapingMiddleware');
 
@@ -61,10 +63,10 @@ if (process.env.NODE_ENV === 'production') {
 
 const app = express();
 
-// ─── Trust proxy for accurate IP detection (loopback by default; prevents header spoofing) ───
-const trustProxyConfig = process.env.TRUST_PROXY 
-  ? (process.env.TRUST_PROXY === 'true' ? true : (process.env.TRUST_PROXY === 'false' ? false : process.env.TRUST_PROXY))
-  : 'loopback';
+// ─── Trust proxy for accurate IP detection (disabled by default to prevent header spoofing) ───
+const trustProxyConfig = process.env.TRUST_PROXY === 'true' 
+  ? 1 
+  : (process.env.TRUST_PROXY && process.env.TRUST_PROXY !== 'false' ? process.env.TRUST_PROXY : false);
 app.set('trust proxy', trustProxyConfig);
 
 // ─── Security Headers ───
@@ -281,6 +283,7 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
       await seedTransports();
       await seedStations();
       await seedTrains();
+      await seedFares();
       await seedFoodRecommendations();
       await seedChatbotKnowledge();
       await loadHotelData();
@@ -290,6 +293,18 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
       console.error('⚠️  Seeder warning (non-fatal):', seedErr.message);
     }
     
+    // ─── Scheduled Background Worker: Pending Booking Expiration (P1 requirement) ───
+    const pendingExpiryInterval = setInterval(async () => {
+      try {
+        const expResult = await expirePendingBookings({ maxAgeMinutes: 15 });
+        if (expResult?.expiredCount > 0) {
+          console.log(`[LifecycleScheduler] Expired ${expResult.expiredCount} stale pending bookings.`);
+        }
+      } catch (expErr) {
+        console.warn('[LifecycleScheduler] Expiry worker notice:', expErr.message);
+      }
+    }, 60000); // Recurring check every 60 seconds
+
     const server = app.listen(PORT, () => {
       console.log(`🚀 Backend server running on http://localhost:${PORT}`);
       console.log(`📋 Health check: http://localhost:${PORT}/api/health`);

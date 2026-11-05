@@ -8,6 +8,7 @@ const { getTrainTrackingDetails } = require('../services/trainTrackingService');
 const { resolveStation, parseTravelDate } = require('../services/stationResolver');
 const { validateTransportRecord } = require('../services/transportValidationEngine');
 const { searchFerriesFromProvider, VERIFIED_FERRY_SCHEDULES } = require('../services/adapters/ferryProviderAdapter');
+const { calculateRailwayFare, estimateRailDistance } = require('../utils/railwayFareCalculator');
 
 const predictTrip = async (req, res) => {
     try {
@@ -235,10 +236,40 @@ const searchRoutes = async (req, res) => {
                 if (durationHours < 0) durationHours += 24; 
             }
 
-            const authenticFares = fareMap[route.train_number] || null;
-            const price = authenticFares ? (authenticFares['SL'] || Math.min(...Object.values(authenticFares))) : null;
-            const classes = authenticFares ? Object.entries(authenticFares).map(([c, p]) => `${c} - ₹${p}`) : [];
-            const fareType = authenticFares ? 'actual' : null;
+            // Calculate journey-dependent segment distance and class fares
+            let segmentDistanceKm = 0;
+            if (sourceStation?.latitude && destStation?.latitude) {
+                segmentDistanceKm = estimateRailDistance(
+                    parseFloat(sourceStation.latitude),
+                    parseFloat(sourceStation.longitude),
+                    parseFloat(destStation.latitude),
+                    parseFloat(destStation.longitude)
+                );
+            }
+
+            let journeyFares = {};
+            if (segmentDistanceKm > 0) {
+                const supportedClasses = ['1A', '2A', '3A', '3E', 'SL', '2S'];
+                for (const cls of supportedClasses) {
+                    const fRes = calculateRailwayFare({
+                        distanceKm: segmentDistanceKm,
+                        travelClass: cls,
+                        isSuperfast: true,
+                        passengers: 1
+                    });
+                    if (fRes?.farePerPassenger) {
+                        journeyFares[cls] = fRes.farePerPassenger;
+                    }
+                }
+            } else if (fareMap[route.train_number]) {
+                journeyFares = fareMap[route.train_number];
+            }
+
+            const price = Object.keys(journeyFares).length > 0
+                ? (journeyFares['SL'] || Math.min(...Object.values(journeyFares)))
+                : null;
+            const classes = Object.entries(journeyFares).map(([c, p]) => `${c} - ₹${p}`);
+            const fareType = Object.keys(journeyFares).length > 0 ? 'calculated_irctc_telescopic' : null;
 
             const runningDaysFormatted = formatRunningDays(route.runs_on);
             const frequencyLabel = route.frequency || getTrainFrequencyLabel(route.runs_on);
@@ -252,7 +283,7 @@ const searchRoutes = async (req, res) => {
                 direct: true,
                 validated: true,
                 source_verified: true,
-                verification_status: authenticFares ? 'static_reference' : 'reference_timetable',
+                verification_status: Object.keys(journeyFares).length > 0 ? 'calculated_telescopic' : 'reference_timetable',
                 source: 'irctc_sql_database',
                 fare_type: fareType,
                 departure_date: departureDate || null,
@@ -268,19 +299,19 @@ const searchRoutes = async (req, res) => {
                 dest_station_code: route.dest_station_code || destStnCode,
                 depStation: sourceStation ? sourceStation.station_name : source,
                 arrStation: destStation ? destStation.station_name : destination,
-                depTime: route.source_departure ? route.source_departure.substring(0, 5) : '08:00 AM',
-                arrTime: route.dest_arrival ? route.dest_arrival.substring(0, 5) : '06:00 PM',
+                depTime: route.source_departure ? route.source_departure.substring(0, 5) : 'Time unavailable',
+                arrTime: route.dest_arrival ? route.dest_arrival.substring(0, 5) : 'Time unavailable',
                 dur: `${Math.floor(durationHours)}h ${Math.round((durationHours % 1) * 60)}m`,
                 duration_hours: parseFloat(durationHours.toFixed(1)),
                 price: price,
                 fare_inr: price,
                 classes: classes,
-                fares: authenticFares,
+                fares: journeyFares,
                 available_seats: null,
                 runs_on: route.runs_on,
                 running_days: runningDaysFormatted,
                 frequency: frequencyLabel,
-                available_classes: authenticFares ? Object.keys(authenticFares) : [],
+                available_classes: journeyFares ? Object.keys(journeyFares) : [],
                 retrieved_at: new Date().toISOString()
             });
         }
@@ -362,8 +393,8 @@ const searchRoutes = async (req, res) => {
                         destination_code: destStnCode,
                         origin_station_code: originStnCode,
                         dest_station_code: destStnCode,
-                        depTime: firstLeg.departure_time_clock || '08:00 AM',
-                        arrTime: lastLeg.arrival_time_clock || '08:00 PM',
+                        depTime: firstLeg.departure_time_clock || 'Time unavailable',
+                        arrTime: lastLeg.arrival_time_clock || 'Time unavailable',
                         dur: conn.duration || '12h 00m',
                         duration_hours: conn.duration_minutes ? parseFloat((conn.duration_minutes / 60).toFixed(1)) : 12.0,
                         depStation: sourceStation ? sourceStation.station_name : originStnCode,

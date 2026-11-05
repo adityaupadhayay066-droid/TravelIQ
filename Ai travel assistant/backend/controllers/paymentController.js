@@ -501,20 +501,33 @@ const handlePaymentWebhook = async (req, res) => {
       if (lockedBooking.booking_status === 'Cancelled') {
         throw new Error('STATE_CONFLICT: Booking was cancelled concurrently.');
       }
+      if (lockedBooking.booking_status === 'Expired') {
+        throw new Error('STATE_CONFLICT: Cannot confirm an expired booking.');
+      }
 
       let txn = null;
       if (order_id) {
+        // STRICT ORDER BINDING: When order_id is present, it MUST match a server-created transaction
+        // Never fall back to arbitrary pending transactions when order_id is unknown/bogus
         txn = await Transaction.findOne({ where: { order_id }, lock: t.LOCK.UPDATE, transaction: t });
-      }
-      if (!txn && payment_id) {
+        if (!txn) {
+          throw new Error(`UNKNOWN_PAYMENT_ORDER: No server-created transaction found for gateway order reference '${order_id}'.`);
+        }
+      } else if (payment_id) {
         txn = await Transaction.findOne({ where: { payment_id }, lock: t.LOCK.UPDATE, transaction: t });
-      }
-      if (!txn) {
+        if (!txn) {
+          txn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.PENDING }, lock: t.LOCK.UPDATE, transaction: t });
+        }
+      } else {
         txn = await Transaction.findOne({ where: { booking_id, status: PAYMENT_STATUSES.PENDING }, lock: t.LOCK.UPDATE, transaction: t });
       }
 
       if (!txn) {
-        throw new Error('UNKNOWN_PAYMENT_ORDER: No server-created transaction found for this gateway order or booking.');
+        throw new Error('UNKNOWN_PAYMENT_ORDER: No server-created transaction found for this gateway order or booking reference.');
+      }
+
+      if (order_id && txn.order_id && txn.order_id !== order_id) {
+        throw new Error('ORDER_MISMATCH: Gateway order reference does not match server transaction.');
       }
 
       if (txn.status === PAYMENT_STATUSES.REFUNDED || txn.status === PAYMENT_STATUSES.REFUND_PENDING) {
@@ -529,8 +542,7 @@ const handlePaymentWebhook = async (req, res) => {
 
       txn.status = PAYMENT_STATUSES.SUCCESS;
       txn.amount = expectedAmount;
-      if (payment_id) txn.payment_id = payment_id;
-      if (order_id) txn.order_id = order_id;
+      if (payment_id && !txn.payment_id) txn.payment_id = payment_id;
       await txn.save({ transaction: t });
 
       await transitionBookingState({
@@ -640,7 +652,40 @@ const processRefund = async (req, res) => {
         throw new Error('ALREADY_REFUNDED');
       }
 
-      const refundId = `rfnd_${crypto.randomBytes(12).toString('hex')}`;
+      const hasLiveGateway = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+      let refundId = null;
+      let isSimulated = !hasLiveGateway || !transaction.payment_id?.startsWith('pay_');
+
+      if (hasLiveGateway && transaction.payment_id?.startsWith('pay_')) {
+        try {
+          const authHeader = 'Basic ' + Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString('base64');
+          const refundResponse = await axios.post(
+            `https://api.razorpay.com/v1/payments/${transaction.payment_id}/refund`,
+            {
+              amount: Math.round(Number(transaction.amount) * 100),
+              speed: 'optimum',
+              notes: { booking_id: String(booking_id), reason: reason || 'Customer requested refund' }
+            },
+            {
+              headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/json'
+              },
+              timeout: 10000
+            }
+          );
+          refundId = refundResponse.data?.id;
+          isSimulated = false;
+        } catch (gwErr) {
+          console.error('[Gateway Refund API Failed]:', gwErr.response?.data || gwErr.message);
+          throw new Error('GATEWAY_REFUND_FAILED: ' + (gwErr.response?.data?.error?.description || gwErr.message));
+        }
+      }
+
+      if (!refundId) {
+        refundId = `rfnd_sim_${crypto.randomBytes(10).toString('hex')}`;
+      }
+
       transaction.status = PAYMENT_STATUSES.REFUNDED;
       transaction.refund_id = refundId;
       transaction.refund_amount = transaction.amount;
@@ -652,19 +697,23 @@ const processRefund = async (req, res) => {
 
       await PaymentLog.create({
         user_id: req.user.id,
-        event_type: 'REFUND_COMPLETED',
+        event_type: isSimulated ? 'SIMULATED_REFUND_COMPLETED' : 'REFUND_COMPLETED',
         payment_method: transaction.payment_method,
-        details: reason || `Refund processed for booking #${booking_id} (Refund ID: ${refundId})`
+        details: reason || `Refund processed for booking #${booking_id} (Refund ID: ${refundId}${isSimulated ? ' - Simulated' : ''})`
       }, { transaction: t });
 
-      return { transaction, refundId };
+      return { transaction, refundId, isSimulated };
     });
 
     return res.status(200).json({
-      message: 'Refund successfully verified and completed.',
+      message: refundResult.isSimulated
+        ? 'Refund registered in simulation sandbox mode (no live gateway configured).'
+        : 'Refund successfully verified and completed with payment gateway.',
       status: PAYMENT_STATUSES.REFUNDED,
       refund_id: refundResult.refundId,
-      booking_id
+      booking_id,
+      simulated: refundResult.isSimulated,
+      gateway_confirmed: !refundResult.isSimulated
     });
   } catch (error) {
     if (error.message === 'ALREADY_REFUNDED') {

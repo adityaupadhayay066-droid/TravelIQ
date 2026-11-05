@@ -208,6 +208,9 @@ export default function BookingModal({ train, onClose }) {
 
   const [bookingComplete, setBookingComplete] = useState(false);
   const [confirmedBookingData, setConfirmedBookingData] = useState(null);
+  const [idempotencyKey, setIdempotencyKey] = useState(() => {
+    return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `idem_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  });
 
   // Destination Stay Booking states (Hotels, Dorms, Homestays)
   const [destHotels, setDestHotels] = useState([]);
@@ -471,8 +474,12 @@ export default function BookingModal({ train, onClose }) {
         total_passengers: passengerCount
       };
 
-      // 1. Create database booking (server returns Pending)
-      const res = await api.post('/profile/bookings', bookingPayload);
+      // 1. Create database booking (server returns Pending) with Idempotency-Key
+      const res = await api.post('/profile/bookings', bookingPayload, {
+        headers: {
+          'Idempotency-Key': idempotencyKey
+        }
+      });
       const booking = res.data.booking;
 
       // 2. Create authoritative payment order bound to booking

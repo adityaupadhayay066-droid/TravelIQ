@@ -36,21 +36,53 @@ async function seedFares() {
 
       let distanceKm = 650; // reasonable default if coordinates unavailable
       if (schedules.length >= 2) {
-        const firstStop = schedules[0];
-        const lastStop = schedules[schedules.length - 1];
+        // Calculate cumulative rail distance along the train's actual stop sequence
+        let totalStopDistance = 0;
+        let validSegmentsCount = 0;
 
-        const [origStation, destStation] = await Promise.all([
-          Station.findOne({ where: { station_code: firstStop.station_code } }),
-          Station.findOne({ where: { station_code: lastStop.station_code } })
-        ]);
+        for (let i = 0; i < schedules.length - 1; i++) {
+          const sCurr = schedules[i];
+          const sNext = schedules[i + 1];
 
-        if (origStation?.latitude && destStation?.latitude) {
-          distanceKm = estimateRailDistance(
-            parseFloat(origStation.latitude),
-            parseFloat(origStation.longitude),
-            parseFloat(destStation.latitude),
-            parseFloat(destStation.longitude)
-          );
+          const [stnCurr, stnNext] = await Promise.all([
+            Station.findOne({ where: { station_code: sCurr.station_code } }),
+            Station.findOne({ where: { station_code: sNext.station_code } })
+          ]);
+
+          if (stnCurr?.latitude && stnNext?.latitude) {
+            const segDist = estimateRailDistance(
+              parseFloat(stnCurr.latitude),
+              parseFloat(stnCurr.longitude),
+              parseFloat(stnNext.latitude),
+              parseFloat(stnNext.longitude)
+            );
+            if (segDist > 0) {
+              totalStopDistance += segDist;
+              validSegmentsCount++;
+            }
+          }
+        }
+
+        if (validSegmentsCount >= 1 && totalStopDistance > 0) {
+          distanceKm = totalStopDistance;
+        } else {
+          // Fallback to end-to-end station coordinates
+          const firstStop = schedules[0];
+          const lastStop = schedules[schedules.length - 1];
+
+          const [origStation, destStation] = await Promise.all([
+            Station.findOne({ where: { station_code: firstStop.station_code } }),
+            Station.findOne({ where: { station_code: lastStop.station_code } })
+          ]);
+
+          if (origStation?.latitude && destStation?.latitude) {
+            distanceKm = estimateRailDistance(
+              parseFloat(origStation.latitude),
+              parseFloat(origStation.longitude),
+              parseFloat(destStation.latitude),
+              parseFloat(destStation.longitude)
+            );
+          }
         }
       }
 

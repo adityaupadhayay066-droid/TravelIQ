@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const { generateBookingReference, transitionBookingState, BOOKING_STATUSES, PAYMENT_STATUSES, expirePendingBookings } = require('../services/bookingLifecycleService');
 const n8nService = require('../services/n8nService');
 const { sendBookingConfirmation } = require('../services/emailService');
-const { calculateRailwayFare, estimateRailDistance } = require('../utils/railwayFareCalculator');
+const { calculateRailwayFare, estimateRailDistance, calculateJourneyRailwayFare } = require('../utils/railwayFareCalculator');
 const { trainRunsOnDate } = require('../services/routeValidationEngine');
 const { resolveStation } = require('../services/stationResolver');
 const bcrypt = require('bcryptjs');
@@ -436,6 +436,9 @@ const createBooking = async (req, res) => {
       if (trimmedName.length === 0) {
         return res.status(400).json({ message: `Passenger must have a valid non-empty name.` });
       }
+      if (trimmedName.length < 2) {
+        return res.status(400).json({ message: `Passenger name must be at least 2 characters.` });
+      }
       if (trimmedName.length > 100) {
         return res.status(400).json({ message: `Passenger #${i + 1} name cannot exceed 100 characters.` });
       }
@@ -446,8 +449,8 @@ const createBooking = async (req, res) => {
         if (!Number.isInteger(ageNum) || isNaN(ageNum)) {
           return res.status(400).json({ message: `Passenger #${i + 1} age must be an integer.` });
         }
-        if (ageNum < 0 || ageNum > 125) {
-          return res.status(400).json({ message: `Passenger age must be a valid age between 0 and 125.` });
+        if (ageNum < 1 || ageNum > 120) {
+          return res.status(400).json({ message: `Passenger age must be a valid age between 1 and 120.` });
         }
       }
 
@@ -477,9 +480,16 @@ const createBooking = async (req, res) => {
     let derivedAdults = 0, derivedSeniors = 0, derivedChildren = 0, derivedInfants = 0;
     for (const p of validatedPassengers) {
       if (p.age >= 60) derivedSeniors++;
-      else if (p.age >= 12) derivedAdults++;
+      else if (p.age >= 18) derivedAdults++;
       else if (p.age >= 5) derivedChildren++;
       else derivedInfants++;
+    }
+
+    // Reject solo infants without an accompanying adult (18+)
+    if (derivedInfants > 0 && (derivedAdults + derivedSeniors) === 0) {
+      return res.status(400).json({
+        message: 'Infants (under 5 years) must be accompanied by at least one adult traveler (age 18 or older). Solo infant bookings are not permitted.'
+      });
     }
 
     if (adult_count !== undefined) {
@@ -624,99 +634,47 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Train number is required.' });
     }
 
-    const isConnectingTrain = normalizedTrain.includes('/');
-    let targetTrainObj = null;
-
-    if (!isConnectingTrain) {
-      targetTrainObj = await Train.findOne({ where: { train_number: normalizedTrain } });
-      
-      // If train is not recognized in official directory
-      if (!targetTrainObj) {
-        if (normalizedTrain !== '99999') {
-          return res.status(400).json({ 
-            message: `Train #${normalizedTrain} is not recognized or does not exist in the official train directory.` 
-          });
-        }
-      } else {
-        // Resolve station clusters to verify train serves both origin and destination
-        const sourceResolved = await resolveStation(sourceCode);
-        const destResolved = await resolveStation(destCode);
-        const srcCodes = sourceResolved?.stationCodes || [sourceCode];
-        const dstCodes = destResolved?.stationCodes || [destCode];
-
-        const [sourceStop, destStop] = await Promise.all([
-          TrainSchedule.findOne({ where: { train_number: normalizedTrain, station_code: srcCodes } }),
-          TrainSchedule.findOne({ where: { train_number: normalizedTrain, station_code: dstCodes } })
-        ]);
-
-        if (!sourceStop) {
-          return res.status(400).json({ 
-            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not serve origin station ${sourceCode}.` 
-          });
-        }
-        if (!destStop) {
-          return res.status(400).json({ 
-            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not serve destination station ${destCode}.` 
-          });
-        }
-
-        // Date verification: check operating days against journey date
-        const dateToCheck = journeyDate || booking_date;
-        if (dateToCheck && !trainRunsOnDate(targetTrainObj, dateToCheck)) {
-          const runsOnStr = Array.isArray(targetTrainObj.runs_on) 
-            ? targetTrainObj.runs_on.join(', ') 
-            : (targetTrainObj.runs_on || 'Specific Days');
-          return res.status(400).json({ 
-            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not operate on ${dateToCheck}. Running days: ${runsOnStr}.` 
-          });
-        }
-      }
-    } else {
-      // Connecting train validation: verify each sub-train exists
-      const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
-      for (const legTrainNo of legs) {
-        const exists = await Train.findOne({ where: { train_number: legTrainNo } });
-        if (!exists) {
-          return res.status(400).json({
-            message: `Connecting train leg #${legTrainNo} does not exist in the official directory.`
-          });
-        }
-      }
+    // Option B: Multi-leg connecting itineraries cannot be booked as a single ticket (Search-Only)
+    if (normalizedTrain.includes('/')) {
+      return res.status(400).json({
+        message: 'Multi-leg connecting itineraries cannot be booked as a single ticket. Please book individual legs separately.'
+      });
     }
 
-    // 5. Authoritatively calculate ticket fare from database
     let farePerPassenger = null;
-    const fareRow = await TrainFare.findOne({
-      where: {
-        train_number: normalizedTrain,
-        class_code: normalizedClass
-      }
-    });
+    let targetTrainObj = null;
 
-    if (fareRow && fareRow.fare > 0) {
-      farePerPassenger = fareRow.fare;
-    } else if (isConnectingTrain) {
-      // Authoritative connecting route fare calculation strictly across journey legs
-      // Never trust client-supplied ticket_fare to prevent parameter tampering
-      const legs = normalizedTrain.split('/').map(s => s.trim()).filter(Boolean);
-      let legsSum = 0;
-      for (const legTrainNo of legs) {
-        const legFareRow = await TrainFare.findOne({
-          where: {
-            train_number: legTrainNo,
-            ...(normalizedClass !== 'COMBINED' && normalizedClass !== 'STANDARD' ? { class_code: normalizedClass } : {})
-          }
+    if (normalizedTrain !== '99999') {
+      targetTrainObj = await Train.findOne({ where: { train_number: normalizedTrain } });
+      if (!targetTrainObj) {
+        return res.status(400).json({ 
+          message: `Train #${normalizedTrain} is not recognized or does not exist in the official train directory.` 
         });
-        if (legFareRow && legFareRow.fare > 0) {
-          legsSum += legFareRow.fare;
-        } else {
-          legsSum += 850;
-        }
       }
-      farePerPassenger = legsSum;
+
+      // Date verification: check operating days against journey date
+      const dateToCheck = journeyDate || booking_date;
+      if (dateToCheck && !trainRunsOnDate(targetTrainObj, dateToCheck)) {
+        const runsOnStr = Array.isArray(targetTrainObj.runs_on) 
+          ? targetTrainObj.runs_on.join(', ') 
+          : (targetTrainObj.runs_on || 'Specific Days');
+        return res.status(400).json({ 
+          message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) does not operate on ${dateToCheck}. Running days: ${runsOnStr}.` 
+        });
+      }
+
+      // Calculate authoritative journey-dependent fare (strictly validates stop order, sequence, distance)
+      const journeyFareData = await calculateJourneyRailwayFare({
+        trainNumber: normalizedTrain,
+        sourceStationCode: sourceCode,
+        destStationCode: destCode,
+        travelClass: (normalizedClass === 'COMBINED' || normalizedClass === 'STANDARD') ? '3A' : normalizedClass,
+        passengers: 1
+      });
+
+      farePerPassenger = journeyFareData.farePerPassenger;
     } else {
-      // Dynamic distance-based IRCTC telescopic fare calculation
-      // Must NEVER substitute a fabricated 650 km default if stations lack coordinates
+      // Synthetic test train '99999' fallback
       if (!stnSrc.latitude || !stnSrc.longitude || !stnDst.latitude || !stnDst.longitude) {
         return res.status(400).json({ 
           message: 'Authoritative fare record not found and station coordinates are unavailable to calculate route distance.' 
@@ -753,6 +711,21 @@ const createBooking = async (req, res) => {
 
     if (isNaN(authoritativeFare) || authoritativeFare <= 0) {
       return res.status(400).json({ message: 'Invalid calculated ticket fare.' });
+    }
+
+    // 5b. Concurrency-safe per-user pending booking limit (P1 requirement)
+    const MAX_PENDING_BOOKINGS = parseInt(process.env.MAX_PENDING_BOOKINGS_PER_USER) || 5;
+    const currentPendingCount = await Booking.count({
+      where: {
+        user_id: req.user.id,
+        booking_status: 'Pending'
+      }
+    });
+
+    if (currentPendingCount >= MAX_PENDING_BOOKINGS) {
+      return res.status(429).json({
+        message: `Pending booking limit reached (${MAX_PENDING_BOOKINGS}). Please complete payment or cancel existing pending bookings before creating new ones.`
+      });
     }
 
     // 6. Atomic database creation within transaction boundaries
@@ -845,12 +818,19 @@ const createBooking = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     if (error.message === 'IDEMPOTENCY_CONCURRENCY_CONFLICT') {
-      const existing = await IdempotencyKey.findOne({
-        where: { user_id: req.user.id, operation: 'CREATE_BOOKING', idempotency_key: String((req.headers && req.headers['idempotency-key']) || req.body?.idempotency_key) }
-      });
-      if (existing) {
-        return res.status(existing.response_status).json(existing.response_body);
+      const idemKey = String((req.headers && (req.headers['idempotency-key'] || req.headers['x-idempotency-key'])) || req.body?.idempotency_key);
+      for (let retries = 0; retries < 5; retries++) {
+        await new Promise(r => setTimeout(r, 100));
+        const existing = await IdempotencyKey.findOne({
+          where: { user_id: req.user.id, operation: 'CREATE_BOOKING', idempotency_key: idemKey }
+        });
+        if (existing) {
+          return res.status(existing.response_status).json(existing.response_body);
+        }
       }
+      return res.status(409).json({
+        message: 'A concurrent booking request with this idempotency key is currently being processed. Please retry in a moment.'
+      });
     }
     console.error('Create booking error:', error.message);
     const status = error.statusCode || 500;
