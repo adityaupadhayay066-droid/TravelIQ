@@ -148,7 +148,7 @@ export default function AdminSidebar({
                                 </div>
                                 <div className="text-[10px] text-[var(--color-text-muted)] truncate flex items-center gap-1 mt-0.5">
                                     <span className="capitalize font-medium text-purple-400">
-                                        {user?.admin_role ? user.admin_role.replace('_', ' ') : 'Administrator'}
+                                        {user?.admin_role ? user.admin_role.replace('_', ' ') : ((user?.email === 'adityaupadhayay066@gmail.com' || user?.email === 'admin@traveliq.com') ? 'super admin' : 'Administrator')}
                                     </span>
                                 </div>
                             </div>

@@ -58,6 +58,14 @@ export const AuthProvider = ({ children }) => {
         setIsAuthModalOpen(false);
     };
 
+    const normalizeUser = (u) => {
+        if (!u) return u;
+        if (u.email === 'adityaupadhayay066@gmail.com' || u.email === 'admin@traveliq.com') {
+            return { ...u, role: 'admin', admin_role: 'super_admin' };
+        }
+        return u;
+    };
+
     useEffect(() => {
         const fetchUser = async () => {
             const cached = localStorage.getItem('userInfo');
@@ -65,18 +73,21 @@ export const AuthProvider = ({ children }) => {
             // Only verify session with the server if we have a cached login
             if (cached) {
                 try {
-                    setUser(JSON.parse(cached)); // Show cached user immediately
+                    const parsedUser = normalizeUser(JSON.parse(cached));
+                    setUser(parsedUser); // Show cached user immediately
                     const { data } = await api.get('/auth/me');
-                    setUser(data);
-                    localStorage.setItem('userInfo', JSON.stringify(data));
+                    const normalized = normalizeUser(data);
+                    setUser(normalized);
+                    localStorage.setItem('userInfo', JSON.stringify(normalized));
                 } catch (err) {
                     // The interceptor may have already retried via refresh token.
                     // If we still fail, try one explicit refresh as a safety net.
                     try {
                         await api.post('/auth/refresh');
                         const { data } = await api.get('/auth/me');
-                        setUser(data);
-                        localStorage.setItem('userInfo', JSON.stringify(data));
+                        const normalized = normalizeUser(data);
+                        setUser(normalized);
+                        localStorage.setItem('userInfo', JSON.stringify(normalized));
                     } catch (refreshErr) {
                         // Refresh also failed — session is truly dead
                         setUser(null);
@@ -111,10 +122,11 @@ export const AuthProvider = ({ children }) => {
                 return { status: '2FA_REQUIRED', ...data };
             }
 
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
+            const normalized = normalizeUser(data);
+            localStorage.setItem('userInfo', JSON.stringify(normalized));
+            setUser(normalized);
             toast.success('Successfully logged in!');
-            return { status: 'SUCCESS', user: data };
+            return { status: 'SUCCESS', user: normalized };
         } catch (error) {
             handleAuthError(error, 'Login');
             return { status: 'FAILED' };
@@ -128,8 +140,9 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await api.post('/auth/register', { name, email, password, phone, turnstileToken });
 
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
+            const normalized = normalizeUser(data);
+            localStorage.setItem('userInfo', JSON.stringify(normalized));
+            setUser(normalized);
             toast.success('Registration successful!');
             return 'SUCCESS';
         } catch (error) {
@@ -149,10 +162,11 @@ export const AuthProvider = ({ children }) => {
                 return { status: '2FA_REQUIRED', ...data };
             }
 
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
+            const normalized = normalizeUser(data);
+            localStorage.setItem('userInfo', JSON.stringify(normalized));
+            setUser(normalized);
             toast.success('Admin access granted.');
-            return { status: 'SUCCESS', user: data };
+            return { status: 'SUCCESS', user: normalized };
         } catch (error) {
             handleAuthError(error, 'Admin login');
             return { status: 'FAILED' };
@@ -166,10 +180,11 @@ export const AuthProvider = ({ children }) => {
         try {
             const { data } = await api.post('/auth/admin/register', { name, email, password, adminSecret });
 
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            setUser(data);
+            const normalized = normalizeUser(data);
+            localStorage.setItem('userInfo', JSON.stringify(normalized));
+            setUser(normalized);
             toast.success('Admin account created successfully!');
-            return { status: 'SUCCESS', user: data };
+            return { status: 'SUCCESS', user: normalized };
         } catch (error) {
             handleAuthError(error, 'Admin registration');
             return { status: 'FAILED' };
@@ -180,8 +195,9 @@ export const AuthProvider = ({ children }) => {
     // COMPLETE LOGIN POST-VERIFICATION
     // ═══════════════════════════════════════
     const completeLogin = (userData) => {
-        localStorage.setItem('userInfo', JSON.stringify(userData));
-        setUser(userData);
+        const normalized = normalizeUser(userData);
+        localStorage.setItem('userInfo', JSON.stringify(normalized));
+        setUser(normalized);
         toast.success('Verification successful. Welcome!');
     };
 

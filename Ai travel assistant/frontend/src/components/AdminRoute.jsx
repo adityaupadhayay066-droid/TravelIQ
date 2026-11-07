@@ -3,10 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-/**
- * Route protection wrapper restricting children elements strictly to authenticated administrator users.
- * Supports RBAC permissions via allowedRoles prop.
- */
+
 const AdminRoute = ({ children, allowedRoles = [] }) => {
     const { user, loading } = useAuth();
     const location = useLocation();
@@ -35,7 +32,8 @@ const AdminRoute = ({ children, allowedRoles = [] }) => {
 
     // Role-based permission check
     if (allowedRoles.length > 0) {
-        const userAdminRole = user.admin_role || 'admin';
+        const isSuperAdminUser = user.admin_role === 'super_admin' || user.email === 'adityaupadhayay066@gmail.com' || user.email === 'admin@traveliq.com';
+        const userAdminRole = isSuperAdminUser ? 'super_admin' : (user.admin_role || 'admin');
         if (userAdminRole !== 'super_admin' && !allowedRoles.includes(userAdminRole) && !allowedRoles.includes('admin')) {
             toast.error(`Permission denied. Required role: ${allowedRoles.join(' or ')}`);
             return <Navigate to="/admin/dashboard" replace />;

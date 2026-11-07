@@ -6,6 +6,13 @@ const { User } = require('../models');
  */
 async function seedAdmin() {
     try {
+        // Ensure Aditya Upadhayay is Super Admin
+        const aditya = await User.findOne({ where: { email: 'adityaupadhayay066@gmail.com' } });
+        if (aditya && (aditya.role !== 'admin' || aditya.admin_role !== 'super_admin')) {
+            await aditya.update({ role: 'admin', admin_role: 'super_admin', account_status: 'active' });
+            console.log('✅ [Admin Seeder] Verified Aditya Upadhayay as Super Admin');
+        }
+
         const existingAdmin = await User.findOne({ where: { role: 'admin' } });
 
         if (existingAdmin) {

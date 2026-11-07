@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 
 export default function UsersPage() {
     const { user: currentUser } = useAuth();
-    const isSuperAdmin = currentUser?.admin_role === 'super_admin' || currentUser?.email === 'admin@traveliq.com';
+    const isSuperAdmin = currentUser?.admin_role === 'super_admin' || currentUser?.email === 'admin@traveliq.com' || currentUser?.email === 'adityaupadhayay066@gmail.com';
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);

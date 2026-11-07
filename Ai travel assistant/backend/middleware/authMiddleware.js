@@ -158,7 +158,8 @@ const requireAdminRole = (allowedRoles = []) => {
         }
         
         // Super admin has full access across all admin modules
-        const userAdminRole = req.user.admin_role || (req.user.email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') ? 'super_admin' : 'admin');
+        const isSuperAdminEmail = (email) => email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') || email === 'adityaupadhayay066@gmail.com';
+        const userAdminRole = req.user.admin_role || (isSuperAdminEmail(req.user.email) ? 'super_admin' : 'admin');
         if (userAdminRole === 'super_admin' || allowedRoles.length === 0 || allowedRoles.includes(userAdminRole)) {
             return next();
         }
