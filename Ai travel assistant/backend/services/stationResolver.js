@@ -157,6 +157,14 @@ const CITY_CLUSTERS = [
     ]
   },
   {
+    city: 'Khurda Road',
+    primaryCode: 'KUR',
+    stationCodes: ['KUR'],
+    synonyms: [
+      'khurda', 'kurdha', 'khordha', 'khurda road', 'khurda rd', 'kur', 'khurda road jn', 'khurdha', 'khurda jn'
+    ]
+  },
+  {
     city: 'Puri',
     primaryCode: 'PURI',
     stationCodes: ['PURI'],

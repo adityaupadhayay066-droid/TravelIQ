@@ -11,9 +11,16 @@ const aiClient = axios.create({
     baseURL: AI_SERVICE_URL,
     timeout: 20000,
     headers: {
-        'Content-Type': 'application/json',
-        ...(INTERNAL_SERVICE_KEY ? { 'X-Internal-Service-Key': INTERNAL_SERVICE_KEY } : {})
+        'Content-Type': 'application/json'
     }
+});
+
+aiClient.interceptors.request.use((config) => {
+    const key = process.env.INTERNAL_SERVICE_KEY || INTERNAL_SERVICE_KEY;
+    if (key) {
+        config.headers['X-Internal-Service-Key'] = key;
+    }
+    return config;
 });
 
 const predictPrice = async (tripData) => {

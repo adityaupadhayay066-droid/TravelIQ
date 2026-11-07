@@ -86,12 +86,15 @@ async function runSecurityHardeningTests() {
   });
 
   test('createReservation rejects invalid date sequences (check_in >= check_out)', () => {
+    const futureCheckIn = new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0];
+    const pastCheckOut = new Date(Date.now() + 86400000 * 4).toISOString().split('T')[0];
+
     assert.throws(() => {
       createReservation(1, {
         hotelName: 'Taj Palace',
         city: 'New Delhi',
-        checkInDate: '2026-11-05',
-        checkOutDate: '2026-11-04', // Before check-in
+        checkInDate: futureCheckIn,
+        checkOutDate: pastCheckOut, // Before check-in
         guestName: 'John Doe',
         guestEmail: 'john@example.com'
       });
@@ -101,8 +104,8 @@ async function runSecurityHardeningTests() {
       createReservation(1, {
         hotelName: 'Taj Palace',
         city: 'New Delhi',
-        checkInDate: '2026-11-05',
-        checkOutDate: '2026-11-05', // Same date
+        checkInDate: futureCheckIn,
+        checkOutDate: futureCheckIn, // Same date
         guestName: 'John Doe',
         guestEmail: 'john@example.com'
       });

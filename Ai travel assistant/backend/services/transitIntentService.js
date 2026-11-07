@@ -13,6 +13,7 @@ const COMMON_STATIONS = [
   { keywords: ['howrah', 'hwh', 'kolkata', 'calcutta', 'sealdah', 'sdah', 'shalimar'], code: 'HWH', name: 'Howrah Jn' },
   { keywords: ['mumbai', 'cstm', 'csmt', 'bombay', 'bct', 'bandra', 'bdts', 'lokmanya tilak', 'ltt'], code: 'CSMT', name: 'Mumbai CSMT' },
   { keywords: ['bhubaneswar', 'bbs'], code: 'BBS', name: 'Bhubaneswar' },
+  { keywords: ['khurda', 'kurdha', 'khordha', 'kur', 'khurda road'], code: 'KUR', name: 'Khurda Road Jn' },
   { keywords: ['chhapra', 'cpr'], code: 'CPR', name: 'Chhapra Jn' },
   { keywords: ['gorakhpur', 'gkp'], code: 'GKP', name: 'Gorakhpur Jn' },
   { keywords: ['lucknow', 'lko', 'ljn', 'charbagh'], code: 'LKO', name: 'Lucknow Charbagh' },
@@ -67,6 +68,8 @@ function cleanEntityString(raw) {
   return raw
     .replace(/^(?:show|find|search|check|is\s+there\s+any|any|give\s+me|get\s+me|list)?\s*(?:direct\s+)?(?:trains?|routes?|transit|travel)?\s*(?:from|between)?\s*/i, '')
     .replace(/\b(?:trains?|direct|schedule|timings?|fares?|tickets?)\b/gi, '')
+    .replace(/\b(?:sleeper|ac|general|tatkal|chair\s+car|executive|[123]a|2s|cc|ec|sl)\b/gi, '')
+    .replace(/\b(?:at|on|for|by|in|dated?|around)\s*$/i, '')
     .replace(/[?.!,]/g, '')
     .trim();
 }
@@ -82,7 +85,7 @@ function extractTransitEntities(message) {
   let destination = null;
 
   // Pattern 1: "... from <origin> to <destination> ..."
-  const fromToRegex = /(?:from|between)\s+([a-zA-Z\s]+?)\s+(?:to|and|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|for|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
+  const fromToRegex = /(?:from|between)\s+([a-zA-Z\s]+?)\s+(?:to|and|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
   const fromToMatch = lower.match(fromToRegex);
   if (fromToMatch) {
     const rawOrigin = cleanEntityString(fromToMatch[1]);
@@ -95,7 +98,7 @@ function extractTransitEntities(message) {
 
   // Pattern 2: "<origin> to <destination>" e.g. "Tatanagar to Ballia", "Delhi to Patna"
   if (!origin || !destination) {
-    const simpleToRegex = /([a-zA-Z\s]+?)\s+(?:to|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|for|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
+    const simpleToRegex = /([a-zA-Z\s]+?)\s+(?:to|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
     const match = lower.match(simpleToRegex);
     if (match) {
       const rawOrigin = cleanEntityString(match[1]);
@@ -134,11 +137,21 @@ function extractTransitEntities(message) {
   // Parse travel date with intelligent fallback to tomorrow
   const dateResult = parseTravelDate(lower);
 
+  // Detect preferred travel class
+  let travelClass = null;
+  if (/\b(?:sleeper|sl)\b/i.test(lower)) travelClass = 'SL';
+  else if (/\b(?:3a|3rd\s*ac|3\s*ac|third\s*ac)\b/i.test(lower)) travelClass = '3A';
+  else if (/\b(?:2a|2nd\s*ac|2\s*ac|second\s*ac)\b/i.test(lower)) travelClass = '2A';
+  else if (/\b(?:1a|1st\s*ac|1\s*ac|first\s*ac)\b/i.test(lower)) travelClass = '1A';
+  else if (/\b(?:cc|chair\s*car)\b/i.test(lower)) travelClass = 'CC';
+  else if (/\b(?:2s|second\s*sitting)\b/i.test(lower)) travelClass = '2S';
+
   if (origin && destination) {
     return {
       origin: origin.trim(),
       destination: destination.trim(),
       travelDate: dateResult.travelDate,
+      travelClass,
       isDefaultDate: dateResult.isDefaultDate,
       dateNotice: dateResult.dateNotice
     };

@@ -111,7 +111,8 @@ const sendMessage = async (req, res) => {
                         message,
                         transitEntities.origin,
                         transitEntities.destination,
-                        transitEntities.isDefaultDate ? null : transitEntities.travelDate
+                        transitEntities.isDefaultDate ? null : transitEntities.travelDate,
+                        transitEntities.travelClass
                     );
                     if (grounded && grounded.response) {
                         botReply = grounded.response;

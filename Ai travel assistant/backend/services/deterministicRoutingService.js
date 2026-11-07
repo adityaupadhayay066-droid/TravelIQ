@@ -223,7 +223,7 @@ async function getVerifiedConnectingRoutes(originCode, destCode, travelDate = nu
 /**
  * Builds the canonical <verified_transit_data> payload.
  */
-async function getGroundedTransitData(originInput, destInput, travelDate = null, messageContext = null) {
+async function getGroundedTransitData(originInput, destInput, travelDate = null, messageContext = null, travelClass = null) {
   const originStation = await resolveStation(originInput);
   const destStation = await resolveStation(destInput);
 
@@ -236,6 +236,7 @@ async function getGroundedTransitData(originInput, destInput, travelDate = null,
         origin: originInput,
         destination: destInput,
         date: effectiveDate,
+        travelClass,
         isDefaultDate: dateObj.isDefaultDate,
         dateNotice: dateObj.dateNotice
       },
@@ -264,6 +265,7 @@ async function getGroundedTransitData(originInput, destInput, travelDate = null,
       destination: destStation.displayName,
       destCluster: destStation.stationCodes,
       date: effectiveDate,
+      travelClass,
       isDefaultDate: dateObj.isDefaultDate,
       dateNotice: dateObj.dateNotice
     },
@@ -305,8 +307,16 @@ function formatDeterministicGroundedResponse(transitData) {
       text += `   • Route: ${t.origin_station || t.origin} ➔ ${t.dest_station || t.destination}\n`;
       text += `   • Departure: ${t.departure_time} | Arrival: ${t.arrival_time} (Duration: ${t.duration})\n`;
       text += `   • Frequency: ${t.frequency} (${t.runs_on})\n`;
+      if (query && query.travelClass && t.fares) {
+        const classRegex = new RegExp(`\\b${query.travelClass}:\\s*₹\\d+`, 'i');
+        const classMatch = t.fares.match(classRegex);
+        if (classMatch) {
+          text += `   • **Requested Class (${query.travelClass})**: ${classMatch[0]}\n`;
+        }
+      }
       text += `   • Fares: ${t.fares}\n\n`;
     });
+    text += `💡 *To book seats, select origin and destination on the TravelIQ Train Search tab, choose your preferred class (${query.travelClass || 'SL/3A'}), and proceed with secure booking!*\n\n`;
   } else {
     text += `No direct trains are available on this route.\n\n`;
   }
@@ -342,8 +352,8 @@ function formatDeterministicGroundedResponse(transitData) {
  * Grounded LLM Execution with Zero Temperature.
  * Adheres strictly to the architectural rule: Zero Generative Routing.
  */
-async function generateGroundedResponse(userMessage, originInput, destInput, travelDate = null) {
-  const transitData = await getGroundedTransitData(originInput, destInput, travelDate, userMessage);
+async function generateGroundedResponse(userMessage, originInput, destInput, travelDate = null, travelClass = null) {
+  const transitData = await getGroundedTransitData(originInput, destInput, travelDate, userMessage, travelClass);
   const dataXml = `<verified_transit_data>\n${JSON.stringify(transitData, null, 2)}\n</verified_transit_data>`;
 
   const systemInstruction = `You are TravelIQ's Grounded Routing Engine.

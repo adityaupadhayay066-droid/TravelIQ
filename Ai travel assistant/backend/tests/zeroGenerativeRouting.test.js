@@ -300,6 +300,56 @@ async function runZeroGenerativeRoutingTests() {
     assert(result.transitData.direct_routes.length > 0, 'direct_routes count must be > 0');
   });
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // TEST SUITE 9: Khurda (Kurdha) to Tatanagar Entity Extraction & Direct Routing
+  // ─────────────────────────────────────────────────────────────────────────
+  console.log('\n--- Test Suite 9: Khurda/Kurdha to Tatanagar (KUR -> TATA) Query Resolution ---');
+
+  await test('Extracts kurdha, tata, 17 november, and sleeper correctly without prepositions leaking into station names', async () => {
+    const query = 'book a ticket from kurdha to tata at 17 november on sleeper';
+    assert(isTransitRoutingQuery(query), 'Must be identified as transit routing query');
+    const entities = extractTransitEntities(query);
+    assert.strictEqual(entities.origin, 'kurdha');
+    assert.strictEqual(entities.destination, 'tata');
+    assert.strictEqual(entities.travelDate, '2026-11-17');
+    assert.strictEqual(entities.travelClass, 'SL');
+    assert.strictEqual(entities.isDefaultDate, false);
+  });
+
+  await test('Kurdha and TATA resolve to KUR and TATA cluster station codes', async () => {
+    const { resolveStation } = require('../services/stationResolver');
+    const origin = await resolveStation('kurdha');
+    const dest = await resolveStation('tata');
+    assert.strictEqual(origin.primaryStationCode, 'KUR');
+    assert(origin.stationCodes.includes('KUR'));
+    assert.strictEqual(dest.primaryStationCode, 'TATA');
+    assert(dest.stationCodes.includes('TATA'));
+  });
+
+  await test('Finds verified direct trains between KUR and TATA on 2026-11-17 (Tue)', async () => {
+    const directTrains = await getVerifiedDirectTrains('kurdha', 'tata', '2026-11-17');
+    assert(directTrains.length >= 2, 'Expected at least 2 direct trains (e.g. Neelachal 12875, Utkal 18477, Purushottam 12801)');
+    const trainNos = directTrains.map(t => t.train_number);
+    assert(trainNos.includes('12875') || trainNos.includes('18477') || trainNos.includes('12801'),
+      'Must contain verified trains between KUR and TATA');
+  });
+
+  await test('Generates grounded response for "book a ticket from kurdha to tata at 17 november on sleeper" without "No verified routes" error', async () => {
+    const query = 'book a ticket from kurdha to tata at 17 november on sleeper';
+    const entities = extractTransitEntities(query);
+    const result = await generateGroundedResponse(
+      query,
+      entities.origin,
+      entities.destination,
+      entities.travelDate,
+      entities.travelClass
+    );
+    assert(result && result.response, 'Response must exist');
+    assert(!result.response.includes('No verified routes found for this date'), 'Must NOT report no verified routes');
+    assert(result.response.includes('Verified Direct Trains'), 'Must include Verified Direct Trains header');
+    assert(result.transitData.direct_routes.length > 0, 'Must have direct routes in transitData');
+  });
+
   console.log(`\n========================================`);
   console.log(`Test Summary: ${passed} passed, ${failed} failed`);
   console.log(`========================================\n`);
