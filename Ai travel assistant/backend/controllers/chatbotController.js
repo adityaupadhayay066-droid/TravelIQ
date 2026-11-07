@@ -19,10 +19,10 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
     }
 
     const models = [
-        'gemini-3.5-flash-lite',
         'gemini-3.5-flash',
-        'gemini-3.8-flash',
+        'gemini-3.5-flash-lite',
         'gemini-flash-latest',
+        'gemini-3.8-flash',
         'gemini-pro-latest'
     ];
 
@@ -32,7 +32,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
         // Option 1: Try with Web Search Grounding if requested
         if (tryWebSearch) {
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 const body = {
                     contents: [{ parts: [{ text: fullText }] }],
                     tools: [{ googleSearch: {} }],
@@ -46,7 +46,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
                         'Content-Type': 'application/json',
                         'x-goog-api-key': apiKey
                     },
-                    timeout: 10000
+                    timeout: 8000
                 });
                 const parts = res.data?.candidates?.[0]?.content?.parts || [];
                 if (parts.length > 0 && parts[0].text) {
@@ -59,7 +59,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
 
         // Option 2: Standard generateContent
         try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const body = {
                 contents: [{ parts: [{ text: fullText }] }],
                 generationConfig: {
@@ -72,7 +72,7 @@ async function callGemini(prompt, systemInstruction = '', tryWebSearch = false) 
                     'Content-Type': 'application/json',
                     'x-goog-api-key': apiKey
                 },
-                timeout: 10000
+                timeout: 8000
             });
             const parts = res.data?.candidates?.[0]?.content?.parts || [];
             if (parts.length > 0 && parts[0].text) {

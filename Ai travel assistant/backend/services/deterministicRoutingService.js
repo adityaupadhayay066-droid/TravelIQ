@@ -376,7 +376,7 @@ RULES:
   const rawApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   const geminiApiKey = rawApiKey ? rawApiKey.trim().replace(/^["']|["']$/g, '') : null;
   if (geminiApiKey && geminiApiKey.length > 8 && !geminiApiKey.startsWith('your_')) {
-    const models = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+    const models = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash', 'gemini-pro-latest'];
     for (const model of models) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
@@ -390,9 +390,10 @@ RULES:
           }
         }, {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'x-goog-api-key': geminiApiKey
           },
-          timeout: 10000
+          timeout: 8000
         });
 
         if (response.data && response.data.candidates && response.data.candidates.length > 0) {

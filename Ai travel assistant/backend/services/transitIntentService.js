@@ -46,7 +46,8 @@ function isTransitRoutingQuery(message) {
   const routingTriggers = [
     'train', 'trains', 'route', 'routes', 'from', ' to ', 'reach', 'travel',
     'transit', 'direct train', 'connecting', 'schedule', 'timing', 'fares',
-    'ticket from', 'journey', 'tatanagar', 'ballia', 'patna', 'delhi'
+    'ticket from', 'journey', 'tatanagar', 'ballia', 'patna', 'delhi',
+    'form ', 'frm ', 'ticket', 'tickets', 'book'
   ];
 
   const hasTrigger = routingTriggers.some(t => lower.includes(t));
@@ -61,12 +62,34 @@ function isTransitRoutingQuery(message) {
 }
 
 /**
+ * Strips conversational intent and action prefixes like "help me to book a train ticket"
+ */
+function stripIntentPrefix(msg) {
+  if (!msg || typeof msg !== 'string') return '';
+  return msg
+    .replace(/^(?:please\s+)?(?:help\s+(?:me\s+)?(?:to\s+)?|i\s+(?:want|need|wish)\s+to\s+|can\s+you\s+(?:please\s+)?(?:help\s+(?:me\s+)?(?:to\s+)?)?|how\s+(?:can\s+i|to)\s+|looking\s+to\s+)?(?:book|find|check|search|get|reserve|view)?\s*(?:me\s+)?(?:a\s+)?(?:train\s+)?(?:tickets?|seats?|routes?|transit)?\s*/i, '')
+    .trim();
+}
+
+/**
+ * Checks if a word or phrase matches a known Indian station or city cluster.
+ */
+function isKnownStationOrCluster(word) {
+  if (!word || typeof word !== 'string') return false;
+  const w = word.toLowerCase().trim();
+  if (w.length < 2) return false;
+  if (COMMON_STATIONS.some(s => s.code.toLowerCase() === w || s.keywords.some(k => k === w))) return true;
+  if (CITY_CLUSTERS.some(c => c.primaryCode.toLowerCase() === w || c.synonyms.some(s => s === w))) return true;
+  return false;
+}
+
+/**
  * Cleans extracted entity string to isolate the pure station/city name.
  */
 function cleanEntityString(raw) {
   if (!raw) return '';
   return raw
-    .replace(/^(?:show|find|search|check|is\s+there\s+any|any|give\s+me|get\s+me|list)?\s*(?:direct\s+)?(?:trains?|routes?|transit|travel)?\s*(?:from|between)?\s*/i, '')
+    .replace(/^(?:show|find|search|check|is\s+there\s+any|any|give\s+me|get\s+me|list)?\s*(?:direct\s+)?(?:trains?|routes?|transit|travel)?\s*(?:from|form|frm|between)?\s*/i, '')
     .replace(/\b(?:trains?|direct|schedule|timings?|fares?|tickets?)\b/gi, '')
     .replace(/\b(?:sleeper|ac|general|tatkal|chair\s+car|executive|[123]a|2s|cc|ec|sl)\b/gi, '')
     .replace(/\b(?:at|on|for|by|in|dated?|around)\s*$/i, '')
@@ -80,44 +103,60 @@ function cleanEntityString(raw) {
 function extractTransitEntities(message) {
   if (!message || typeof message !== 'string') return null;
   const lower = message.toLowerCase().trim();
+  const cleanedText = stripIntentPrefix(lower);
 
   let origin = null;
   let destination = null;
 
-  // Pattern 1: "... from <origin> to <destination> ..."
-  const fromToRegex = /(?:from|between)\s+([a-zA-Z\s]+?)\s+(?:to|and|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
-  const fromToMatch = lower.match(fromToRegex);
-  if (fromToMatch) {
-    const rawOrigin = cleanEntityString(fromToMatch[1]);
-    const rawDest = cleanEntityString(fromToMatch[2]);
-    if (rawOrigin && rawDest) {
-      origin = rawOrigin;
-      destination = rawDest;
-    }
-  }
-
-  // Pattern 2: "<origin> to <destination>" e.g. "Tatanagar to Ballia", "Delhi to Patna"
-  if (!origin || !destination) {
-    const simpleToRegex = /([a-zA-Z\s]+?)\s+(?:to|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
-    const match = lower.match(simpleToRegex);
-    if (match) {
-      const rawOrigin = cleanEntityString(match[1]);
-      const rawDest = cleanEntityString(match[2]);
+  // Pattern 1: "... from/form <origin> to <destination> ..."
+  // Tested on both cleanedText and raw lower
+  const fromToRegex = /(?:from|form|frm|fom|between|btwn)\s+([a-zA-Z\s]+?)\s+(?:to|and|➔|->|-->)\s+([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
+  for (const text of [cleanedText, lower]) {
+    const fromToMatch = text.match(fromToRegex);
+    if (fromToMatch) {
+      const rawOrigin = cleanEntityString(fromToMatch[1]);
+      const rawDest = cleanEntityString(fromToMatch[2]);
       if (rawOrigin && rawDest) {
         origin = rawOrigin;
         destination = rawDest;
+        break;
+      }
+    }
+  }
+
+  // Pattern 2: "<origin> to <destination>" (excluding verbs like "to book", "to travel")
+  if (!origin || !destination || (!isKnownStationOrCluster(origin) && !isKnownStationOrCluster(destination))) {
+    const simpleToRegex = /(?:^|\s)([a-zA-Z\s]+?)\s+(?:to|➔|->|-->)\s+(?!book|go|travel|reach|find|get|check|reserve)([a-zA-Z\s]+?)(?:\s+(?:on|at|for|by|in|dated?|tomorrow|today|\d{4}|\d{1,2})|$|[?.!,])/i;
+    for (const text of [cleanedText, lower]) {
+      const match = text.match(simpleToRegex);
+      if (match) {
+        const rawOrigin = cleanEntityString(match[1]);
+        const rawDest = cleanEntityString(match[2]);
+        if (rawOrigin && rawDest && (isKnownStationOrCluster(rawOrigin) || isKnownStationOrCluster(rawDest))) {
+          origin = rawOrigin;
+          destination = rawDest;
+          break;
+        }
       }
     }
   }
 
   // Pattern 3: Fallback using station / cluster keywords order in text
-  if (!origin || !destination) {
+  if (!origin || !destination || (!isKnownStationOrCluster(origin) && !isKnownStationOrCluster(destination))) {
     const found = [];
     COMMON_STATIONS.forEach(stn => {
       stn.keywords.forEach(kw => {
         const idx = lower.indexOf(kw);
         if (idx !== -1) {
           found.push({ index: idx, code: stn.code, name: stn.name, kwLength: kw.length });
+        }
+      });
+    });
+    CITY_CLUSTERS.forEach(cluster => {
+      cluster.synonyms.forEach(syn => {
+        const idx = lower.indexOf(syn);
+        if (idx !== -1) {
+          found.push({ index: idx, code: cluster.primaryCode, name: cluster.city, kwLength: syn.length });
         }
       });
     });
