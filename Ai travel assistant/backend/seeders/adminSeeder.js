@@ -6,43 +6,36 @@ const { User } = require('../models');
  */
 async function seedAdmin() {
     try {
-        // Ensure Aditya Upadhayay is Super Admin
-        const aditya = await User.findOne({ where: { email: 'adityaupadhayay066@gmail.com' } });
-        if (aditya && (aditya.role !== 'admin' || aditya.admin_role !== 'super_admin')) {
-            await aditya.update({ role: 'admin', admin_role: 'super_admin', account_status: 'active' });
-            console.log('✅ [Admin Seeder] Verified Aditya Upadhayay as Super Admin');
-        }
-
-        const existingAdmin = await User.findOne({ where: { role: 'admin' } });
-
-        if (existingAdmin) {
-            return;
-        }
-
-        const adminEmail = process.env.ADMIN_SEED_EMAIL;
+        const adminEmail = process.env.ADMIN_SEED_EMAIL || 'adityaupadhayay066@gmail.com';
         const adminPassword = process.env.ADMIN_SEED_PASSWORD;
 
-        // Never create default admin with hardcoded/weak passwords on startup
-        if (!adminEmail || !adminPassword || adminPassword === 'Admin@123' || adminPassword.length < 10) {
-            console.log('ℹ️ [Admin Seeder] No administrator found. To provision an initial administrator, configure strong ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD (min 10 characters) in your environment.');
-            return;
+        if (adminEmail && adminPassword && adminPassword.length >= 6) {
+            const cleanEmail = adminEmail.toLowerCase().trim();
+            const existingUser = await User.findOne({ where: { email: cleanEmail } });
+            if (existingUser) {
+                if (existingUser.role !== 'admin' || existingUser.admin_role !== 'super_admin') {
+                    await existingUser.update({ role: 'admin', admin_role: 'super_admin', account_status: 'active' });
+                    console.log(`✅ [Admin Seeder] Verified ${cleanEmail} as Super Admin`);
+                }
+            } else {
+                await User.create({
+                    name: cleanEmail.includes('aditya') ? 'Aditya Upadhayay' : 'System Administrator',
+                    email: cleanEmail,
+                    password: adminPassword,
+                    role: 'admin',
+                    admin_role: 'super_admin',
+                    account_status: 'active',
+                    email_verified: true,
+                    phone_verified: false,
+                    two_factor_enabled: false
+                });
+                console.log(`✅ [Admin Seeder] Created Super Admin account for: ${cleanEmail}`);
+            }
         }
-
-        const admin = await User.create({
-            name: 'System Administrator',
-            email: adminEmail.toLowerCase().trim(),
-            password: adminPassword,
-            role: 'admin',
-            admin_role: 'super_admin',
-            account_status: 'active',
-            email_verified: true,
-            phone_verified: false,
-            two_factor_enabled: false
-        });
-
-        console.log(`✅ [Admin Seeder] Initial administrator account created for: ${adminEmail}`);
-
     } catch (error) {
+        console.error('⚠️ Admin seeder warning:', error.message);
+    }
+}
         console.error('⚠️ Admin seeder warning:', error.message);
     }
 }

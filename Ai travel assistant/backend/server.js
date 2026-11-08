@@ -124,7 +124,8 @@ app.use(cors({
     if (!origin) return callback(null, true);
 
     const isAllowed = allowedOrigins.some(allowed => {
-      if (allowed === origin) return true;
+      if (allowed === '*' || allowed === origin) return true;
+      if (origin.endsWith('.netlify.app') || origin.endsWith('.onrender.com') || origin.endsWith('.vercel.app')) return true;
       if (process.env.NODE_ENV !== 'production') {
         if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
         if (origin.includes('.devtunnels.ms')) return true;

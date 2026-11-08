@@ -70,17 +70,18 @@ const generateRefreshToken = (id, sessionId, deviceId) => {
 };
 
 const setTokenCookies = (res, accessToken, refreshToken) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/api/auth',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
@@ -919,10 +920,11 @@ const verify2FA = async (req, res) => {
                 process.env.JWT_SECRET,
                 { expiresIn: '30d' }
             );
+            const isProd = process.env.NODE_ENV === 'production';
             res.cookie('trusted_device_token', trustedDeviceToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: isProd,
+                sameSite: isProd ? 'none' : 'lax',
                 maxAge: 30 * 24 * 60 * 60 * 1000
             });
         }
@@ -1253,17 +1255,18 @@ const refreshSession = async (req, res) => {
         const newAccessToken = generateAccessToken(user.id, decoded.sessionId, user.role);
 
         // 4. Set secure HTTP-only cookies
+        const isProdEnv = process.env.NODE_ENV === 'production';
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: isProdEnv,
+            sameSite: isProdEnv ? 'none' : 'lax',
             maxAge: 15 * 60 * 1000 // 15 minutes
         });
 
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: isProdEnv,
+            sameSite: isProdEnv ? 'none' : 'lax',
             path: '/api/auth',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
