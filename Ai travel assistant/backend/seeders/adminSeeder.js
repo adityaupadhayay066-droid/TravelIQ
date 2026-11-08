@@ -36,8 +36,5 @@ async function seedAdmin() {
         console.error('⚠️ Admin seeder warning:', error.message);
     }
 }
-        console.error('⚠️ Admin seeder warning:', error.message);
-    }
-}
 
 module.exports = { seedAdmin };

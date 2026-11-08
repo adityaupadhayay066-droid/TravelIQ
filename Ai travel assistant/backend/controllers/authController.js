@@ -320,6 +320,8 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'An account with this email address already exists.' });
         }
 
+        const isSuperAdminEmail = email.toLowerCase().trim() === 'adityaupadhayay066@gmail.com' || email.toLowerCase().trim() === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com').toLowerCase().trim();
+
         const user = await User.create({
             name: name.trim(),
             email: email.toLowerCase().trim(),
@@ -329,7 +331,8 @@ const registerUser = async (req, res) => {
             phone_verified: false,
             two_factor_enabled: false,
             account_status: 'active',
-            role: 'user'
+            role: isSuperAdminEmail ? 'admin' : 'user',
+            admin_role: isSuperAdminEmail ? 'super_admin' : null
         });
 
         // ─── Direct login post-registration ───
