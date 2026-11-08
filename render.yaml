@@ -66,3 +66,4 @@ services:
         value: traveliq
       - key: DB_PORT
         value: "3306"
+
