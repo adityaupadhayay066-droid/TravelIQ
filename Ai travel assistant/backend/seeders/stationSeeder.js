@@ -98,7 +98,7 @@ const seedStations = async () => {
     }
 
     const count = await Station.count();
-    if (count > 20) {
+    if (count >= 5000) {
       console.log('Stations already seeded. Skipping...');
       return;
     }

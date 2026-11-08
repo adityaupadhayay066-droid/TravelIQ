@@ -1,4 +1,4 @@
-const { StationModel, Station } = require('../models');
+const { StationModel, Station, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // Helper to generate a procedural 3D station model data
@@ -374,19 +374,30 @@ const getStationNavigation = async (req, res) => {
 
 const searchStations = async (req, res) => {
     try {
-        const query = (req.query.q || req.query.query || '').trim();
+        const rawQuery = (req.query.q || req.query.query || '').trim();
         
         let stations = [];
-        if (!query) {
+        if (!rawQuery) {
             stations = await Station.findAll({ limit: 10 });
         } else {
+            const queryUpper = rawQuery.toUpperCase();
+            const queryLower = rawQuery.toLowerCase();
             stations = await Station.findAll({
                 where: {
                     [Op.or]: [
-                        { station_code: { [Op.like]: `%${query}%` } },
-                        { station_name: { [Op.like]: `%${query}%` } }
+                        { station_code: { [Op.like]: `%${queryUpper}%` } },
+                        { station_name: { [Op.like]: `%${queryUpper}%` } },
+                        { station_code: { [Op.like]: `%${rawQuery}%` } },
+                        { station_name: { [Op.like]: `%${rawQuery}%` } },
+                        sequelize.where(sequelize.fn('LOWER', sequelize.col('station_code')), { [Op.like]: `%${queryLower}%` }),
+                        sequelize.where(sequelize.fn('LOWER', sequelize.col('station_name')), { [Op.like]: `%${queryLower}%` }),
+                        sequelize.where(sequelize.fn('LOWER', sequelize.col('city')), { [Op.like]: `%${queryLower}%` })
                     ]
                 },
+                order: [
+                    [sequelize.literal(`CASE WHEN UPPER(station_code) = '${queryUpper.replace(/'/g, "''")}' THEN 0 WHEN UPPER(station_code) LIKE '${queryUpper.replace(/'/g, "''")}%' THEN 1 WHEN UPPER(station_name) LIKE '${queryUpper.replace(/'/g, "''")}%' THEN 2 ELSE 3 END`), 'ASC'],
+                    ['station_name', 'ASC']
+                ],
                 limit: 20
             });
         }
