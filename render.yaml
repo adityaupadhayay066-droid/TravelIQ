@@ -1,0 +1,68 @@
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # 1. TravelIQ Express Backend API Server
+  # ═══════════════════════════════════════════════════════════════
+  - type: web
+    name: traveliq-backend
+    runtime: node
+    rootDir: Ai travel assistant/backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: traveliq
+      - key: DB_PORT
+        value: "3306"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: INTERNAL_SERVICE_KEY
+        generateValue: true
+      - key: AI_SERVICE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_SEED_EMAIL
+        value: adityaupadhayay066@gmail.com
+      - key: ADMIN_SEED_PASSWORD
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  # ═══════════════════════════════════════════════════════════════
+  # 2. TravelIQ FastAPI AI & Transit Intelligence Microservice
+  # ═══════════════════════════════════════════════════════════════
+  - type: web
+    name: traveliq-ai-service
+    runtime: python
+    rootDir: Ai travel assistant/ai-services
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: free
+    envVars:
+      - key: INTERNAL_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: traveliq
+      - key: DB_PORT
+        value: "3306"
