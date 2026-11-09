@@ -147,9 +147,9 @@ const sendMessage = async (req, res) => {
                         `• **Route**: ${haltSummary}\n` +
                         `• **Operating Days**: ${runsDays} (${tr.frequency || 'Regular Service'})\n` +
                         `• **Verified Fares**: ${fareList}\n\n` +
-                        `To book seats on this train, enter ${stops[0]?.station_code || 'origin'} and ${stops[stops.length - 1]?.station_code || 'destination'} in the TravelIQ Search tab!`;
+                        `To book seats on this train, enter ${stops[0]?.station_code || 'origin'} and ${stops[stops.length - 1]?.station_code || 'destination'} in the AEVORA Search tab!`;
                 } else {
-                    botReply = `Train #${trainNo} was not found in our verified Indian Railways timetable directory. Please check the train number or search on the TravelIQ Route Search page.`;
+                    botReply = `Train #${trainNo} was not found in our verified Indian Railways timetable directory. Please check the train number or search on the AEVORA Route Search page.`;
                 }
             }
         }
@@ -179,7 +179,7 @@ const sendMessage = async (req, res) => {
 
             // If matched in fed knowledge, synthesize answer using Gemini grounded on fed data!
             if (matchedKnowledge && maxScore > 0) {
-                const fedPrompt = `You are TravelIQ AI, India's Smart Travel Concierge.
+                const fedPrompt = `You are AEVORA AI, India's Smart Travel Concierge.
 Use the following verified internal platform knowledge to answer the user's question clearly, helpfully, and professionally:
 
 <verified_platform_knowledge>
@@ -197,11 +197,11 @@ User Question: ${message}`;
 
         // 2. Data Not in Fed Knowledge Base: Search on Web via Gemini with strict anti-hallucination guardrail!
         if (!botReply) {
-            const webSearchPrompt = `You are TravelIQ AI, India's Smart Travel Concierge.
+            const webSearchPrompt = `You are AEVORA AI, India's Smart Travel Concierge.
 The user is asking a travel question that is not in our internal database.
 CRITICAL APPLICATION SECURITY & ANTI-HALLUCINATION CONSTRAINTS:
 1. NEVER invent, guess, or hallucinate train numbers, railway schedules, train names, or ticket fares.
-2. If the user asks about specific train schedules, train numbers, or ticket prices that are not explicitly provided, state: "I do not have verified timetable records for this specific train or corridor. Please search on the TravelIQ Route Search page for verified IRCTC schedules."
+2. If the user asks about specific train schedules, train numbers, or ticket prices that are not explicitly provided, state: "I do not have verified timetable records for this specific train or corridor. Please search on the AEVORA Route Search page for verified IRCTC schedules."
 3. Answer informatively regarding general travel tips, tourist places, weather, food, packing, or booking steps.
 
 User Question: ${message}`;
@@ -229,13 +229,13 @@ User Question: ${message}`;
         if (!botReply) {
             const lowerMsg = cleanMessage.toLowerCase();
             if (/\b(api key|developer|b2b|x-api-key|telemetry|token|endpoint|sdk)\b/i.test(lowerMsg)) {
-                botReply = "🔑 To get a Developer API Key: 1) Go to 'B2B Developer Hub' from the Explore menu. 2) Click 'Generate API Key' and name your app. 3) Pass the generated key in the 'X-API-Key' header when calling TravelIQ AI endpoints (/api/v1/predict/delay, /api/v1/predict/fare, /api/v1/optimize-route).";
+                botReply = "🔑 To get a Developer API Key: 1) Go to 'B2B Developer Hub' from the Explore menu. 2) Click 'Generate API Key' and name your app. 3) Pass the generated key in the 'X-API-Key' header when calling AEVORA AI endpoints (/api/v1/predict/delay, /api/v1/predict/fare, /api/v1/optimize-route).";
             } else if (/\b(book in train|book train|book ticket|how to book|rail booking|seat reservation)\b/i.test(lowerMsg)) {
                 botReply = "🚆 To book a train: 1) Click 'Plan Trip' on top. 2) Enter Origin & Destination (e.g. NDLS to CSTM). 3) Choose your class (1A, 2A, 3A, SL, CC). 4) Enter passenger details & berth preference. 5) Pay via UPI QR sandbox to instantly get your official IRCTC Co-Branded Electronic Reservation Slip (ERS)!";
             } else if (/\b(hotel|hostel|dorm|homestay|stay in|room)\b/i.test(lowerMsg)) {
-                botReply = "🏨 TravelIQ Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
+                botReply = "🏨 AEVORA Stays: Reserve 0% prepay verified hotel rooms, homestays, and futuristic capsule dorms with free cancellation. View your vouchers anytime under 'My Trips'!";
             } else if (/\b(fare|price|cost|ticket|cheap|flight|train|igi|rnc|del|bom)\b/i.test(lowerMsg)) {
-                botReply = "To check verified ticket fares and price trends for flights or trains, search your origin and destination on the TravelIQ Route Search tab for verified provider schedules and fares.";
+                botReply = "To check verified ticket fares and price trends for flights or trains, search your origin and destination on the AEVORA Route Search tab for verified provider schedules and fares.";
             } else if (/\b(delay|late|time|status|cancel|reschedule)\b/i.test(lowerMsg)) {
                 botReply = "Train delays are monitored using historical weather and route statistics. Enter your train number in our 'Delay Predictor' tab for real-time risk predictions!";
             } else if (/\b(food|eat|meal|thali|restaurant|snacks)\b/i.test(lowerMsg)) {
@@ -243,7 +243,7 @@ User Question: ${message}`;
             } else if (/\b(safety|sos|emergency|help|rpf|security)\b/i.test(lowerMsg)) {
                 botReply = "Your safety is our top priority! Use our 'SOS Alerts' feature to share your live PNR itinerary or call Railway Helpline 139.";
             } else {
-                botReply = "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train booking steps, verified hotel stays, delay forecasts, local food, or custom trip itineraries!";
+                botReply = "Hello! I am your AEVORA AI assistant. Ask me about developer API keys, train booking steps, verified hotel stays, delay forecasts, local food, or custom trip itineraries!";
             }
         }
 

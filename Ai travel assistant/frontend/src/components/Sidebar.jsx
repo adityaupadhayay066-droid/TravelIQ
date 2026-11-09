@@ -135,9 +135,9 @@ export default function Sidebar() {
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
-                className="font-bold text-lg tracking-tight text-[#263238] dark:text-[#F7F8FA] whitespace-nowrap ml-1 font-heading"
+                className="font-bold text-lg tracking-tight text-[#101B2D] dark:text-[#F8FAFC] whitespace-nowrap ml-1 font-heading"
               >
-                TravelIQ
+                AEVORA
               </motion.span>
             )}
           </AnimatePresence>

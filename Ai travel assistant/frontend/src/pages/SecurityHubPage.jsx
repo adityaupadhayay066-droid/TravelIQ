@@ -139,7 +139,7 @@ export default function SecurityHubPage() {
                                     <Key className="w-4 h-4" /> Multi-device bounds
                                 </h4>
                                 <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm leading-relaxed">
-                                    TravelIQ enforces bank-grade limits of **2 desktop sessions** and **2 mobile sessions** per user. Logging in on a new device will safely revoke your oldest active session of that category automatically.
+                                    AEVORA enforces bank-grade limits of **2 desktop sessions** and **2 mobile sessions** per user. Logging in on a new device will safely revoke your oldest active session of that category automatically.
                                 </p>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ export default function SecurityHubPage() {
                                         <h3 className="text-base font-bold flex items-center gap-2 text-[#263238] dark:text-[#F7F8FA]">
                                             📅 Location & Login Audit History
                                         </h3>
-                                        <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Sign-in actions recorded on TravelIQ.</p>
+                                        <p className="text-sm text-[#66736F] dark:text-[#A3B0AB]">Sign-in actions recorded on AEVORA.</p>
                                     </div>
 
                                     {/* Search login logs */}

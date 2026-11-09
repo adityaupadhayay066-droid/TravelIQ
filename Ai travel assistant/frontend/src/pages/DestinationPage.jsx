@@ -330,12 +330,12 @@ export default function DestinationPage() {
     e.preventDefault();
     const code = couponInput.trim().toUpperCase();
     if (!code) return;
-    if (code === 'MMTHOLIDAY' || code === 'TRAVELIQ15' || code === 'OYOSTAY300') {
+    if (code === 'MMTHOLIDAY' || code === 'AEVORA15' || code === 'TRAVELIQ15' || code === 'OYOSTAY300') {
       setAppliedCoupon(code);
-      setCouponDiscount(code === 'TRAVELIQ15' ? 2000 : code === 'OYOSTAY300' ? 1200 : 1500);
+      setCouponDiscount((code === 'AEVORA15' || code === 'TRAVELIQ15') ? 2000 : code === 'OYOSTAY300' ? 1200 : 1500);
       toast.success(`Coupon ${code} applied successfully!`);
     } else {
-      toast.error('Invalid coupon code. Try MMTHOLIDAY or TRAVELIQ15');
+      toast.error('Invalid coupon code. Try MMTHOLIDAY or AEVORA15');
     }
   };
 
@@ -404,7 +404,7 @@ export default function DestinationPage() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: `${plannerDays}-Day Holiday Itinerary for ${dest.name} | TravelIQ & MMT`,
+        title: `${plannerDays}-Day Holiday Itinerary for ${dest.name} | AEVORA & MMT`,
         text: `Check out my customized ${plannerDays}-day holiday itinerary for ${dest.name}! Total package estimate: ₹${budgetBreakdown.finalTotal.toLocaleString('en-IN')}`,
         url: window.location.href
       }).catch(() => {});

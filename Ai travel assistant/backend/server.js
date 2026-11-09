@@ -142,7 +142,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield', 'x-traveliq-secret']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-API-Key', 'X-API-Token', 'x-api-key', 'X-Client-Shield', 'x-client-shield', 'x-traveliq-secret', 'x-aevora-secret']
 }));
 
 // ─── Parsers (Restricted payload size to prevent memory exhaustion; preserve raw body for webhook HMAC) ───

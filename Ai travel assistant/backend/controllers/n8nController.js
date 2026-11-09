@@ -14,7 +14,7 @@ function isAuthorized(req) {
     return false; // Fail securely: reject all webhooks when secret is missing or insecure default
   }
 
-  const providedSecret = req.headers['x-traveliq-secret'];
+  const providedSecret = req.headers['x-aevora-secret'] || req.headers['x-traveliq-secret'];
   if (!providedSecret || typeof providedSecret !== 'string') {
     return false;
   }
@@ -163,7 +163,7 @@ exports.getStatus = async (req, res) => {
     const telemetry = n8nService.getTelemetry();
     res.json({
       success: true,
-      service: 'TravelIQ n8n Automation Engine',
+      service: 'AEVORA n8n Automation Engine',
       telemetry
     });
   } catch (error) {

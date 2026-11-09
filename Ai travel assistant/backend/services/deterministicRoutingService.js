@@ -30,14 +30,16 @@ async function getVerifiedDirectTrains(originInput, destInput, travelDate = null
     originCodes = originInput;
   } else if (typeof originInput === 'string') {
     const resolved = await resolveStation(originInput);
-    originCodes = resolved?.stationCodes || [originInput.trim().toUpperCase()];
+    if (!resolved || resolved.status === 'STATION_NOT_FOUND') return [];
+    originCodes = resolved.stationCodes || [resolved.primaryStationCode];
   }
 
   if (Array.isArray(destInput)) {
     destCodes = destInput;
   } else if (typeof destInput === 'string') {
     const resolved = await resolveStation(destInput);
-    destCodes = resolved?.stationCodes || [destInput.trim().toUpperCase()];
+    if (!resolved || resolved.status === 'STATION_NOT_FOUND') return [];
+    destCodes = resolved.stationCodes || [resolved.primaryStationCode];
   }
 
   if (!originCodes.length || !destCodes.length) {
@@ -316,7 +318,7 @@ function formatDeterministicGroundedResponse(transitData) {
       }
       text += `   • Fares: ${t.fares}\n\n`;
     });
-    text += `💡 *To book seats, select origin and destination on the TravelIQ Train Search tab, choose your preferred class (${query.travelClass || 'SL/3A'}), and proceed with secure booking!*\n\n`;
+    text += `💡 *To book seats, select origin and destination on the AEVORA Train Search tab, choose your preferred class (${query.travelClass || 'SL/3A'}), and proceed with secure booking!*\n\n`;
   } else {
     text += `No direct trains are available on this route.\n\n`;
   }
@@ -356,7 +358,7 @@ async function generateGroundedResponse(userMessage, originInput, destInput, tra
   const transitData = await getGroundedTransitData(originInput, destInput, travelDate, userMessage, travelClass);
   const dataXml = `<verified_transit_data>\n${JSON.stringify(transitData, null, 2)}\n</verified_transit_data>`;
 
-  const systemInstruction = `You are TravelIQ's Grounded Routing Engine.
+  const systemInstruction = `You are AEVORA's Grounded Routing Engine.
 You must answer the user's inquiry using ONLY the data explicitly provided inside <verified_transit_data>.
 
 RULES:

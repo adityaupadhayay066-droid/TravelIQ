@@ -472,7 +472,7 @@ export default function TrainLiveTrackingModal({
                 <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between">
                     <div className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                        <span>TravelIQ Telemetry synced with IRCTC Railway Timetables</span>
+                        <span>AEVORA Telemetry synced with IRCTC Railway Timetables</span>
                     </div>
 
                     <button

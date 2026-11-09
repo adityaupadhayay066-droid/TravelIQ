@@ -34,7 +34,11 @@ from transport_schema import TransportOption, TransportSearchResponse, Verificat
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="TravelIQ AI Service")
+app = FastAPI(
+    title="AEVORA AI Service",
+    description="AEVORA Unified Travel Intelligence & Mobility Platform",
+    version="2.4.0"
+)
 
 # ─── Service-to-Service Authentication ───
 INTERNAL_SERVICE_KEY = os.getenv("INTERNAL_SERVICE_KEY")
@@ -262,13 +266,13 @@ class VoiceRespondRequest(BaseModel):
 # ─── Core Service Routes ───
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to TravelIQ AI API", "status": "online"}
+    return {"message": "Welcome to AEVORA AI API", "status": "online"}
 
 @app.get("/health")
 def health_check():
     return {
         "status": "ok",
-        "service": "TravelIQ AI Service",
+        "service": "AEVORA AI Service",
         "models_loaded": model_delay is not None
     }
 
@@ -523,7 +527,7 @@ def recommend_food(req: FoodRecommendRequest):
 
 # 7. Chatbot NLP Intent Classifier
 TRAVEL_KNOWLEDGE_DYN = {
-    "greeting": "Hello! 👋 I'm your TravelIQ AI travel assistant. I can help you with route optimization, delay predictions, fare forecasts, local food recommendations, or travel safety tips. What would you like to plan today?",
+    "greeting": "Hello! 👋 I'm your AEVORA AI travel assistant. I can help you with route optimization, delay predictions, fare forecasts, local food recommendations, or travel safety tips. What would you like to plan today?",
     "fare_inquiry": "To book the cheapest fares, look for Sleeper Class (SL) or 3rd AC (3A) trains and reserve 30-60 days early. Flying is usually cheaper when booked 4+ weeks in advance on Tuesdays or Wednesdays.",
     "cheapest_fare": "To book the cheapest fares, look for Sleeper Class (SL) or 3rd AC (3A) trains and reserve 30-60 days early. Flying is usually cheaper when booked 4+ weeks in advance on Tuesdays or Wednesdays.",
     "speed_inquiry": "For speeds up to 130 km/h, look for Vande Bharat, Shatabdi, or Rajdhani Express trains. For cross-country travel (>500km), domestic flights are the fastest option.",
@@ -537,8 +541,8 @@ TRAVEL_KNOWLEDGE_DYN = {
     "weather_aware": "Weather changes delay journeys. Check for regional storm warnings or heavy fog alerts before boarding. Plan a 1-hour buffer for flights during extreme weather.",
     "admin_metrics": "The Admin Panel shows neural network performance metrics, model accuracies, loss curves, prediction rates, and retrain controllers.",
     "admin_dashboard": "The Admin Panel shows neural network performance metrics, model accuracies, loss curves, prediction rates, and retrain controllers.",
-    "general_info": "TravelIQ is an AI-powered travel intelligence dashboard. You can toggle dark mode, update your profile details, audit booking logs, and request SOS alerts.",
-    "general_faq": "TravelIQ is an AI-powered travel intelligence dashboard. You can toggle dark mode, update your profile details, audit booking logs, and request SOS alerts."
+    "general_info": "AEVORA is an AI-powered travel intelligence dashboard. You can toggle dark mode, update your profile details, audit booking logs, and request SOS alerts.",
+    "general_faq": "AEVORA is an AI-powered travel intelligence dashboard. You can toggle dark mode, update your profile details, audit booking logs, and request SOS alerts."
 }
 
 # ─── Google Gemini API Integration ───
@@ -574,7 +578,7 @@ def generate_gemini_response(user_message: str) -> str:
     payload = {
         "contents": [{
             "parts": [{
-                "text": f"You are TravelIQ AI, a helpful futuristic travel assistant. Answer the user's travel question concisely in 2-3 friendly sentences: {user_message}"
+                "text": f"You are AEVORA AI, a helpful futuristic travel assistant. Answer the user's travel question concisely in 2-3 friendly sentences: {user_message}"
             }]
         }],
         "generationConfig": {
@@ -679,7 +683,7 @@ def generate_expert_traveliq_response(message: str) -> dict:
     # 1. Developer API Keys / B2B Portal
     if any(k in clean for k in ["api key", "developer key", "b2b", "x-api-key", "api token", "developer portal", "developer hub", "rate limit", "telemetry", "sdk", "endpoint"]):
         return {
-            "response": "🔑 **How to Generate & Use TravelIQ Developer API Keys**:\n\n1. **Open Developer Portal**: Click **Explore → B2B Developer Hub** (or navigate to your workspace).\n2. **Generate Key**: Click the **'Generate API Key'** button, name your application/organization, and select your tier (Sandbox or Production).\n3. **Authenticate Requests**: Include the header `X-API-Key: tiq_live_your_key_here` in your HTTP requests.\n4. **Available Endpoints**:\n   • `POST /api/v1/predict/delay` — AI Train Delay Forecast\n   • `POST /api/v1/predict/fare` — Dynamic Multi-Modal Fare Predictor\n   • `POST /api/v1/optimize-route` — Route & Carbon Optimization\n   • `POST /api/v1/predict/crowd` — Live Platform Density Estimation\n\nTrack your live usage, response latency, and rate limits in real-time under the **Telemetry** tab!",
+            "response": "🔑 **How to Generate & Use AEVORA Developer API Keys**:\n\n1. **Open Developer Portal**: Click **Explore → B2B Developer Hub** (or navigate to your workspace).\n2. **Generate Key**: Click the **'Generate API Key'** button, name your application/organization, and select your tier (Sandbox or Production).\n3. **Authenticate Requests**: Include the header `X-API-Key: tiq_live_your_key_here` in your HTTP requests.\n4. **Available Endpoints**:\n   • `POST /api/v1/predict/delay` — AI Train Delay Forecast\n   • `POST /api/v1/predict/fare` — Dynamic Multi-Modal Fare Predictor\n   • `POST /api/v1/optimize-route` — Route & Carbon Optimization\n   • `POST /api/v1/predict/crowd` — Live Platform Density Estimation\n\nTrack your live usage, response latency, and rate limits in real-time under the **Telemetry** tab!",
             "intent": "developer_api_keys",
             "confidence": 99.0
         }
@@ -687,7 +691,7 @@ def generate_expert_traveliq_response(message: str) -> dict:
     # 2. Train Search & Booking Assistance
     if any(k in clean for k in ["book in train", "book train", "book ticket", "how to book", "rail booking", "reserve seat", "irctc booking", "tatkal"]):
         return {
-            "response": "🚆 **Step-by-Step Guide to Booking Train Tickets on TravelIQ**:\n\n1. **Search Route**: Click **Plan Trip** on the top navigation bar and enter your **Origin** (e.g. NDLS) & **Destination** (e.g. CSTM).\n2. **Select Class**: Choose your preferred class — **1A** (First AC), **2A** (2-Tier), **3A** (3-Tier), **CC** (Chair Car), or **SL** (Sleeper).\n3. **Passenger Info**: Fill in traveler names, ages, gender, and preferred berths (Lower, Middle, Upper, Side Lower).\n4. **Sandbox / Instant Payment**: Pay securely via the interactive Dynamic UPI QR code or Card sandbox.\n5. **Official E-Ticket**: Instantly generate and print your **IRCTC Co-Branded Electronic Reservation Slip (ERS)** with confirmed PNR, Coach/Berth allocations, and security QR code!",
+            "response": "🚆 **Step-by-Step Guide to Booking Train Tickets on AEVORA**:\n\n1. **Search Route**: Click **Plan Trip** on the top navigation bar and enter your **Origin** (e.g. NDLS) & **Destination** (e.g. CSTM).\n2. **Select Class**: Choose your preferred class — **1A** (First AC), **2A** (2-Tier), **3A** (3-Tier), **CC** (Chair Car), or **SL** (Sleeper).\n3. **Passenger Info**: Fill in traveler names, ages, gender, and preferred berths (Lower, Middle, Upper, Side Lower).\n4. **Sandbox / Instant Payment**: Pay securely via the interactive Dynamic UPI QR code or Card sandbox.\n5. **Official E-Ticket**: Instantly generate and print your **IRCTC Co-Branded Electronic Reservation Slip (ERS)** with confirmed PNR, Coach/Berth allocations, and security QR code!",
             "intent": "train_booking_guide",
             "confidence": 98.5
         }
@@ -695,7 +699,7 @@ def generate_expert_traveliq_response(message: str) -> dict:
     # 3. Hotels, Hostels, Capsule Pods & Stays
     if any(k in clean for k in ["hotel", "hostel", "dorm", "capsule pod", "homestay", "stay in", "book hotel", "room reservation", "e-voucher"]):
         return {
-            "response": "🏨 **TravelIQ Stays & Backpacker Dorms**:\n\n• **Zero Prepayment**: Reserve verified hotels, homestays, and budget pod hostels with 0% upfront prepayment.\n• **Curated Options**: Filter by backpacker dorms (from ₹499/bed), luxury resorts, and homestays with verified amenities (WiFi, Hot Water, Breakfast).\n• **Free Cancellation**: Cancel anytime up to 24 hours prior to check-in without penalty.\n• **Instant e-Voucher**: Download your official MakeMyTrip / OYO-style Tax Invoice & PDF Voucher under **'My Trips → Hotels & Stays'**!",
+            "response": "🏨 **AEVORA Stays & Backpacker Dorms**:\n\n• **Zero Prepayment**: Reserve verified hotels, homestays, and budget pod hostels with 0% upfront prepayment.\n• **Curated Options**: Filter by backpacker dorms (from ₹499/bed), luxury resorts, and homestays with verified amenities (WiFi, Hot Water, Breakfast).\n• **Free Cancellation**: Cancel anytime up to 24 hours prior to check-in without penalty.\n• **Instant e-Voucher**: Download your official MakeMyTrip / OYO-style Tax Invoice & PDF Voucher under **'My Trips → Hotels & Stays'**!",
             "intent": "hotel_stays_guide",
             "confidence": 98.0
         }
@@ -717,7 +721,7 @@ def generate_expert_traveliq_response(message: str) -> dict:
     # 5. Train Delays & Live GPS Tracking
     if any(k in clean for k in ["delay", "running status", "live status", "train late", "delay predictor", "gps track"]):
         return {
-            "response": "⏱️ **AI Train Delay & Live Tracking Intelligence**:\n\nTravelIQ uses deep LSTM Recurrent Neural Networks analyzing historical punctuality records, route choke-points, and real-time monsoon/winter fog weather data.\n\n• **Check Live Delays**: Go to **'Live Train GPS Tracker'** and enter any 5-digit Train Number (e.g. 12951, 12004, 22436).\n• **Expected Accuracy**: Up to 94.6% confidence with dynamic arrival and platform predictions!",
+            "response": "⏱️ **AI Train Delay & Live Tracking Intelligence**:\n\nAEVORA uses deep LSTM Recurrent Neural Networks analyzing historical punctuality records, route choke-points, and real-time monsoon/winter fog weather data.\n\n• **Check Live Delays**: Go to **'Live Train GPS Tracker'** and enter any 5-digit Train Number (e.g. 12951, 12004, 22436).\n• **Expected Accuracy**: Up to 94.6% confidence with dynamic arrival and platform predictions!",
             "intent": "delay_prediction_guide",
             "confidence": 97.5
         }
@@ -749,7 +753,7 @@ def generate_expert_traveliq_response(message: str) -> dict:
     # 9. Safety, Emergency & SOS Alerts
     if any(k in clean for k in ["sos", "emergency", "safety", "helpline", "security", "rpf", "police", "unsafe"]):
         return {
-            "response": "🛡️ **Travel Safety & SOS Emergency Network**:\n\n• **Indian Railways Helpline**: Dial **139** (24x7 Security, Medical Emergency, Childline, and Complaints).\n• **TravelIQ Live SOS**: Broadcast your real-time GPS coordinates, PNR details, and train coach to emergency contacts via the **Security Hub**.\n• **Women Traveler Safety**: Railway Protection Force (RPF) 'Meri Saheli' squads provide dedicated escorts on late-night transit routes.",
+            "response": "🛡️ **Travel Safety & SOS Emergency Network**:\n\n• **Indian Railways Helpline**: Dial **139** (24x7 Security, Medical Emergency, Childline, and Complaints).\n• **AEVORA Live SOS**: Broadcast your real-time GPS coordinates, PNR details, and train coach to emergency contacts via the **Security Hub**.\n• **Women Traveler Safety**: Railway Protection Force (RPF) 'Meri Saheli' squads provide dedicated escorts on late-night transit routes.",
             "intent": "safety_sos_guide",
             "confidence": 99.0
         }
@@ -861,7 +865,7 @@ def generate_grounded_routing_chat(message: str):
         }
 
     grounded_system_prompt = (
-        "You are TravelIQ's Grounded Routing Engine.\n"
+        "You are AEVORA's Grounded Routing Engine.\n"
         "You must answer the user's inquiry using ONLY the data explicitly provided inside <verified_transit_data>.\n\n"
         "RULES:\n"
         "1. NEVER cite or invent any train number, operator name, timing, or fare not present in <verified_transit_data>.\n"
@@ -934,7 +938,7 @@ def chat(req: ChatRequest):
     if grounded_reply:
         return {
             "response": grounded_reply,
-            "suggestion": "Verified by TravelIQ Deterministic Routing Engine 🛡️",
+            "suggestion": "Verified by AEVORA Deterministic Routing Engine 🛡️",
             "confidence": 99.9,
             "intent": "grounded_transit_routing"
         }
@@ -954,7 +958,7 @@ def chat(req: ChatRequest):
     if domain_match:
         return {
             "response": domain_match["response"],
-            "suggestion": "Explore related tools on your TravelIQ Dashboard!",
+            "suggestion": "Explore related tools on your AEVORA Dashboard!",
             "confidence": domain_match["confidence"],
             "intent": domain_match["intent"]
         }
@@ -966,7 +970,7 @@ def chat(req: ChatRequest):
         if rag_res and rag_res.get("response") and rag_res.get("confidence", 0) >= 80.0:
             return {
                 "response": rag_res["response"],
-                "suggestion": "Retrieved from verified TravelIQ Knowledge Base 📚",
+                "suggestion": "Retrieved from verified AEVORA Knowledge Base 📚",
                 "confidence": rag_res["confidence"],
                 "intent": "rag_knowledge"
             }
@@ -976,7 +980,7 @@ def chat(req: ChatRequest):
     # 4. Fallback to PyTorch Intent Classifier Neural Network
     if not model_chatbot:
         return {
-            "response": "Hello! I am your TravelIQ Assistant. I can assist you with Developer API keys, train booking steps, verified hotel stays, multi-day itineraries, delay predictions, station food delivery, and safety alerts!",
+            "response": "Hello! I am your AEVORA Assistant. I can assist you with Developer API keys, train booking steps, verified hotel stays, multi-day itineraries, delay predictions, station food delivery, and safety alerts!",
             "suggestion": "Ask 'How to get developer api key' or 'Plan 5-day trip to Manali'",
             "confidence": 80.0,
             "intent": "general_faq"
@@ -994,7 +998,7 @@ def chat(req: ChatRequest):
             prob = float(torch.softmax(logits, dim=-1)[0][intent_idx].item())
             
         intent = INTENT_CLASSES[intent_idx]
-        response_text = TRAVEL_KNOWLEDGE_DYN.get(intent, "TravelIQ is an AI-powered travel intelligence dashboard. You can plan multimodal routes, check delay forecasts, explore 3D stations, audit booking logs, and request SOS alerts.")
+        response_text = TRAVEL_KNOWLEDGE_DYN.get(intent, "AEVORA is an AI-powered travel intelligence dashboard. You can plan multimodal routes, check delay forecasts, explore 3D stations, audit booking logs, and request SOS alerts.")
         
         # Dynamic matching for route stations
         route_match = re.search(r'(?:from|between)\s+(\w+)\s+(?:to|and)\s+(\w+)', req.message.lower())
@@ -1011,7 +1015,7 @@ def chat(req: ChatRequest):
     except Exception as e:
         logger.error(f"Error in chat processing: {e}")
         return {
-            "response": "Hello! I am your TravelIQ AI assistant. Ask me about developer API keys, train tickets, hotel stays, delay predictions, or city itineraries!",
+            "response": "Hello! I am your AEVORA AI assistant. Ask me about developer API keys, train tickets, hotel stays, delay predictions, or city itineraries!",
             "suggestion": None,
             "confidence": 75.0,
             "intent": "general_faq"
@@ -1394,7 +1398,7 @@ def copilot_query(request: CopilotRequest):
         dest = dst_extracted if dst_extracted else "Destination"
         
         verified_trains = []
-        sources = ["TravelIQ Grounded Routing Engine"]
+        sources = ["AEVORA Grounded Routing Engine"]
         route_info = None
 
         if src_extracted and dst_extracted:
@@ -1404,7 +1408,7 @@ def copilot_query(request: CopilotRequest):
                 logger.error(f"Copilot routing error: {e}")
 
         if route_info and route_info.get("verified"):
-            sources.append("TravelIQ Verified Corridor Registry")
+            sources.append("AEVORA Verified Corridor Registry")
             for r_text in route_info.get("route", []):
                 verified_trains.append({
                     "service_name": r_text,

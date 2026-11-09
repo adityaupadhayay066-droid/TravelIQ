@@ -44,7 +44,7 @@ async function sendEmail({ to, subject, html, text, otpCode, purpose = 'notifica
     if (!isSmtpConfigured()) {
         if (otpCode) {
             console.log('\n┌────────────────────────────────────────────────────────┐');
-            console.log(`│ 🔒 [TRAVELIQ DEV OTP] ${purpose.toUpperCase()}`);
+            console.log(`│ 🔒 [AEVORA DEV OTP] ${purpose.toUpperCase()}`);
             console.log(`│ To: ${to}`);
             console.log(`│ 🔑 Verification Code: ${otpCode}`);
             console.log(`│ (SMTP not configured. Real email simulated)            `);
@@ -58,7 +58,7 @@ async function sendEmail({ to, subject, html, text, otpCode, purpose = 'notifica
     try {
         const transporter = getTransporter();
         const mailOptions = {
-            from: `"TravelIQ Security" <${(process.env.SMTP_USER || process.env.EMAIL_USER).trim()}>`,
+            from: `"AEVORA Security" <${(process.env.SMTP_USER || process.env.EMAIL_USER).trim()}>`,
             to,
             subject,
             ...(html ? { html } : {}),
@@ -97,15 +97,15 @@ async function sendBookingConfirmation({ user, booking }) {
 
     const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff;">
-        <div style="background: #173F3A; padding: 28px 24px; text-align: center; color: #ffffff;">
-            <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">TravelIQ E-Ticket Confirmation</h1>
-            <p style="margin: 6px 0 0; font-size: 13px; color: #a7f3d0;">Your reservation has been confirmed and verified!</p>
+        <div style="background: #101B2D; padding: 28px 24px; text-align: center; color: #ffffff;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.5px;">AEVORA E-Ticket Confirmation</h1>
+            <p style="margin: 6px 0 0; font-size: 13px; color: #20C5D9;">Your reservation has been confirmed and verified!</p>
         </div>
         <div style="padding: 24px;">
             <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">TravelIQ Booking Ref:</span>
-                    <strong style="font-size: 15px; color: #173F3A; font-family: monospace;">${bookingRef}</strong>
+                    <span style="font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase;">AEVORA Booking Ref:</span>
+                    <strong style="font-size: 15px; color: #101B2D; font-family: monospace;">${bookingRef}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span style="font-size: 12px; color: #64748b;">Service Number:</span>
@@ -124,7 +124,7 @@ async function sendBookingConfirmation({ user, booking }) {
                     <strong style="font-size: 13px; color: #0f172a;">${passengerNames || user.name} (${booking.total_passengers || 1})</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 8px;">
-                    <span style="font-size: 13px; color: #173F3A; font-weight: bold;">Total Amount Paid:</span>
+                    <span style="font-size: 13px; color: #101B2D; font-weight: bold;">Total Amount Paid:</span>
                     <strong style="font-size: 16px; color: #15803d;">₹${(booking.ticket_fare || 0).toLocaleString()}</strong>
                 </div>
             </div>
@@ -133,7 +133,7 @@ async function sendBookingConfirmation({ user, booking }) {
             </p>
         </div>
         <div style="background: #f1f5f9; padding: 14px; text-align: center; font-size: 11px; color: #94a3b8;">
-            TravelIQ AI Smart Travel Assistant • Automated Notification Dispatch
+            AEVORA AI Smart Travel Assistant • Automated Notification Dispatch
         </div>
     </div>
     `;
@@ -148,7 +148,7 @@ async function sendBookingConfirmation({ user, booking }) {
 
     // 2. Simulated SMS Notification
     console.log('\n┌────────────────────────────────────────────────────────┐');
-    console.log(`│ 📱 [TRAVELIQ SMS SIMULATOR] Booking SMS Dispatched    `);
+    console.log(`│ 📱 [AEVORA SMS SIMULATOR] Booking SMS Dispatched      `);
     console.log(`│ To: ${user.phone || 'N/A'} (${user.name || 'Traveler'})`);
     console.log(`│ Booking Ref: ${bookingRef} | Train: #${booking.train_number || '12301'}`);
     console.log(`│ Route: ${booking.source_station_code} ➔ ${booking.destination_station_code}`);

@@ -113,7 +113,7 @@ export default function EcoTrackerPage() {
                                     <Award className="w-10 h-10 text-[#4F7D62]" />
                                 </div>
                                 <h3 className="text-xs text-[#66736F] dark:text-[#A3B0AB] font-semibold uppercase tracking-widest mb-1">
-                                    TravelIQ Badge Rank
+                                    AEVORA Badge Rank
                                 </h3>
                                 <h2 className="text-xl font-bold text-[#263238] dark:text-[#F7F8FA] leading-tight">
                                     {summary?.badge || 'Bronze Eco-Traveler'}
@@ -269,7 +269,7 @@ export default function EcoTrackerPage() {
                                             <div>
                                                 <h5 className="text-xs text-[#263238] dark:text-[#F7F8FA] font-bold mb-1">Eco-Travel Tips</h5>
                                                 <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB] leading-relaxed">
-                                                    Choosing trains over short-haul regional flights reduces your carbon footprints by **up to 85%**! Green choices immediately improve your TravelIQ Eco Score and help you achieve the **Gold Green Pioneer** badge rank!
+                                                    Choosing trains over short-haul regional flights reduces your carbon footprints by **up to 85%**! Green choices immediately improve your AEVORA Eco Score and help you achieve the **Gold Green Pioneer** badge rank!
                                                 </p>
                                             </div>
                                         </div>

@@ -33,7 +33,7 @@ export default function AIAssistantPage() {
             timestamp: new Date(Date.now() - 5 * 60000),
             latency: '240ms',
             status: 'Success',
-            model: 'TravelIQ-RAG-v2 (Gemini Flash)',
+            model: 'AEVORA-RAG-v2 (Gemini Flash)',
             tokens: 420,
             confidence: '98.5%'
         },
@@ -57,7 +57,7 @@ export default function AIAssistantPage() {
             timestamp: new Date(Date.now() - 42 * 60000),
             latency: '175ms',
             status: 'Success',
-            model: 'TravelIQ-RAG-v2 (Gemini Flash)',
+            model: 'AEVORA-RAG-v2 (Gemini Flash)',
             tokens: 280,
             confidence: '97.8%'
         },
@@ -69,7 +69,7 @@ export default function AIAssistantPage() {
             timestamp: new Date(Date.now() - 75 * 60000),
             latency: '160ms',
             status: 'Success',
-            model: 'TravelIQ-RAG-v2 (Gemini Flash)',
+            model: 'AEVORA-RAG-v2 (Gemini Flash)',
             tokens: 190,
             confidence: '99.8%'
         }

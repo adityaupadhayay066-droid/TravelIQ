@@ -1,8 +1,11 @@
 /* ===== External Fonts ===== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* ===== Leaflet CSS ===== */
 @import "leaflet/dist/leaflet.css";
+
+/* ===== AEVORA Brand Utilities ===== */
+@import "./styles/brand.css";
 
 /* ===== Tailwind CSS v4 ===== */
 @import "tailwindcss";
@@ -45,44 +48,45 @@ html, body {
   background: rgba(163, 176, 171, 0.45);
 }
 
-/* ===== TravelIQ Production Travel Design Tokens ===== */
+/* ===== AEVORA Unified Travel Intelligence Design Tokens ===== */
 :root,
 .light,
 [data-theme="light"] {
   color-scheme: light;
-  --color-bg: #F7F8FA;
+  --color-bg: #F4F7FB;
   --color-surface: #FFFFFF;
-  --color-cream: #F7F8FA;
-  --color-primary: #244C66;
-  --color-primary-hover: #193B51;
-  --color-primary-light: #356280;
-  --color-navy: #244C66;
-  --color-navy-dark: #193B51;
-  --color-teal: #244C66;
-  --color-teal-hover: #193B51;
-  --color-teal-light: #356280;
-  --color-teal-subtle: #EAF0F4;
-  --color-accent: #B66A45;
-  --color-accent-hover: #9E5633;
-  --color-secondary: #66737D;
-  --color-secondary-dark: #202A32;
-  --color-amber: #B66A45;
-  --color-orange: #B66A45;
-  --color-text: #202A32;
-  --color-text-secondary: #66737D;
-  --color-text-muted: #89939B;
-  --color-border: #E3E7EA;
-  --color-border-light: #EEF2F4;
-  --color-soft: #EEF2F4;
-  --color-section: #EEF2F4;
-  --color-nav-selected-bg: #EAF0F4;
-  --color-nav-selected-text: #244C66;
-  --color-danger: #B54747;
-  --color-error: #B54747;
-  --color-success: #287A55;
+  --color-cream: #F4F7FB;
+  --color-primary: #101B2D;
+  --color-primary-hover: #1A2E4C;
+  --color-primary-light: #20C5D9;
+  --color-navy: #101B2D;
+  --color-navy-dark: #0A111E;
+  --color-cyan: #20C5D9;
+  --color-teal: #42D6B5;
+  --color-teal-hover: #1EAF94;
+  --color-teal-light: #6EE7CD;
+  --color-teal-subtle: #E6FAF5;
+  --color-accent: #20C5D9;
+  --color-accent-hover: #17A2B3;
+  --color-secondary: #64748B;
+  --color-secondary-dark: #334155;
+  --color-amber: #F59E0B;
+  --color-orange: #F97316;
+  --color-text: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+  --color-soft: #F8FAFC;
+  --color-section: #F1F5F9;
+  --color-nav-selected-bg: #E6FAF5;
+  --color-nav-selected-text: #101B2D;
+  --color-danger: #EF4444;
+  --color-error: #EF4444;
+  --color-success: #10B981;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Sora', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -93,36 +97,37 @@ html, body {
 .dark,
 [data-theme="dark"] {
   color-scheme: dark;
-  --color-bg: #121921;
-  --color-surface: #1B242E;
-  --color-cream: #162029;
-  --color-primary: #5A8CAE;
-  --color-primary-hover: #75A4C4;
-  --color-primary-light: #90B9D4;
-  --color-navy: #1B242E;
-  --color-navy-dark: #121921;
-  --color-teal: #5A8CAE;
-  --color-teal-hover: #75A4C4;
-  --color-teal-light: #90B9D4;
-  --color-teal-subtle: #233240;
-  --color-accent: #C87E58;
-  --color-accent-hover: #DC926C;
-  --color-secondary: #9CAAB5;
-  --color-secondary-dark: #CAD3DA;
-  --color-amber: #C87E58;
-  --color-orange: #C87E58;
-  --color-text: #F0F4F7;
-  --color-text-secondary: #9CAAB5;
-  --color-text-muted: #768591;
-  --color-border: #293644;
-  --color-border-light: #202D3A;
-  --color-soft: #1D2833;
-  --color-section: #162029;
-  --color-nav-selected-bg: #233240;
-  --color-nav-selected-text: #75A4C4;
-  --color-danger: #D65C5C;
-  --color-error: #D65C5C;
-  --color-success: #349669;
+  --color-bg: #0A111E;
+  --color-surface: #101B2D;
+  --color-cream: #0D1626;
+  --color-primary: #20C5D9;
+  --color-primary-hover: #42D6B5;
+  --color-primary-light: #6EE7CD;
+  --color-navy: #101B2D;
+  --color-navy-dark: #080D18;
+  --color-cyan: #20C5D9;
+  --color-teal: #42D6B5;
+  --color-teal-hover: #6EE7CD;
+  --color-teal-light: #A7F3D0;
+  --color-teal-subtle: #122838;
+  --color-accent: #20C5D9;
+  --color-accent-hover: #42D6B5;
+  --color-secondary: #94A3B8;
+  --color-secondary-dark: #CBD5E1;
+  --color-amber: #FBBF24;
+  --color-orange: #FB923C;
+  --color-text: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-border: #1E293B;
+  --color-border-light: #162032;
+  --color-soft: #0E1828;
+  --color-section: #0C1524;
+  --color-nav-selected-bg: #122838;
+  --color-nav-selected-text: #20C5D9;
+  --color-danger: #F87171;
+  --color-error: #F87171;
+  --color-success: #34D399;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

@@ -36,7 +36,14 @@ const IdempotencyKey = sequelize.define('IdempotencyKey', {
   tableName: 'idempotency_keys',
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: false
+  updatedAt: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'operation', 'idempotency_key'],
+      name: 'idx_user_op_idempotency_unique'
+    }
+  ]
 });
 
 module.exports = IdempotencyKey;

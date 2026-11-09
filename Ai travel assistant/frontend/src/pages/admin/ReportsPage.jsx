@@ -338,7 +338,7 @@ export default function ReportsPage() {
                                 rows={2}
                                 value={internalNotes}
                                 onChange={(e) => setInternalNotes(e.target.value)}
-                                placeholder="Notes visible only to TravelIQ administrators..."
+                                placeholder="Notes visible only to AEVORA administrators..."
                                 className="w-full p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl text-xs text-[var(--color-text)] focus:outline-none focus:border-sky-500"
                             />
                         </div>

@@ -97,8 +97,8 @@ function resolveCoordinates(stationObj, fallbackName) {
     }
   }
 
-  // Default coordinate if completely unknown
-  return { lat: 26.0, lon: 80.0, name: fallbackName, code: 'STN' };
+  // Never fabricate coordinates or STN placeholders
+  return null;
 }
 
 // Format duration into Xh Ym
@@ -588,10 +588,18 @@ function discoverMultiModalRoutes(sourceStation, destStation, sourceInput, destI
   const srcCoord = resolveCoordinates(sourceStation, sourceInput);
   const dstCoord = resolveCoordinates(destStation, destInput);
 
+  if (!srcCoord || !dstCoord) {
+    const missingStation = !srcCoord ? (sourceInput || 'Origin') : (destInput || 'Destination');
+    const error = new Error(`STATION_NOT_FOUND: Unable to resolve verified station or coordinates for "${missingStation}".`);
+    error.statusCode = 400;
+    error.code = 'STATION_NOT_FOUND';
+    throw error;
+  }
+
   const distanceKm = Math.max(50, calculateDistance(srcCoord.lat, srcCoord.lon, dstCoord.lat, dstCoord.lon));
 
   const resolvedSource = {
-    station_code: sourceStation?.station_code || srcCoord.code || 'SRC',
+    station_code: sourceStation?.station_code || srcCoord.code,
     station_name: sourceStation?.station_name || srcCoord.name || sourceInput,
     city: sourceStation?.city || srcCoord.name,
     latitude: srcCoord.lat,
@@ -599,7 +607,7 @@ function discoverMultiModalRoutes(sourceStation, destStation, sourceInput, destI
   };
 
   const resolvedDest = {
-    station_code: destStation?.station_code || dstCoord.code || 'DST',
+    station_code: destStation?.station_code || dstCoord.code,
     station_name: destStation?.station_name || dstCoord.name || destInput,
     city: destStation?.city || dstCoord.name,
     latitude: dstCoord.lat,

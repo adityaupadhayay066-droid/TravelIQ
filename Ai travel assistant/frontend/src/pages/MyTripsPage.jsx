@@ -67,7 +67,7 @@ export default function MyTripsPage() {
   };
 
   // Generate mock printable PDF Receipt trigger for trains
-  // Generate official IRCTC & TravelIQ E-Ticket Receipt
+  // Generate official IRCTC & AEVORA E-Ticket Receipt
   const handlePrintReceipt = (booking) => {
     window.open(`/api/payment/ticket/${booking.id}/pdf`, '_blank');
   };

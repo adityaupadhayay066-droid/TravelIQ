@@ -32,7 +32,7 @@ def test_public_endpoints_accessible_without_auth():
     """Verify that only genuinely public endpoints (/ and /health) are accessible without auth."""
     res_root = client.get("/")
     assert res_root.status_code == 200
-    assert "TravelIQ" in res_root.json()["message"]
+    assert "AEVORA" in res_root.json()["message"] or "TravelIQ" in res_root.json()["message"]
 
     res_health = client.get("/health")
     assert res_health.status_code == 200

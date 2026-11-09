@@ -15,8 +15,8 @@ export default function SettingsPage() {
     const [ipWhitelist, setIpWhitelist] = useState('127.0.0.1, 192.168.1.0/24');
 
     // Platform Settings
-    const [platformName, setPlatformName] = useState('TravelIQ AI Travel Assistant');
-    const [supportEmail, setSupportEmail] = useState('support@traveliq.com');
+    const [platformName, setPlatformName] = useState('AEVORA AI Travel Assistant');
+    const [supportEmail, setSupportEmail] = useState('support@aevora.travel');
     const [defaultCurrency, setDefaultCurrency] = useState('INR (₹)');
     const [maintenanceMode, setMaintenanceMode] = useState(false);
 

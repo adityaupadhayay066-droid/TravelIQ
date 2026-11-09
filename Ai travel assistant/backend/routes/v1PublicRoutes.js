@@ -13,7 +13,7 @@ router.use(requireApiKey);
 router.get('/ping', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'TravelIQ API Key authenticated successfully',
+    message: 'AEVORA API Key authenticated successfully',
     organization: req.organization.name,
     plan_tier: req.organization.plan_tier,
     quota_limit: req.organization.monthly_quota,

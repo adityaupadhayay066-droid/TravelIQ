@@ -1,0 +1,48 @@
+/**
+ * AEVORA Design System Brand Utilities
+ * Core palette:
+ * - Midnight Navy: #101B2D
+ * - Electric Cyan: #20C5D9
+ * - Aurora Teal:   #42D6B5
+ * - Cloud White:   #F4F7FB
+ * - Slate Grey:    #64748B
+ */
+
+:root {
+  --aevora-navy: #101B2D;
+  --aevora-cyan: #20C5D9;
+  --aevora-teal: #42D6B5;
+  --aevora-cloud: #F4F7FB;
+  --aevora-surface: #FFFFFF;
+  --aevora-slate: #64748B;
+  --aevora-gradient: linear-gradient(135deg, #20C5D9 0%, #42D6B5 100%);
+}
+
+.font-heading {
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.bg-aevora-navy {
+  background-color: #101B2D;
+}
+
+.text-aevora-cyan {
+  color: #20C5D9;
+}
+
+.text-aevora-teal {
+  color: #42D6B5;
+}
+
+.bg-aevora-gradient {
+  background: linear-gradient(135deg, #20C5D9 0%, #42D6B5 100%);
+}
+
+.border-aevora-cyan {
+  border-color: #20C5D9;
+}
+

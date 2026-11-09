@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import Logo from './brand/Logo';
 
 /* ==========================================================================
    PRIMARY TRAVEL CATEGORIES (MakeMyTrip / Skyscanner inspired, TravelIQ identity)
@@ -273,29 +274,9 @@ export default function Navbar() {
       >
         <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 h-[64px] flex items-center justify-between gap-3 sm:gap-6">
           
-          {/* LEFT: TRAVELIQ BRAND LOGO */}
+          {/* LEFT: AEVORA BRAND LOGO */}
           <div className="flex items-center gap-3 shrink-0">
-            <Link 
-              to="/" 
-              className="flex items-center gap-2.5 group whitespace-nowrap"
-              aria-label="TravelIQ Homepage"
-            >
-              {/* Distinctive Travel Compass Route Icon */}
-              <div className="w-8 h-8 rounded-lg bg-[#244C66] text-white flex items-center justify-center shadow-xs transition-opacity duration-200 group-hover:opacity-90">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" />
-                </svg>
-              </div>
-
-              <div className="flex flex-col">
-                <div className="flex items-center text-lg font-bold tracking-tight leading-none text-[#244C66] dark:text-[#F0F4F7]">
-                  <span>TravelIQ</span>
-                </div>
-                <span className="text-[9.5px] font-medium text-[#89939B] tracking-wider uppercase leading-none mt-0.5 hidden xs:inline">
-                  Smart Travel Assistant
-                </span>
-              </div>
-            </Link>
+            <Logo size="md" withTagline={true} />
           </div>
 
           {/* CENTER: TRAVEL CATEGORY TABS (Visible only after login/signup) */}

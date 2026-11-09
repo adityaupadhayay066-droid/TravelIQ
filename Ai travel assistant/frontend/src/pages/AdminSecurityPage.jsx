@@ -366,7 +366,7 @@ export default function AdminSecurityPage() {
                   <Globe className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
                   Platform Login History Log
                 </h3>
-                <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] mt-1">Historical records of logins registered on TravelIQ.</p>
+                <p className="text-sm text-[#66736F] dark:text-[#A3B0AB] mt-1">Historical records of logins registered on AEVORA.</p>
               </div>
 
               <div className="overflow-x-auto">

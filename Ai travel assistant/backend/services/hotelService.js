@@ -729,7 +729,7 @@ function calculateAuthoritativePricing(hotelName, city, roomType, nights, unitsC
 
   let discount = 0;
   const cleanPromo = (promoCode || '').trim().toUpperCase();
-  if (cleanPromo === 'TRAVELIQ10' || cleanPromo === 'WELCOME10') {
+  if (cleanPromo === 'AEVORA10' || cleanPromo === 'AEVORA' || cleanPromo === 'TRAVELIQ10' || cleanPromo === 'WELCOME10') {
     discount = Math.round(baseTotal * 0.10);
   } else if (cleanPromo === 'SUPERSTAY20') {
     discount = Math.round(baseTotal * 0.20);

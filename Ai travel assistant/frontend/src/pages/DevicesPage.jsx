@@ -104,7 +104,7 @@ export default function DevicesPage() {
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-['Manrope']">Device Management</h1>
                     <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">
-                        Audit and manage active browsers and devices currently signed in to your TravelIQ account.
+                        Audit and manage active browsers and devices currently signed in to your AEVORA account.
                     </p>
                 </div>
 

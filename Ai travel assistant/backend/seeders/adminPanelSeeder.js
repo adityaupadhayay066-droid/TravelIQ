@@ -139,7 +139,7 @@ const seedAdminPanelData = async () => {
             {
                 report_id: 'REP-10845',
                 user_name: 'Siddharth Nair',
-                user_email: 'sid.nair@traveliq.com',
+                user_email: 'sid.nair@aevora.travel',
                 category: 'Website bug',
                 subject: 'Search filter on mobile screen overlaps fare card',
                 description: 'When tapping filter modal on Safari iOS 18, the apply button is partially obscured by safe area margin.',
@@ -176,7 +176,7 @@ const seedAdminPanelData = async () => {
             {
                 type: 'security_alert',
                 title: 'Multiple Failed Admin Login Attempts',
-                message: '5 failed login attempts detected from IP 192.168.1.104 targeting admin@traveliq.com. Rate limit triggered.',
+                message: '5 failed login attempts detected from IP 192.168.1.104 targeting admin@aevora.travel. Rate limit triggered.',
                 severity: 'warning',
                 read: false,
                 action_url: '/admin/audit-logs'

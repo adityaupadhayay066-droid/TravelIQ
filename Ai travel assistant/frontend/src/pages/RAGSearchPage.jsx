@@ -44,7 +44,7 @@ export default function RAGSearchPage() {
       const isKolkata = finalQ.toLowerCase().includes('kolkata');
       const fallbackAns = isKolkata ? 
         "🏛️ Top Best Places to Visit in Kolkata:\n1. Victoria Memorial — Magnificent marble monument & gardens.\n2. Howrah Bridge — Iconic cantilever bridge over the Hooghly River.\n3. Park Street — Premier food, culture & heritage hub.\n4. Dakshineswar Kali Temple — Historic spiritual riverfront shrine.\n5. Princep Ghat — Beautiful riverfront promenade & sunset views." :
-        `TravelIQ AI Travel Assistant: For "${finalQ}", we recommend planning early, checking train/flight options on the dashboard, and tracking live delay alerts.`;
+        `AEVORA AI Travel Assistant: For "${finalQ}", we recommend planning early, checking train/flight options on the dashboard, and tracking live delay alerts.`;
       
       const demo = {
         answer: fallbackAns,
@@ -73,7 +73,7 @@ export default function RAGSearchPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] font-manrope">RAG Knowledge Search</h1>
-          <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm font-inter">Ask questions and get answers from the TravelIQ document knowledge base with source citations.</p>
+          <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm font-inter">Ask questions and get answers from the AEVORA document knowledge base with source citations.</p>
         </div>
       </div>
 

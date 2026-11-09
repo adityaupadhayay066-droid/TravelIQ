@@ -16,7 +16,7 @@ import { printHotelInvoice } from '../utils/hotelInvoiceGenerator';
 const COUPONS = [
   { code: 'HOSTEL20', label: '20% OFF Hostels & Dorms', discountPercent: 20, maxDiscount: 600, forHostelOnly: true },
   { code: 'OYO300', label: 'Flat ₹300 OFF on Stays', flatDiscount: 300, minTotal: 1200 },
-  { code: 'TRAVELIQ', label: '15% Member Discount', discountPercent: 15, maxDiscount: 1500 }
+  { code: 'AEVORA', label: '15% Member Discount', discountPercent: 15, maxDiscount: 1500 }
 ];
 
 export default function HotelBookingModal({ 
@@ -145,7 +145,7 @@ export default function HotelBookingModal({
   const [copiedCode, setCopiedCode] = useState(false);
 
   // UPI & QR states
-  const DUMMY_HOTEL_UPI = 'traveliq.stays@icici';
+  const DUMMY_HOTEL_UPI = 'aevora.stays@icici';
   const [upiOption, setUpiOption] = useState('qr'); // 'qr' | 'vpa'
   const [upiId, setUpiId] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -378,7 +378,7 @@ export default function HotelBookingModal({
   // Generate dynamic crisp QR code
   useEffect(() => {
     if (pricing.grandTotal > 0) {
-      const dummyPayload = `upi://pay?pa=${DUMMY_HOTEL_UPI}&pn=TravelIQ%20Stays&am=${pricing.grandTotal}&cu=INR&tn=HotelStay_${hotel?.name || 'Stay'}_${Date.now()}`;
+      const dummyPayload = `upi://pay?pa=${DUMMY_HOTEL_UPI}&pn=AEVORA%20Stays&am=${pricing.grandTotal}&cu=INR&tn=HotelStay_${hotel?.name || 'Stay'}_${Date.now()}`;
       QRCode.toDataURL(dummyPayload, {
         width: 400,
         margin: 2,
@@ -523,7 +523,7 @@ export default function HotelBookingModal({
       } else if (paymentTab === 'netbanking') {
         finalPaymentMethod = `Net Banking (${selectedBank})`;
       } else if (paymentTab === 'wallet') {
-        finalPaymentMethod = `TravelIQ PayLater (${payLaterChoice})`;
+        finalPaymentMethod = `AEVORA PayLater (${payLaterChoice})`;
       }
     }
 
@@ -1722,7 +1722,7 @@ export default function HotelBookingModal({
                         {[
                           { id: 'LazyPay', title: 'LazyPay', desc: '15 Days 0% EMI' },
                           { id: 'Simpl', title: 'Simpl PayLater', desc: '1-Click Checkout' },
-                          { id: 'TravelIQ Rupee', title: 'TravelIQ Wallet', desc: 'Instant Points Redemption' }
+                          { id: 'AEVORA Rupee', title: 'AEVORA Wallet', desc: 'Instant Points Redemption' }
                         ].map(w => (
                           <button
                             key={w.id}
@@ -1764,7 +1764,7 @@ export default function HotelBookingModal({
                     Stay Confirmed at {confirmedBooking.hotelName || hotel.name}!
                   </h3>
                   <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
-                    Your official TravelIQ Hotel Booking Voucher & Tax Invoice is generated below.
+                    Your official AEVORA Hotel Booking Voucher & Tax Invoice is generated below.
                   </p>
                 </div>
               </div>
@@ -1817,7 +1817,7 @@ export default function HotelBookingModal({
                         {confirmedBooking.guestName || guestName || 'Verified Guest'}
                       </h4>
                       <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] mt-0.5 font-medium">
-                        📞 {confirmedBooking.guestPhone || guestPhone || 'Not Provided'} &nbsp;|&nbsp; ✉️ {confirmedBooking.guestEmail || guestEmail || 'guest@traveliq.local'}
+                        📞 {confirmedBooking.guestPhone || guestPhone || 'Not Provided'} &nbsp;|&nbsp; ✉️ {confirmedBooking.guestEmail || guestEmail || 'guest@aevora.travel'}
                       </p>
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
                         <span className="text-[10px] text-[#14532D] dark:text-[#F0F4F7] bg-[#F0F4F7] dark:bg-[#1E332C] px-2 py-0.5 rounded font-semibold">
@@ -2198,7 +2198,7 @@ export default function HotelBookingModal({
                             className="mt-0.5 rounded text-[#15803D] focus:ring-[#15803D] accent-[#15803D]"
                           />
                           <span className="text-[11px] text-[#475569] dark:text-[#CBD5E1] leading-relaxed">
-                            I give my consent to <strong>DigiLocker (MeitY, Government of India)</strong> to authenticate my identity and release my digitally verified e-KYC document XML to <strong>TravelIQ Stays</strong> for hotel guest check-in statutory compliance under Sec. 40 of Indian Registration Act.
+                            I give my consent to <strong>DigiLocker (MeitY, Government of India)</strong> to authenticate my identity and release my digitally verified e-KYC document XML to <strong>AEVORA Stays</strong> for hotel guest check-in statutory compliance under Sec. 40 of Indian Registration Act.
                           </span>
                         </label>
                       </div>

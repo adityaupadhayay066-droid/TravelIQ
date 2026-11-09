@@ -155,12 +155,12 @@ export default function Login() {
           >
             <div className="text-center mb-8">
               <Link to="/" className="inline-block mb-4">
-                <span className="font-bold text-3xl tracking-tight text-[#244C66] dark:text-[#F0F4F7] font-['Manrope']">
-                  TravelIQ
+                <span className="font-extrabold text-3xl tracking-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
+                  AEV<span className="text-[#20C5D9]">ORA</span>
                 </span>
               </Link>
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-['Manrope']">Welcome Back</h2>
-              <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm font-['Inter']">Sign in to resume your premium itinerary planner</p>
+              <h2 className="text-2xl font-bold text-[#101B2D] dark:text-[#F8FAFC] mb-2 font-['Sora']">Welcome Back</h2>
+              <p className="text-[#64748B] dark:text-[#94A3B8] text-sm font-['Inter']">Sign in to resume your intelligent travel discovery</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -275,7 +275,7 @@ export default function Login() {
                     <div className="space-y-2">
                       <h3 className="text-base font-bold text-[#263238] dark:text-[#F7F8FA] font-['Manrope']">Login on IRCTC to complete booking</h3>
                       <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed font-['Inter']">
-                        TravelIQ does not ask for or store IRCTC passwords. Click Continue to sign in securely on the official government website.
+                        AEVORA does not ask for or store IRCTC passwords. Click Continue to sign in securely on the official government website.
                       </p>
                     </div>
 

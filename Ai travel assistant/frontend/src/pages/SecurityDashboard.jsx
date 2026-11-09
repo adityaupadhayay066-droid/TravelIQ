@@ -192,17 +192,17 @@ export default function SecurityDashboard() {
   };
 
   const handleDownloadBackupCodes = () => {
-    const text = `TRAVELIQ SECURITY - RECOVERY BACKUP CODES\n` +
+    const text = `AEVORA SECURITY - RECOVERY BACKUP CODES\n` +
       `Generated at: ${new Date().toLocaleString()}\n` +
       `Store these codes safely. Each code is ONE-TIME use only.\n\n` +
       backupCodes.map((code, idx) => `[ ] Code #${idx + 1}: ${code}`).join('\n') +
-      `\n\n© 2026 TravelIQ Account Protection`;
+      `\n\n© 2026 AEVORA Account Protection`;
 
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'traveliq-recovery-backup-codes.txt';
+    link.download = 'aevora-recovery-backup-codes.txt';
     link.click();
     URL.revokeObjectURL(url);
   };

@@ -427,7 +427,7 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
                 {activeTab === 'wallet' && (
                   <div className="space-y-4 animate-fade-in bg-[var(--color-soft)] dark:bg-[var(--color-soft)] p-4 rounded-xl border border-[var(--color-border)] dark:border-[var(--color-border)]">
                     <div className="flex justify-between items-center text-xs text-[var(--color-text)] dark:text-[var(--color-text)]">
-                      <span>TravelIQ Sandbox Wallet Balance</span>
+                      <span>AEVORA Sandbox Wallet Balance</span>
                       <span className="font-mono font-bold text-[var(--color-primary)] dark:text-[var(--color-primary)]">₹8,540.00</span>
                     </div>
                     <div className="text-[10px] text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Paying from your loyalty sandbox wallet requires no extra validation and completes bookings instantly.</div>
@@ -520,8 +520,8 @@ export default function DemoPaymentPortal({ isOpen, onClose, bookingPayload, onP
               {confirmedBooking && (
                 <div className="bg-[var(--color-surface)] dark:bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-[var(--color-border)] p-4 rounded-xl w-full max-w-md text-left mb-6 space-y-2">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">TravelIQ Reference:</span>
-                    <span className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold font-mono">{confirmedBooking.booking_reference || confirmedBooking.bookingReference || `TIQ-${confirmedBooking.id}`}</span>
+                    <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">AEVORA Reference:</span>
+                    <span className="text-[var(--color-text)] dark:text-[var(--color-text)] font-bold font-mono">{confirmedBooking.booking_reference || confirmedBooking.bookingReference || `AEV-${confirmedBooking.id}`}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-[var(--color-text-muted)] dark:text-[var(--color-text-muted)]">Booking status:</span>

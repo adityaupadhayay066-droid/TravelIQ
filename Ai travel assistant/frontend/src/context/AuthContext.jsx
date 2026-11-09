@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
 
     const normalizeUser = (u) => {
         if (!u) return u;
-        if (u.email === 'adityaupadhayay066@gmail.com' || u.email === 'admin@traveliq.com') {
+        if (u.email === 'adityaupadhayay066@gmail.com' || u.email === 'admin@traveliq.com' || u.email === 'admin@aevora.travel') {
             return { ...u, role: 'admin', admin_role: 'super_admin' };
         }
         return u;

@@ -26,7 +26,7 @@ export default function SystemHealthPage() {
                 timestamp: new Date().toISOString(),
                 uptime_seconds: 14280,
                 services: {
-                    backend: { name: 'TravelIQ Core Backend (Express)', status: 'operational', latency: '12ms', uptime: '4h 12m', node_version: 'v22.14.0', active_connections: 42 },
+                    backend: { name: 'AEVORA Core Backend (Express)', status: 'operational', latency: '12ms', uptime: '4h 12m', node_version: 'v22.14.0', active_connections: 42 },
                     database: { name: 'MySQL Database (Sequelize)', status: 'operational', latency: '4ms', engine: 'InnoDB 8.0', tables_count: 28, pool_status: 'Healthy' },
                     ai_service: { name: 'AI & ML Microservice (FastAPI)', status: 'operational', latency: '45ms', models_loaded: 4, engine: 'Python 3.11 + NetworkX' },
                     data_pipeline: { name: 'Dataset & RAG Indexing', status: 'operational', last_sync: '10 minutes ago', chunks_indexed: 412 }

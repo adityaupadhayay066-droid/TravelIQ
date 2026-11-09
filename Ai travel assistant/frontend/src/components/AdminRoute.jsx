@@ -32,7 +32,7 @@ const AdminRoute = ({ children, allowedRoles = [] }) => {
 
     // Role-based permission check
     if (allowedRoles.length > 0) {
-        const isSuperAdminUser = user.admin_role === 'super_admin' || user.email === 'adityaupadhayay066@gmail.com' || user.email === 'admin@traveliq.com';
+        const isSuperAdminUser = user.admin_role === 'super_admin' || user.email === 'adityaupadhayay066@gmail.com' || user.email === 'admin@traveliq.com' || user.email === 'admin@aevora.travel';
         const userAdminRole = isSuperAdminUser ? 'super_admin' : (user.admin_role || 'admin');
         if (userAdminRole !== 'super_admin' && !allowedRoles.includes(userAdminRole) && !allowedRoles.includes('admin')) {
             toast.error(`Permission denied. Required role: ${allowedRoles.join(' or ')}`);

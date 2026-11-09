@@ -1,4 +1,4 @@
-# 💻 TravelIQ Frontend Client SPA
+# 💻 AEVORA Frontend Client SPA
 
 > Modern, accessible, high-performance single-page application for Indian transit, multi-modal search, and intelligent booking management. Built with **React 19**, **Vite**, and **Tailwind CSS v4**.
 

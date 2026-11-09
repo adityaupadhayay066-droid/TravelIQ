@@ -1,4 +1,6 @@
-# TravelIQ: Comprehensive Reverse-Engineering & Architecture Audit
+# AEVORA (formerly TravelIQ): Comprehensive Architecture Audit
+
+> **Historical Note:** Formerly audited under the project code-name *TravelIQ*, the platform is now officially rebranded to **AEVORA** (Unified Travel Intelligence & Mobility Platform).
 
 **Document Version:** 1.0.0  
 **Audit Date:** November 2026  

@@ -348,7 +348,7 @@ export default function TrainsPage() {
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
                 title="Add Train to Inventory"
-                subtitle="Register a new railway schedule into TravelIQ database"
+                subtitle="Register a new railway schedule into AEVORA database"
                 size="md"
                 footer={
                     <>

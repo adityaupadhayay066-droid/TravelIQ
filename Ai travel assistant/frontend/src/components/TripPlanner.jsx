@@ -64,7 +64,7 @@ const INITIAL_ITINERARY = [
     items: [
       { id: 20, time: '08:30', title: 'Souvenir Packing & Resort Checkout', type: 'hotel', detail: 'Luggage prep and mountain photo memories' },
       { id: 21, time: '10:00', title: 'Scenic Drive to Bhuntar Airport / Volvo to Delhi', type: 'transport', mode: 'road', detail: 'Kullu valley riverside transit' },
-      { id: 22, time: '18:00', title: 'Flight Delhi (DEL) → Bhubaneswar (BBI)', type: 'transport', mode: 'flight', detail: 'Safe return journey home with TravelIQ digital itinerary log' }
+      { id: 22, time: '18:00', title: 'Flight Delhi (DEL) → Bhubaneswar (BBI)', type: 'transport', mode: 'flight', detail: 'Safe return journey home with AEVORA digital itinerary log' }
     ]
   }
 ];

@@ -466,7 +466,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteTrain = async (trainNumber) => {
-    if (!window.confirm(`⚠️ Permanently purge train #${trainNumber} from TravelIQ maps?`)) return;
+    if (!window.confirm(`⚠️ Permanently purge train #${trainNumber} from AEVORA maps?`)) return;
     try {
       await api.delete(`/admin/trains/${trainNumber}`);
       toast.success('Train decommissioned.');
@@ -618,7 +618,7 @@ export default function AdminDashboard() {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `traveliq_${type}_${Date.now()}.csv`);
+      link.setAttribute('download', `aevora_${type}_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -879,8 +879,10 @@ export default function AdminDashboard() {
             <ShieldAlert className="w-5 h-5 text-[#244C66] dark:text-[#F0F4F7]" />
           </div>
           <div>
-            <span className="font-bold text-xl tracking-tight text-[#263238] dark:text-[#F7F8FA]">TravelIQ</span>
-            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-[#D96C4F] bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] px-2.5 py-0.5 rounded-full uppercase">
+            <span className="font-extrabold text-xl tracking-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
+              AEV<span className="text-[#20C5D9]">ORA</span>
+            </span>
+            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-[#20C5D9] bg-[#E6FAF5] dark:bg-[#122838] border border-[#20C5D9]/30 px-2.5 py-0.5 rounded-full uppercase">
               Admin Center
             </span>
           </div>

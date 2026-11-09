@@ -26,7 +26,7 @@ exports.triggerSOS = async (req, res) => {
         // Send Email (non-blocking)
         sendEmail({
             to: user.email,
-            subject: '🚨 Emergency SOS Alert - TravelIQ',
+            subject: '🚨 Emergency SOS Alert - AEVORA',
             text: `Emergency assistance requested.\n\nUser Name: ${user.name}\nEmail: ${user.email}\nDate: ${new Date().toLocaleDateString()}\nTime: ${new Date().toLocaleTimeString()}\nLocation: ${location || 'Unavailable'}\nDevice: ${deviceString}\n\nReference ID: ${alert.id}`
         }).then(res => {
             if (res.success && !res.simulated) {

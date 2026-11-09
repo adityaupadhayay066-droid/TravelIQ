@@ -231,7 +231,7 @@ console.log(data);`;
                 {org?.name || 'Developer Workspace'}
               </h1>
               <p className="text-white/80 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
-                Integrate TravelIQ AI models (Delay Forecasting, Dynamic Pricing, Crowd Prediction, and Routing) directly into your apps and platforms.
+                Integrate AEVORA AI models (Delay Forecasting, Dynamic Pricing, Crowd Prediction, and Routing) directly into your apps and platforms.
               </p>
             </div>
 
@@ -344,7 +344,7 @@ console.log(data);`;
                   </div>
                   <h3 className="font-semibold text-sm mb-1 text-[#202A32] dark:text-[#F0F4F7]">No API Keys Generated Yet</h3>
                   <p className="text-xs text-[#66737D] dark:text-[#89939B] max-w-sm mb-4">
-                    Create your first production or sandbox API key to start calling TravelIQ AI endpoints.
+                    Create your first production or sandbox API key to start calling AEVORA AI endpoints.
                   </p>
                   <button
                     onClick={() => setShowCreateModal(true)}

@@ -12,6 +12,8 @@ import toast from 'react-hot-toast';
 import StationAutocomplete from '../components/StationAutocomplete';
 import PassengerSelector from '../components/PassengerSelector';
 import { resolveCityAndState, parseGuestsCount } from '../utils/cityStateResolver';
+import Logo from '../components/brand/Logo';
+import { BRAND } from '../config/branding';
 
 // Featured 8 Popular Destinations across India
 const POPULAR_DESTINATIONS = [
@@ -170,8 +172,12 @@ export default function LandingPage() {
         setActiveTab(e.detail.tab);
       }
     };
+    window.addEventListener('aevora:set-tab', handleTabEvent);
     window.addEventListener('traveliq:set-tab', handleTabEvent);
-    return () => window.removeEventListener('traveliq:set-tab', handleTabEvent);
+    return () => {
+      window.removeEventListener('aevora:set-tab', handleTabEvent);
+      window.removeEventListener('traveliq:set-tab', handleTabEvent);
+    };
   }, []);
 
   // Sync tab with URL search parameter if changed
@@ -336,17 +342,39 @@ export default function LandingPage() {
           
           {/* Hero Headline & Supporting Statement */}
           <div className="max-w-3xl mb-7 sm:mb-9 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EEF2F4] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5] text-xs font-medium tracking-wide mb-3">
-              <span>Intelligent Indian Travel Assistant</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EEF2F4] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#20C5D9] text-xs font-semibold tracking-wide mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#20C5D9] animate-pulse"></span>
+              <span>AEVORA Intelligent Travel Assistant</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-bold tracking-tight leading-tight text-[#202A32] dark:text-[#F0F4F7]">
-              Every journey starts <span className="text-[#244C66] dark:text-[#75A4C4]">smarter</span>.
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight leading-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
+              Discover a <span className="text-[#20C5D9] bg-gradient-to-r from-[#20C5D9] to-[#42D6B5] bg-clip-text text-transparent">smarter way</span> to travel.
             </h1>
 
-            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-2xl">
-              Discover better routes, compare verified trains, flights, and buses, and plan your journey with confidence.
+            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed max-w-2xl font-['Inter']">
+              Explore routes, compare transportation options and plan your next journey with intelligent travel assistance.
             </p>
+
+            {/* Hero CTAs */}
+            <div className="mt-5 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+              <button
+                onClick={() => {
+                  const elem = document.getElementById('search-booking-panel');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#20C5D9] to-[#42D6B5] text-[#101B2D] font-bold text-sm shadow-md hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+              >
+                <Compass className="w-4 h-4" />
+                <span>Plan Your Journey</span>
+              </button>
+              <Link
+                to="/destinations"
+                className="px-5 py-2.5 rounded-lg bg-white/10 dark:bg-white/5 hover:bg-white/20 dark:hover:bg-white/10 text-[#101B2D] dark:text-white font-semibold text-sm border border-gray-300 dark:border-gray-700 transition-all flex items-center gap-2"
+              >
+                <MapPin className="w-4 h-4 text-[#20C5D9]" />
+                <span>Explore Destinations</span>
+              </Link>
+            </div>
           </div>
 
           {/* ================================================================
@@ -369,6 +397,7 @@ export default function LandingPage() {
                     key={tab.id}
                     onClick={() => {
                       setActiveTab(tab.id);
+                      window.dispatchEvent(new CustomEvent('aevora:set-tab', { detail: { tab: tab.id } }));
                       window.dispatchEvent(new CustomEvent('traveliq:set-tab', { detail: { tab: tab.id } }));
                     }}
                     className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
@@ -918,7 +947,7 @@ export default function LandingPage() {
               Smart Alternatives for Your Journey
             </h2>
             <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1">
-              When direct trains or flights are waitlisted, TravelIQ calculates reliable connecting journeys through verified interchange stations.
+              When direct trains or flights are waitlisted, AEVORA calculates reliable connecting journeys through verified interchange stations.
             </p>
           </div>
 
@@ -969,8 +998,8 @@ export default function LandingPage() {
 
             {/* Smart Alternative Option */}
             <div className="lg:col-span-7 bg-white dark:bg-[#1B242E] rounded-xl p-5 border border-[#244C66] dark:border-[#75A4C4] shadow-xs flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-0.5 bg-[#244C66] text-white text-[10px] font-semibold rounded-bl-lg">
-                ★ TravelIQ Alternative
+              <div className="absolute top-0 right-0 px-3 py-0.5 bg-[#101B2D] text-[#20C5D9] text-[10px] font-bold rounded-bl-lg border-l border-b border-[#20C5D9]/30">
+                ★ AEVORA Alternative
               </div>
 
               <div>
@@ -1341,58 +1370,78 @@ export default function LandingPage() {
           SECTION 11: ADDITIONAL HOMEPAGE SECTIONS
           ==================================================================== */}
       
-      {/* 11.1 WHY TRAVELIQ? */}
+      {/* 11.1 WHY AEVORA? */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#244C66] dark:text-[#75A4C4] mb-1">
-            <span>Built For Indian Commuters & Travelers</span>
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#20C5D9] mb-1">
+            <span>Unified Travel Intelligence & Mobility</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#202A32] dark:text-[#F0F4F7]">
-            Why TravelIQ?
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
+            Why AEVORA?
           </h2>
-          <p className="text-sm text-[#66737D] dark:text-[#9CAAB5] mt-1.5">
-            A travel platform engineered to solve real booking frustrations across rail, air, and interstate buses.
+          <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-1.5 font-['Inter']">
+            Discover a smarter way to travel with algorithmic multi-modal transit intelligence, verified schedules, and proactive AI assistance.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
-              <Compass className="w-4.5 h-4.5" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <Compass className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Compare Travel Modes</h3>
-            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
-              Evaluate trains, domestic flights, and buses side-by-side on duration, comfort, and real fare differences.
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Intelligent Route Planning</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Algorithmic multi-modal routing evaluating rail, road, and air in real time with verified interchange transfers.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
-              <ArrowRightLeft className="w-4.5 h-4.5" />
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <Train className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Discover Alternative Routes</h3>
-            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
-              When direct trains are waitlisted, explore connecting journeys through convenient junction stations with safe layovers.
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Multi-Transport Discovery</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Unified cross-modal search across verified rail networks, domestic flights, and interstate bus corridors.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
-              <IndianRupee className="w-4.5 h-4.5" />
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <IndianRupee className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Plan Around Your Budget</h3>
-            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
-              Allocate your spending logically between transit, stays, and dining to prevent surprise travel expenses.
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Smart Fare Comparison</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Transparent fare breakdown with dynamic analytics, class-by-class comparison, and zero hidden surcharges.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E3E7EA] dark:border-[#293644] bg-white dark:bg-[#1B242E] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#EEF2F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] flex items-center justify-center font-bold">
-              <ShieldCheck className="w-4.5 h-4.5" />
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <Sparkles className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-base text-[#202A32] dark:text-[#F0F4F7]">Verified Schedules</h3>
-            <p className="text-xs text-[#66737D] dark:text-[#9CAAB5] leading-relaxed">
-              Train numbers, running days, and station codes are checked against active timetable datasets for dependable plans.
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Personalized Travel Assistance</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Voice and conversational AI tuned for trip recommendations, itinerary customization, and real-time support.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Local Transportation Insights</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              Station twin navigation, first-to-last-mile connectivity, and verified platform transfer directions.
+            </p>
+          </div>
+
+          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+              <Clock className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Real-Time Travel Information</h3>
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              GPS train status, delay probability forecasts, and active station timetable verification.
             </p>
           </div>
         </div>
@@ -1537,7 +1586,7 @@ export default function LandingPage() {
             Trust & Transparency Commitment
           </h2>
           <p className="text-xs sm:text-sm text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-3xl mx-auto">
-            At TravelIQ, we believe honest travel information is essential. Train schedules, station codes, and running frequencies are validated against active datasets. Whenever live data is unavailable, information is clearly labeled as an estimate.
+            At AEVORA, we believe honest travel information is essential. Train schedules, station codes, and running frequencies are validated against active datasets. Whenever live data is unavailable, information is clearly labeled as an estimate.
           </p>
         </div>
       </section>
@@ -1553,15 +1602,10 @@ export default function LandingPage() {
             {/* Col 1: Brand Info */}
             <div className="lg:col-span-2 space-y-2.5">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[#244C66] text-white flex items-center justify-center shadow-xs">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z" />
-                  </svg>
-                </div>
-                <span className="text-base font-bold text-[#202A32] dark:text-[#F0F4F7]">TravelIQ</span>
+                <Logo size="sm" withTagline={true} />
               </div>
-              <p className="text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-sm">
-                Indian multimodal travel planner and route comparison platform. Unifying trains, domestic flights, and interstate buses into a reliable search experience.
+              <p className="text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-sm mt-2">
+                AI-powered unified travel intelligence and mobility platform. Discover, compare and plan journeys across rail, domestic flights, and interstate buses with confidence.
               </p>
             </div>
 
@@ -1604,8 +1648,8 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#89939B]">
-            <p>© {new Date().getFullYear()} TravelIQ. All rights reserved.</p>
-            <p>Built with verified Indian transit schedules and responsive layout.</p>
+            <p>© {new Date().getFullYear()} AEVORA. All rights reserved. A smarter way to discover the world.</p>
+            <p>Built with verified transit schedules and intelligent route optimization.</p>
           </div>
 
         </div>

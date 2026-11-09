@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 export default function AdminManagementPage() {
     const { user: currentUser } = useAuth();
-    const isSuperAdmin = currentUser?.admin_role === 'super_admin' || currentUser?.email === 'admin@traveliq.com' || currentUser?.email === 'adityaupadhayay066@gmail.com';
+    const isSuperAdmin = currentUser?.admin_role === 'super_admin' || currentUser?.email === 'admin@traveliq.com' || currentUser?.email === 'admin@aevora.travel' || currentUser?.email === 'adityaupadhayay066@gmail.com';
 
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -723,7 +723,7 @@ export default function Dashboard() {
                     <div>
                       <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 text-[11px] font-bold uppercase mb-1">
                         <Sparkles className="w-3 h-3 text-teal-500" />
-                        <span>TravelIQ Route Intelligence</span>
+                        <span>AEVORA Route Intelligence</span>
                       </div>
                       <h3 className="text-lg sm:text-xl font-bold font-heading text-slate-900 dark:text-white">
                         Smart Alternatives for Your Journey

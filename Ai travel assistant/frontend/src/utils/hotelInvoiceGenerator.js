@@ -52,7 +52,7 @@ export function numberToWordsINR(amount) {
 export function generateHotelInvoiceHTML(booking = {}) {
   // Extract user from localStorage if not directly in booking
   let defaultUserName = 'Guest Traveler';
-  let defaultUserEmail = 'guest@traveliq.local';
+  let defaultUserEmail = 'guest@aevora.travel';
   let defaultUserPhone = 'Not Provided';
 
   try {
@@ -126,7 +126,7 @@ export function generateHotelInvoiceHTML(booking = {}) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TravelIQ_Hotel_Tax_Invoice_${bookingId}</title>
+  <title>AEVORA_Hotel_Tax_Invoice_${bookingId}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -813,21 +813,20 @@ export function generateHotelInvoiceHTML(booking = {}) {
     <!-- ─── 1. TOP BRAND BAR WITH TRAVELIQ LOGO ─── -->
     <div class="brand-topbar">
       <div class="brand-logo-area">
-        <!-- High-Definition TravelIQ Logo Badge -->
+        <!-- High-Definition AEVORA Logo Badge -->
         <div class="traveliq-logo-icon">
-          <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
-            <!-- Hexagonal / Compass Shield -->
-            <polygon points="16,2 29,9 29,23 16,30 3,23 3,9" stroke="#4ADE80" stroke-width="2.2" fill="rgba(74, 222, 128, 0.15)"/>
-            <!-- Stylized Compass Needle / Airplane -->
-            <path d="M16 6L21 16L16 13.5L11 16L16 6Z" fill="#FFFFFF"/>
-            <path d="M16 26L11 16L16 18.5L21 16L16 26Z" fill="#E58A3A"/>
-            <circle cx="16" cy="16" r="2.5" fill="#4ADE80"/>
+          <svg width="30" height="30" viewBox="0 0 64 64" fill="none">
+            <rect width="64" height="64" rx="14" fill="#101B2D" />
+            <path d="M32 10 L14 52 L22.5 52 L32 28 L41.5 52 L50 52 L32 10 Z" fill="#20C5D9" />
+            <path d="M21 39 L47 31 L41 36 L25 41 Z" fill="#FFFFFF" />
+            <polygon points="32,23 35.5,28 32,33 28.5,28" fill="#FFFFFF" />
+            <circle cx="47" cy="31" r="2.5" fill="#42D6B5" />
           </svg>
         </div>
 
         <div class="brand-name-group">
           <div class="brand-title">
-            Travel<span class="brand-iq">IQ</span>
+            AEV<span class="brand-iq">ORA</span>
             <span class="brand-stays-tag">Stays</span>
           </div>
           <div class="brand-subtitle">AI Travel Intelligence & Verified Hospitality Network</div>
@@ -874,7 +873,7 @@ export function generateHotelInvoiceHTML(booking = {}) {
         </div>
 
         <div class="meta-card-col meta-divider-left">
-          <span class="field-tag">TravelIQ Booking Reference ID</span>
+          <span class="field-tag">AEVORA Booking Reference ID</span>
           <div class="booking-ref-box">${bookingId}</div>
           <div class="contact-info-line" style="margin-top: 5px;">
             Payment Method: <strong style="color: #0F172A;">${paymentMethod}</strong>
@@ -989,7 +988,7 @@ export function generateHotelInvoiceHTML(booking = {}) {
           <tr>
             <td>
               <strong class="coupon-savings-highlight">Promotional Discount & Coupon Savings</strong>
-              <div style="font-size: 10.5px; color: #15803D;">Coupon Applied: ${promoCode || 'TRAVELIQ_SAVINGS'}</div>
+              <div style="font-size: 10.5px; color: #15803D;">Coupon Applied: ${promoCode || 'AEVORA_SAVINGS'}</div>
             </td>
             <td class="align-right coupon-savings-highlight">-</td>
             <td class="align-right coupon-savings-highlight">1</td>
@@ -1120,7 +1119,7 @@ export function generateHotelInvoiceHTML(booking = {}) {
 
         <div class="embossed-seal">
           <div class="seal-border-dashed">
-            <span style="font-size: 7.5px; color: #14532D; font-weight:800;">TRAVELIQ</span>
+            <span style="font-size: 7.5px; color: #14532D; font-weight:800;">AEVORA</span>
             <span style="font-size: 9.5px; font-weight: 900; color: #15803D;">VERIFIED</span>
             <span style="font-size: 6.5px; color: #64748B; font-weight:700;">OFFICIAL STAYS</span>
           </div>
@@ -1158,13 +1157,13 @@ export function generateHotelInvoiceHTML(booking = {}) {
         <div style="font-weight: 800; color: #0F172A; margin-bottom: 2px;">24x7 Customer Care & Stay Support</div>
         <div class="helpline-links">
           <span>📞 Helpline: <a href="tel:18008728354">1800-872-8354</a></span>
-          <span>✉️ Email: <a href="mailto:support@traveliq.in">support@traveliq.in</a></span>
+          <span>✉️ Email: <a href="mailto:support@aevora.travel">support@aevora.travel</a></span>
           <span>💬 WhatsApp: <a href="https://wa.me/919876543210">+91 98765 43210</a></span>
         </div>
       </div>
 
       <div class="company-statutory-info">
-        <strong>TravelIQ Technologies Pvt. Ltd.</strong><br>
+        <strong>AEVORA Travel Technologies Inc.</strong><br>
         GSTIN: 27AABCT1234F1Z5 &nbsp;|&nbsp; CIN: U72900MH2024PTC123456<br>
         Place of Supply: 27-Maharashtra • BKC Cyber Park, Mumbai - 400051<br>
         <em>This is a computer-generated tax invoice & booking voucher.</em>
@@ -1206,7 +1205,7 @@ export function printHotelInvoice(booking, autoPrint = true) {
     const html = generateHotelInvoiceHTML(booking);
     const printWindow = window.open('', '_blank', 'width=940,height=1050,menubar=no,toolbar=no,location=no,status=no');
     if (!printWindow) {
-      alert('Please allow popups for TravelIQ to download your invoice.');
+      alert('Please allow popups for AEVORA to download your invoice.');
       return;
     }
     printWindow.document.open();

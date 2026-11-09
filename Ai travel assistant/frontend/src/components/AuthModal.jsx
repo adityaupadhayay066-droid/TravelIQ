@@ -103,7 +103,7 @@ export default function AuthModal() {
             {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </h2>
           <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs">
-            {mode === 'login' ? 'Sign in to access your travel dashboard' : 'Join TravelIQ to plan and compare trips'}
+            {mode === 'login' ? 'Sign in to access your travel dashboard' : 'Join AEVORA to plan and compare trips'}
           </p>
         </div>
 

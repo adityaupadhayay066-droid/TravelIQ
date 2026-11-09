@@ -1,5 +1,5 @@
 /**
- * City and State resolution utility for TravelIQ.
+ * City and State resolution utility for AEVORA.
  * Normalizes station codes, city aliases, and regions across India.
  */
 

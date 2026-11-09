@@ -66,11 +66,11 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
   // Generate QR Code for UPI
   useEffect(() => {
     if (isOpen && activeTab === 'upi') {
-      const upiPayload = `upi://pay?pa=traveliq.developers@mockpay&pn=TravelIQ+AI+Developer+Platform&am=${inrEquivalent}&cu=INR&tn=${encodeURIComponent((item?.name || 'API Plan') + ' Subscription')}`;
+      const upiPayload = `upi://pay?pa=aevora.developers@mockpay&pn=AEVORA+AI+Developer+Platform&am=${inrEquivalent}&cu=INR&tn=${encodeURIComponent((item?.name || 'API Plan') + ' Subscription')}`;
       QRCode.toDataURL(upiPayload, {
         width: 200,
         margin: 1,
-        color: { dark: '#244C66', light: '#FFFFFF' }
+        color: { dark: '#101B2D', light: '#FFFFFF' }
       }).then(url => setQrCodeUrl(url)).catch(console.error);
     }
   }, [isOpen, activeTab, item, inrEquivalent]);
@@ -332,11 +332,11 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
       <!DOCTYPE html>
       <html>
       <head>
-        <title>TravelIQ Developer API Verified Invoice - ${transactionResult?.transactionId}</title>
+        <title>AEVORA Developer API Verified Invoice - ${transactionResult?.transactionId}</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; background: #fff; line-height: 1.5; }
           .header { display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 24px; margin-bottom: 30px; }
-          .logo { font-size: 24px; font-weight: 800; color: #244C66; }
+          .logo { font-size: 24px; font-weight: 800; color: #101B2D; }
           .badge { display: inline-block; background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid #86efac; }
           .table { width: 100%; border-collapse: collapse; margin: 30px 0; }
           .table th { background: #f8fafc; text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; }
@@ -351,7 +351,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
       <body>
         <div class="header">
           <div>
-            <div class="logo">TravelIQ API Hub</div>
+            <div class="logo">AEVORA API Hub</div>
             <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Autonomous AI Travel Intelligence Platform</p>
             <p style="margin: 2px 0 0 0; font-size: 12px; color: #94a3b8;">Tax Invoice & Cryptographically Verified License</p>
           </div>
@@ -420,7 +420,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         </div>
 
         <div class="footer">
-          <p>This is a verified sandbox transaction invoice. Thank you for building on TravelIQ AI Platform!</p>
+          <p>This is a verified sandbox transaction invoice. Thank you for building on AEVORA AI Platform!</p>
         </div>
       </body>
       </html>
@@ -474,12 +474,12 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         <div className="w-full md:w-5/12 bg-[#F7F8FA] dark:bg-[#121921] p-6 sm:p-7 border-b md:border-b-0 md:border-r border-[#E3E7EA] dark:border-[#293644] flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 rounded-xl bg-[#244C66] dark:bg-[#F0F4F7] text-white dark:text-[#244C66] flex items-center justify-center font-bold text-sm shadow">
-                TIQ
+              <div className="w-8 h-8 rounded-xl bg-[#101B2D] text-[#20C5D9] border border-[#20C5D9]/30 flex items-center justify-center font-extrabold text-xs shadow">
+                AE
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#244C66] dark:text-[#F0F4F7] leading-none">TravelIQ Developer Checkout</h4>
-                <span className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">2FA Payment Verification</span>
+                <h4 className="text-sm font-bold text-[#101B2D] dark:text-[#F8FAFC] leading-none">AEVORA Developer Checkout</h4>
+                <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">2FA Payment Verification</span>
               </div>
             </div>
 

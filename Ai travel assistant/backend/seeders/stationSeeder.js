@@ -90,42 +90,117 @@ const ESSENTIAL_STATIONS = [
   { station_code: 'TVC', station_name: 'THIRUVANANTHAPURAM CENTRAL', city: 'Thiruvananthapuram', state: 'Kerala', latitude: 8.4875, longitude: 76.9525 }
 ];
 
-const seedStations = async () => {
-  try {
-    // Authoritatively guarantee essential stations have accurate geographic coordinates (upsert)
-    for (const st of ESSENTIAL_STATIONS) {
-      await Station.upsert(st);
-    }
+const seedStations = async (options = {}) => {
+  const { force = false } = options;
+  const metrics = {
+    totalSourceRecords: 0,
+    validRecords: 0,
+    essentialCount: ESSENTIAL_STATIONS.length,
+    insertedOrExistingCount: 0,
+    duplicateCount: 0,
+    rejectedCount: 0,
+    finalDatabaseCount: 0
+  };
 
-    const count = await Station.count();
-    if (count >= 5000) {
-      console.log('Stations already seeded. Skipping...');
-      return;
-    }
-
-    const dataPath = path.join(__dirname, '../data/unique_stations.json');
-    if (!fs.existsSync(dataPath)) {
-      console.log('unique_stations.json not found. Skipping station seeding.');
-      return;
-    }
-
-    const rawData = fs.readFileSync(dataPath);
-    const stations = JSON.parse(rawData);
-
-    console.log(`Seeding ${stations.length} stations. This may take a moment...`);
-    
-    // Bulk create in chunks to avoid overwhelming the database
-    const chunkSize = 1000;
-    for (let i = 0; i < stations.length; i += chunkSize) {
-      const chunk = stations.slice(i, i + chunkSize);
-      await Station.bulkCreate(chunk, { ignoreDuplicates: true });
-      console.log(`Seeded ${Math.min(i + chunkSize, stations.length)} / ${stations.length} stations...`);
-    }
-
-    console.log('Stations seeded successfully!');
-  } catch (error) {
-    console.error('Error seeding stations:', error);
+  const dataPath = path.join(__dirname, '../data/unique_stations.json');
+  if (!fs.existsSync(dataPath)) {
+    throw new Error(`DATASET_NOT_FOUND: Required station dataset is missing at ${dataPath}. Cannot initialize station registry.`);
   }
+
+  let rawData;
+  try {
+    rawData = fs.readFileSync(dataPath, 'utf8');
+  } catch (readErr) {
+    throw new Error(`DATASET_UNREADABLE: Failed to read station dataset: ${readErr.message}`);
+  }
+
+  let stations;
+  try {
+    stations = JSON.parse(rawData);
+  } catch (parseErr) {
+    throw new Error(`DATASET_INVALID_JSON: Station dataset contains malformed JSON: ${parseErr.message}`);
+  }
+
+  if (!Array.isArray(stations) || stations.length === 0) {
+    throw new Error(`DATASET_EMPTY: Station dataset contains zero records.`);
+  }
+
+  metrics.totalSourceRecords = stations.length;
+
+  // 1. Strict Record & Duplicate Validation
+  const seenCodes = new Set();
+  const validStations = [];
+
+  for (let i = 0; i < stations.length; i++) {
+    const s = stations[i];
+    const code = (s.station_code || '').trim().toUpperCase();
+    const name = (s.station_name || '').trim();
+
+    // Required field validation
+    if (!code || !name) {
+      metrics.rejectedCount++;
+      continue;
+    }
+
+    // Duplicate detection within source dataset
+    if (seenCodes.has(code)) {
+      metrics.duplicateCount++;
+      continue;
+    }
+    seenCodes.add(code);
+
+    validStations.push({
+      station_code: code,
+      station_name: name,
+      city: (s.city || name).trim(),
+      state: (s.state || 'India').trim(),
+      latitude: s.latitude ? Number(s.latitude) : null,
+      longitude: s.longitude ? Number(s.longitude) : null
+    });
+  }
+
+  metrics.validRecords = validStations.length;
+
+  // 2. Authoritatively upsert essential stations first
+  for (const st of ESSENTIAL_STATIONS) {
+    await Station.upsert({
+      station_code: st.station_code.toUpperCase().trim(),
+      station_name: st.station_name.trim(),
+      city: st.city.trim(),
+      state: st.state.trim(),
+      latitude: Number(st.latitude),
+      longitude: Number(st.longitude)
+    });
+  }
+
+  // 3. Check existing count: If already fully seeded, skip re-bulk insertion
+  const currentCount = await Station.count();
+  if (!force && currentCount >= metrics.validRecords) {
+    metrics.insertedOrExistingCount = currentCount;
+    metrics.finalDatabaseCount = currentCount;
+    console.log(`✅ [Station Seeder] Stations verified: ${currentCount} stations present in database.`);
+    return metrics;
+  }
+
+  console.log(`⏳ [Station Seeder] Seeding ${metrics.validRecords} verified railway stations (Source: ${metrics.totalSourceRecords}, Rejected: ${metrics.rejectedCount}, Duplicates: ${metrics.duplicateCount})...`);
+
+  // 4. Idempotent bulk creation in chunks
+  const chunkSize = 500;
+  for (let i = 0; i < validStations.length; i += chunkSize) {
+    const chunk = validStations.slice(i, i + chunkSize);
+    await Station.bulkCreate(chunk, { ignoreDuplicates: true });
+  }
+
+  metrics.finalDatabaseCount = await Station.count();
+  metrics.insertedOrExistingCount = metrics.finalDatabaseCount;
+
+  // 5. Verification: Do not report success if dataset is partial
+  if (metrics.finalDatabaseCount < metrics.validRecords) {
+    throw new Error(`SEPARATION_FAILURE: Partial station seeding detected! Expected at least ${metrics.validRecords} stations, but found ${metrics.finalDatabaseCount} in database.`);
+  }
+
+  console.log(`✅ [Station Seeder] Station seeding completed successfully. Total active stations: ${metrics.finalDatabaseCount}`);
+  return metrics;
 };
 
 module.exports = { seedStations, ESSENTIAL_STATIONS };

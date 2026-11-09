@@ -100,9 +100,22 @@ const searchRoutes = async (req, res) => {
             return res.status(400).json({ message: 'Source and destination required.' });
         }
 
-        // Strict Entity Resolution & Fuzzy Station Matching
+        // Strict Entity Resolution & Deterministic Station Matching
         const sourceMatch = await resolveStation(source);
         const destMatch = await resolveStation(destination);
+
+        if (!sourceMatch) {
+            return res.status(400).json({ error: 'STATION_NOT_FOUND', message: `Unknown origin station: "${source}".` });
+        }
+        if (!destMatch) {
+            return res.status(400).json({ error: 'STATION_NOT_FOUND', message: `Unknown destination station: "${destination}".` });
+        }
+        if (sourceMatch.status === 'AMBIGUOUS') {
+            return res.status(400).json({ error: 'STATION_AMBIGUOUS', message: sourceMatch.message, candidates: sourceMatch.candidates });
+        }
+        if (destMatch.status === 'AMBIGUOUS') {
+            return res.status(400).json({ error: 'STATION_AMBIGUOUS', message: destMatch.message, candidates: destMatch.candidates });
+        }
 
         const originCodes = sourceMatch?.stationCodes || [String(source).trim().toUpperCase()];
         const destCodes = destMatch?.stationCodes || [String(destination).trim().toUpperCase()];

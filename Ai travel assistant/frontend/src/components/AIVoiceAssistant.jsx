@@ -279,14 +279,14 @@ export default function AIVoiceAssistant() {
                             boxShadow: '0 2px 8px rgba(23, 63, 58, 0.08)',
                             opacity: 0.6,
                         }}
-                        title="Open TravelIQ Voice Assistant"
+                        title="Open AEVORA Voice Assistant"
                     >
                         <span
                             className="shrink-0"
                             style={{
                                 width: 6,
                                 height: 6,
-                                background: '#E58A3A',
+                                background: '#20C5D9',
                                 borderRadius: '1px',
                                 animation: 'pulse 2s ease-in-out infinite',
                             }}
@@ -301,7 +301,7 @@ export default function AIVoiceAssistant() {
                                 letterSpacing: '0.02em',
                             }}
                         >
-                            TravelIQ Voice Assistant
+                            AEVORA Voice Assistant
                         </span>
                     </button>
                 )}
@@ -309,8 +309,8 @@ export default function AIVoiceAssistant() {
                 {/* Mic FAB — matches chatbot's green circle style */}
                 <button
                     onClick={togglePanel}
-                    aria-label="TravelIQ Voice Assistant"
-                    title="TravelIQ Voice Assistant"
+                    aria-label="AEVORA Voice Assistant"
+                    title="AEVORA Voice Assistant"
                     className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 shrink-0 ${
                         isOpen
                             ? 'text-[var(--color-primary)] dark:text-[#F0F4F7]'
@@ -374,8 +374,8 @@ export default function AIVoiceAssistant() {
                                     className="flex items-center gap-1"
                                     style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}
                                 >
-                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#2F7D32' }} />
-                                    TravelIQ AI
+                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#20C5D9' }} />
+                                    AEVORA AI
                                 </span>
                             </div>
                         </div>

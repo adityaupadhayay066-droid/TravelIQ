@@ -26,7 +26,7 @@ export default function NotificationsPage() {
             setNotifications([
                 { id: 1, type: 'critical_report', title: 'Critical Issue Reported on AI Routing', message: 'User reported high-pass winter road recommended in Leh-Manali region. Review prompt safety constraints.', severity: 'critical', read: false, action_url: '/admin/reports', created_at: new Date() },
                 { id: 2, type: 'data_import', title: 'Indian Railways Master Schedule Synced', message: '1,420 express trains and 640 station coordinates successfully verified.', severity: 'success', read: true, action_url: '/admin/trains', created_at: new Date(Date.now() - 60 * 60000) },
-                { id: 3, type: 'security_alert', title: 'Multiple Failed Admin Login Attempts', message: '5 failed login attempts detected from IP 192.168.1.104 targeting admin@traveliq.com.', severity: 'warning', read: false, action_url: '/admin/logs', created_at: new Date(Date.now() - 120 * 60000) }
+                { id: 3, type: 'security_alert', title: 'Multiple Failed Admin Login Attempts', message: '5 failed login attempts detected from IP 192.168.1.104 targeting admin@aevora.travel.', severity: 'warning', read: false, action_url: '/admin/logs', created_at: new Date(Date.now() - 120 * 60000) }
             ]);
         } finally {
             setLoading(false);

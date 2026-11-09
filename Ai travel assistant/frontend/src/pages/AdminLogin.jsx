@@ -73,8 +73,8 @@ export default function AdminLogin() {
                 <ShieldAlert className="w-8 h-8 text-[#244C66] dark:text-[#F0F4F7]" />
               </div>
               
-              <h2 className="text-2xl font-bold text-[#263238] dark:text-[#F7F8FA] mb-2 font-[Manrope]">
-                TravelIQ Command Center
+              <h2 className="text-2xl font-bold text-[#101B2D] dark:text-[#F8FAFC] mb-2 font-['Sora']">
+                AEVORA Command Center
               </h2>
               <p className="text-[#66736F] dark:text-[#A3B0AB] text-sm">Authorized administrative personnel only</p>
             </div>

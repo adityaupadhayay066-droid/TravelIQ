@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow, DirectionsRenderer, Polyline } from '@react-google-maps/api';
 
-// Warm Editorial Theme styling for Google Maps matching the TravelIQ look
+// Warm Editorial Theme styling for Google Maps matching the AEVORA look
 const warmMapStyle = [
   { elementType: "geometry", stylers: [{ color: "#F7F8FA" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#F7F8FA" }] },

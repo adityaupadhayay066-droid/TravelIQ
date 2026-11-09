@@ -328,7 +328,7 @@ export default function BookingModal({ train, onClose }) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Dynamic Functional QR states
-  const DUMMY_UPI_ID = 'traveliq.sandbox@icici';
+  const DUMMY_UPI_ID = 'aevora.sandbox@icici';
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [qrTimer, setQrTimer] = useState(300); // 5 minutes countdown
   const [qrCopied, setQrCopied] = useState(false);
@@ -337,7 +337,7 @@ export default function BookingModal({ train, onClose }) {
   // Generate dynamic crisp QR code
   useEffect(() => {
     if (totalFare > 0) {
-      const dummyPayload = `upi://pay?pa=${DUMMY_UPI_ID}&pn=TravelIQ%20Bookings&am=${totalFare}&cu=INR&tn=TicketReservation_${train?.train_number || '12301'}_${Date.now()}`;
+      const dummyPayload = `upi://pay?pa=${DUMMY_UPI_ID}&pn=AEVORA%20Bookings&am=${totalFare}&cu=INR&tn=TicketReservation_${train?.train_number || '12301'}_${Date.now()}`;
       QRCode.toDataURL(dummyPayload, {
         width: 480,
         margin: 2,
@@ -602,8 +602,8 @@ export default function BookingModal({ train, onClose }) {
                 {confirmedBookingData && (
                   <div className="w-full max-w-md bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 sm:p-5 text-left space-y-3 shadow-sm">
                     <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
-                      <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">TravelIQ Reference</span>
-                      <span className="font-bold text-[#263238] dark:text-[#F7F8FA] font-mono text-sm">{confirmedBookingData.booking_reference || `TIQ-${confirmedBookingData.id}`}</span>
+                      <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">AEVORA Reference</span>
+                      <span className="font-bold text-[#263238] dark:text-[#F7F8FA] font-mono text-sm">{confirmedBookingData.booking_reference || `AEV-${confirmedBookingData.id}`}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs border-b border-[#E3E7EA] dark:border-[#293644] pb-2">
                       <span className="text-[#66736F] dark:text-[#A3B0AB] uppercase font-semibold">Booking Status</span>
@@ -720,7 +720,7 @@ export default function BookingModal({ train, onClose }) {
                         <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                         <div>
                           <p className="font-bold text-amber-900 dark:text-amber-100">Direct booking unsupported for {transportType}s</p>
-                          <p className="mt-0.5 text-amber-700 dark:text-amber-300 leading-relaxed">TravelIQ currently supports online ticketing reservations for Trains only. Flight and Bus schedules are displayed for itinerary exploration and multi-modal routing. Direct carrier checkout for {transportType.toLowerCase()}s will be available in an upcoming release.</p>
+                          <p className="mt-0.5 text-amber-700 dark:text-amber-300 leading-relaxed">AEVORA currently supports online ticketing reservations for Trains only. Flight and Bus schedules are displayed for itinerary exploration and multi-modal routing. Direct carrier checkout for {transportType.toLowerCase()}s will be available in an upcoming release.</p>
                         </div>
                       </div>
                     )}
@@ -1060,7 +1060,7 @@ export default function BookingModal({ train, onClose }) {
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <h4 className="text-xs sm:text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">TravelIQ Smart UPI QR</h4>
+                                <h4 className="text-xs sm:text-sm font-bold text-[#263238] dark:text-[#F7F8FA]">AEVORA Smart UPI QR</h4>
                                 <span className="bg-[#4F7D62]/15 text-[#4F7D62] text-[9px] font-bold px-1.5 py-0.5 rounded border border-[#4F7D62]/30 uppercase tracking-wider">
                                   ⚡ Demo Sandbox
                                 </span>
@@ -1080,7 +1080,7 @@ export default function BookingModal({ train, onClose }) {
                             <div className="relative">
                               <img 
                                 src={qrCodeUrl} 
-                                alt="TravelIQ Payment QR Code" 
+                                alt="AEVORA Payment QR Code" 
                                 className="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg transition-transform"
                               />
                               
@@ -1271,7 +1271,7 @@ export default function BookingModal({ train, onClose }) {
                     {paymentTab === 'wallet' && (
                       <div className="p-4 rounded-xl bg-[#F7F8FA] dark:bg-[#121921] border border-[#E3E7EA] dark:border-[#293644] space-y-2 text-left">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-[#66736F] dark:text-[#A3B0AB]">Available TravelIQ Wallet Balance</span>
+                          <span className="text-[#66736F] dark:text-[#A3B0AB]">Available AEVORA Wallet Balance</span>
                           <span className="font-bold text-[#4F7D62]">₹8,450.00</span>
                         </div>
                         <p className="text-[11px] text-[#66736F] dark:text-[#A3B0AB]">

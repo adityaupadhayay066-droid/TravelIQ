@@ -66,7 +66,7 @@ export default function AdminSidebar({
                     {!collapsed && (
                         <div className="flex items-center gap-2">
                             <span className="text-base font-extrabold tracking-tight text-[var(--color-text)] font-heading">
-                                Travel<span className="text-sky-500">IQ</span>
+                                AEV<span className="text-[#20C5D9]">ORA</span>
                             </span>
                             <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
                                 Admin
@@ -138,7 +138,7 @@ export default function AdminSidebar({
                     <div className="flex items-center gap-2.5 min-w-0">
                         <UserAvatar
                             name={user?.name || 'Admin User'}
-                            email={user?.email || 'admin@traveliq.com'}
+                            email={user?.email || 'admin@aevora.travel'}
                             role={user?.admin_role || user?.role || 'admin'}
                             size={collapsed ? 'md' : 'sm'}
                             showBadge
@@ -150,7 +150,7 @@ export default function AdminSidebar({
                                 </div>
                                 <div className="text-[10px] text-[var(--color-text-muted)] truncate flex items-center gap-1 mt-0.5">
                                     <span className="capitalize font-medium text-purple-400">
-                                        {user?.admin_role ? user.admin_role.replace('_', ' ') : ((user?.email === 'adityaupadhayay066@gmail.com' || user?.email === 'admin@traveliq.com') ? 'super admin' : 'Administrator')}
+                                        {user?.admin_role ? user.admin_role.replace('_', ' ') : ((user?.email === 'adityaupadhayay066@gmail.com' || user?.email === 'admin@traveliq.com' || user?.email === 'admin@aevora.travel') ? 'super admin' : 'Administrator')}
                                     </span>
                                 </div>
                             </div>

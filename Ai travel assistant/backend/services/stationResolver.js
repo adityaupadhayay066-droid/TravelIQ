@@ -161,7 +161,7 @@ const CITY_CLUSTERS = [
     primaryCode: 'KUR',
     stationCodes: ['KUR'],
     synonyms: [
-      'khurda', 'kurdha', 'khordha', 'khurda road', 'khurda rd', 'kur', 'khurda road jn', 'khurdha', 'khurda jn'
+      'khurda', 'kurdha', 'khordha', 'khurda road', 'khurda rd', 'kur', 'khurda road jn', 'khurdha', 'khurda jn', 'jatni', 'jatani'
     ]
   },
   {
@@ -202,6 +202,14 @@ const CITY_CLUSTERS = [
     stationCodes: ['BPL', 'HBJ', 'RKMP'],
     synonyms: [
       'bhopal', 'habibganj', 'rani kamlapati', 'bpl', 'hbj', 'rkmp'
+    ]
+  },
+  {
+    city: 'Brahmapur',
+    primaryCode: 'BAM',
+    stationCodes: ['BAM'],
+    synonyms: [
+      'brahmapur', 'berhampur', 'bam', 'brahmapur jn', 'berhampur jn', 'behrampur'
     ]
   },
   {
@@ -288,12 +296,44 @@ function levenshteinDistance(s1, s2) {
   return v1[b.length];
 }
 
+const APPROVED_STATION_ALIASES = {
+  // Odisha & Eastern Corridor
+  'jatni': { code: 'KUR', name: 'KHURDA ROAD JN', city: 'Khurda Road' },
+  'jatani': { code: 'KUR', name: 'KHURDA ROAD JN', city: 'Khurda Road' },
+  'kurdha': { code: 'KUR', name: 'KHURDA ROAD JN', city: 'Khurda Road' },
+  'khurda': { code: 'KUR', name: 'KHURDA ROAD JN', city: 'Khurda Road' },
+  'khurda road': { code: 'KUR', name: 'KHURDA ROAD JN', city: 'Khurda Road' },
+  'berhampur': { code: 'BAM', name: 'BRAHMAPUR', city: 'Brahmapur' },
+  'behrampur': { code: 'BAM', name: 'BRAHMAPUR', city: 'Brahmapur' },
+  'brahmapur': { code: 'BAM', name: 'BRAHMAPUR', city: 'Brahmapur' },
+
+  // Historical & Colloquial Aliases
+  'calcutta': { code: 'HWH', name: 'HOWRAH JN', city: 'Kolkata' },
+  'bombay': { code: 'CSMT', name: 'MUMBAI CSMT', city: 'Mumbai' },
+  'madras': { code: 'MAS', name: 'CHENNAI CENTRAL', city: 'Chennai' },
+  'bangalore': { code: 'SBC', name: 'BENGALURU CITY JN', city: 'Bengaluru' },
+  'trivandrum': { code: 'TVC', name: 'THIRUVANANTHAPURAM CENTRAL', city: 'Thiruvananthapuram' },
+  'cochin': { code: 'ERS', name: 'ERNAKULAM JN', city: 'Kochi' },
+  'baroda': { code: 'BRC', name: 'VADODARA JN', city: 'Vadodara' },
+  'poona': { code: 'PUNE', name: 'PUNE JN', city: 'Pune' },
+  'benares': { code: 'BSB', name: 'VARANASI JN', city: 'Varanasi' },
+  'banaras': { code: 'BSBS', name: 'BANARAS', city: 'Varanasi' },
+  'kashi': { code: 'BSB', name: 'VARANASI JN', city: 'Varanasi' },
+  'allahabad': { code: 'PRYJ', name: 'PRAYAGRAJ JN', city: 'Prayagraj' },
+  'mughalsarai': { code: 'DDU', name: 'PT DEEN DAYAL UPADHYAYA JN', city: 'Mughalsarai' },
+  'jamshedpur': { code: 'TATA', name: 'TATANAGAR JN', city: 'Jamshedpur' },
+  'pink city': { code: 'JP', name: 'JAIPUR JN', city: 'Jaipur' },
+  'secunderabad': { code: 'SC', name: 'SECUNDERABAD JN', city: 'Hyderabad' },
+  'habibganj': { code: 'RKMP', name: 'RANI KAMLAPATI', city: 'Bhopal' },
+  'kalupur': { code: 'ADI', name: 'AHMEDABAD JN', city: 'Ahmedabad' }
+};
+
 /**
  * ════════════════════════════════════════════════════════════════════════════
  * RESOLVE STATION PIPELINE
  * ════════════════════════════════════════════════════════════════════════════
- * Strict Entity Resolution & Fuzzy Station Matching.
- * Returns StationMatch with multi-station cluster codes.
+ * Strict Entity Resolution & Deterministic Station Matching.
+ * Returns StationMatch with multi-station cluster codes or null if not found.
  */
 async function resolveStation(input) {
   if (!input || typeof input !== 'string') return null;
@@ -302,10 +342,13 @@ async function resolveStation(input) {
   const normalized = normalizeInput(input);
   const core = cleanCoreName(input);
 
+  if (!rawClean) return null;
+
   // 1. Direct station code check against city cluster primary/station codes
   for (const cluster of CITY_CLUSTERS) {
     if (cluster.stationCodes.includes(rawClean)) {
       return {
+        status: 'RESOLVED',
         cityName: cluster.city,
         primaryStationCode: cluster.primaryCode,
         stationCodes: cluster.stationCodes,
@@ -315,10 +358,36 @@ async function resolveStation(input) {
     }
   }
 
-  // 2. Exact city synonym match
+  // 2. Approved Alias Table (Jatni -> Khurda Road Jn, Berhampur -> Brahmapur, etc.)
+  const aliasMatch = APPROVED_STATION_ALIASES[normalized] || (core && APPROVED_STATION_ALIASES[core]);
+  if (aliasMatch) {
+    // Check if this station belongs to a cluster
+    const cluster = CITY_CLUSTERS.find(c => c.primaryCode === aliasMatch.code || c.stationCodes.includes(aliasMatch.code));
+    if (cluster) {
+      return {
+        status: 'RESOLVED',
+        cityName: cluster.city,
+        primaryStationCode: cluster.primaryCode,
+        stationCodes: cluster.stationCodes,
+        matchedVia: 'approved_alias_cluster',
+        displayName: `${cluster.city} Area (${cluster.stationCodes.join(', ')})`
+      };
+    }
+    return {
+      status: 'RESOLVED',
+      cityName: aliasMatch.city,
+      primaryStationCode: aliasMatch.code,
+      stationCodes: [aliasMatch.code],
+      matchedVia: 'approved_alias',
+      displayName: `${aliasMatch.name} (${aliasMatch.code})`
+    };
+  }
+
+  // 3. Exact city synonym match in CITY_CLUSTERS
   for (const cluster of CITY_CLUSTERS) {
     if (cluster.synonyms.includes(normalized) || (core && cluster.synonyms.includes(core))) {
       return {
+        status: 'RESOLVED',
         cityName: cluster.city,
         primaryStationCode: cluster.primaryCode,
         stationCodes: cluster.stationCodes,
@@ -328,7 +397,7 @@ async function resolveStation(input) {
     }
   }
 
-  // 3. Database lookup in stations table (exact station_code or station_name)
+  // 4. Database lookup in stations table (exact station_code or exact station_name)
   try {
     let dbStation = await Station.findOne({
       where: { station_code: rawClean }
@@ -340,14 +409,26 @@ async function resolveStation(input) {
           [Op.or]: [
             { station_name: rawClean },
             sequelize.where(sequelize.fn('LOWER', sequelize.col('station_name')), normalized),
-            sequelize.where(sequelize.fn('LOWER', sequelize.col('city')), normalized)
+            sequelize.where(sequelize.fn('LOWER', sequelize.col('station_name')), core)
           ]
         }
       });
     }
 
     if (dbStation) {
+      const cluster = CITY_CLUSTERS.find(c => c.primaryCode === dbStation.station_code || c.stationCodes.includes(dbStation.station_code));
+      if (cluster) {
+        return {
+          status: 'RESOLVED',
+          cityName: cluster.city,
+          primaryStationCode: cluster.primaryCode,
+          stationCodes: cluster.stationCodes,
+          matchedVia: 'exact_db_station_cluster',
+          displayName: `${cluster.city} Area (${cluster.stationCodes.join(', ')})`
+        };
+      }
       return {
+        status: 'RESOLVED',
         cityName: dbStation.city || dbStation.station_name,
         primaryStationCode: dbStation.station_code,
         stationCodes: [dbStation.station_code],
@@ -359,11 +440,52 @@ async function resolveStation(input) {
     console.warn('[StationResolver] DB lookup warning:', dbErr.message);
   }
 
-  // 4. Substring containment match in synonyms
+  // 5. Database lookup by City
+  try {
+    const cityStations = await Station.findAll({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('city')), normalized),
+      limit: 10
+    });
+    if (cityStations.length === 1) {
+      return {
+        status: 'RESOLVED',
+        cityName: cityStations[0].city,
+        primaryStationCode: cityStations[0].station_code,
+        stationCodes: [cityStations[0].station_code],
+        matchedVia: 'exact_city_single_station',
+        displayName: `${cityStations[0].station_name} (${cityStations[0].station_code})`
+      };
+    } else if (cityStations.length > 1) {
+      const cluster = CITY_CLUSTERS.find(c => c.city.toLowerCase() === normalized);
+      if (cluster) {
+        return {
+          status: 'RESOLVED',
+          cityName: cluster.city,
+          primaryStationCode: cluster.primaryCode,
+          stationCodes: cluster.stationCodes,
+          matchedVia: 'city_cluster',
+          displayName: `${cluster.city} Area (${cluster.stationCodes.join(', ')})`
+        };
+      }
+      return {
+        status: 'AMBIGUOUS',
+        cityName: cityStations[0].city,
+        primaryStationCode: cityStations[0].station_code,
+        stationCodes: cityStations.map(s => s.station_code),
+        candidates: cityStations.map(s => ({ station_code: s.station_code, station_name: s.station_name, city: s.city })),
+        message: `Multiple stations found for "${input}". Please select a specific station.`
+      };
+    }
+  } catch (cityErr) {
+    console.warn('[StationResolver] City DB lookup warning:', cityErr.message);
+  }
+
+  // 6. Substring containment match in synonyms (min length 4, strict boundary)
   for (const cluster of CITY_CLUSTERS) {
     for (const syn of cluster.synonyms) {
-      if (syn.length >= 4 && (normalized === syn || normalized.includes(syn) || (core && core.includes(syn)))) {
+      if (syn.length >= 4 && (normalized === syn || (normalized.length >= 5 && normalized.split(' ').includes(syn)))) {
         return {
+          status: 'RESOLVED',
           cityName: cluster.city,
           primaryStationCode: cluster.primaryCode,
           stationCodes: cluster.stationCodes,
@@ -374,7 +496,9 @@ async function resolveStation(input) {
     }
   }
 
-  // 5. Fuzzy Levenshtein matching on cluster synonyms (edit distance <= 2 for >=5 chars, <=1 for 4 chars)
+  // 7. Strict Typo Levenshtein matching on cluster synonyms
+  // Guard: First character MUST match, edit distance <= 1 for length <= 6, <= 2 for length > 6.
+  // This prevents 'jatni' (len 5) from ever matching 'patna' (diff first char, dist 2).
   let bestCluster = null;
   let minDistance = Infinity;
 
@@ -382,7 +506,11 @@ async function resolveStation(input) {
   if (targetWord.length >= 4) {
     for (const cluster of CITY_CLUSTERS) {
       for (const syn of cluster.synonyms) {
+        if (!syn || syn.length < 4) continue;
+        // First character must match strictly to avoid completely different word false-positives
+        if (targetWord[0] !== syn[0]) continue;
         if (Math.abs(syn.length - targetWord.length) > 2) continue;
+
         const maxAllowed = targetWord.length <= 4 ? 1 : 2;
         const dist = levenshteinDistance(targetWord, syn);
         if (dist <= maxAllowed && dist < minDistance) {
@@ -395,6 +523,7 @@ async function resolveStation(input) {
 
   if (bestCluster && minDistance <= 2) {
     return {
+      status: 'RESOLVED',
       cityName: bestCluster.city,
       primaryStationCode: bestCluster.primaryCode,
       stationCodes: bestCluster.stationCodes,
@@ -403,32 +532,35 @@ async function resolveStation(input) {
     };
   }
 
-  // 6. Fallback partial DB search
+  // 8. Partial prefix database search (must have at least 4 characters)
   try {
-    if (core.length >= 4) {
-      const dbStation = await Station.findOne({
+    if (targetWord.length >= 4) {
+      const partialMatches = await Station.findAll({
         where: {
           [Op.or]: [
-            sequelize.where(
-              sequelize.fn('LOWER', sequelize.col('station_name')),
-              'LIKE',
-              `%${core}%`
-            ),
-            sequelize.where(
-              sequelize.fn('LOWER', sequelize.col('city')),
-              'LIKE',
-              `%${core}%`
-            )
+            sequelize.where(sequelize.fn('LOWER', sequelize.col('station_name')), 'LIKE', `${targetWord}%`),
+            sequelize.where(sequelize.fn('LOWER', sequelize.col('city')), 'LIKE', `${targetWord}%`)
           ]
-        }
+        },
+        limit: 5
       });
-      if (dbStation) {
+      if (partialMatches.length === 1) {
+        const dbStation = partialMatches[0];
         return {
+          status: 'RESOLVED',
           cityName: dbStation.city || dbStation.station_name,
           primaryStationCode: dbStation.station_code,
           stationCodes: [dbStation.station_code],
-          matchedVia: 'partial_db_station',
+          matchedVia: 'partial_prefix_db_station',
           displayName: `${dbStation.station_name} (${dbStation.station_code})`
+        };
+      } else if (partialMatches.length > 1) {
+        return {
+          status: 'AMBIGUOUS',
+          primaryStationCode: partialMatches[0].station_code,
+          stationCodes: partialMatches.map(s => s.station_code),
+          candidates: partialMatches.map(s => ({ station_code: s.station_code, station_name: s.station_name, city: s.city })),
+          message: `Multiple matching stations for "${input}". Please select one.`
         };
       }
     }
@@ -436,14 +568,8 @@ async function resolveStation(input) {
     console.warn('[StationResolver] Partial DB lookup warning:', dbErr.message);
   }
 
-  // 6. Fallback: Treat as individual station code or raw string
-  return {
-    cityName: input.trim(),
-    primaryStationCode: rawClean,
-    stationCodes: [rawClean],
-    matchedVia: 'fallback',
-    displayName: `${input.trim()} (${rawClean})`
-  };
+  // 9. Strict rejection: No reliable match found. NEVER FABRICATE OR FALL BACK TO UNVERIFIED CODES.
+  return null;
 }
 
 /**
@@ -569,6 +695,7 @@ function parseTravelDate(text) {
 
 module.exports = {
   CITY_CLUSTERS,
+  APPROVED_STATION_ALIASES,
   normalizeInput,
   cleanCoreName,
   levenshteinDistance,
