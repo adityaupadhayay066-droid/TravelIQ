@@ -64,7 +64,7 @@ export default function AdminSidebar({
                     {!collapsed && (
                         <div className="flex items-center gap-2">
                             <span className="text-base font-extrabold tracking-tight text-[var(--color-text)] font-heading">
-                                AEV<span className="text-[#20C5D9]">ORA</span>
+                                AEV<span className="text-sky-500">ORA</span>
                             </span>
                             <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
                                 Admin

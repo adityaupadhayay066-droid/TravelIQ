@@ -262,14 +262,14 @@ export default function AIChatbot() {
       {/* Floating Concierge Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-[#101B2D] hover:bg-[#1A2E4C] text-[#20C5D9] shadow-xl cursor-pointer flex items-center justify-center border-2 border-[#20C5D9]/30 transition-transform duration-200"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 w-14 h-14 rounded-full bg-slate-900 hover:bg-slate-800 text-sky-400 shadow-xl cursor-pointer flex items-center justify-center border border-slate-700/80 transition-transform duration-200"
         style={{ transform: `scale(${isOpen ? 1 : scrollScale})`, transformOrigin: 'bottom right' }}
         title="AEVORA Assistant Concierge"
       >
         {isOpen ? <X className="w-6 h-6 text-white" /> : (
           <div className="relative">
-            <MessageSquare className="w-6 h-6 text-[#20C5D9]" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#42D6B5] animate-ping" />
+            <MessageSquare className="w-6 h-6 text-sky-400" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-sky-400 animate-ping" />
           </div>
         )}
       </button>
@@ -281,7 +281,7 @@ export default function AIChatbot() {
           {/* Concierge Header */}
           <div className="p-4 border-b border-[#E2E8F0] dark:border-[#1E293B] flex items-center justify-between bg-[#F4F7FB] dark:bg-[#0C1523]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#101B2D] text-[#20C5D9] border border-[#20C5D9]/30 flex items-center justify-center font-black shadow-xs text-xs">
+              <div className="w-9 h-9 rounded-xl bg-slate-900 text-sky-400 border border-slate-700/80 flex items-center justify-center font-black shadow-xs text-xs">
                 AE
               </div>
               <div>
@@ -289,7 +289,7 @@ export default function AIChatbot() {
                   AEVORA Assistant
                 </h4>
                 <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1 font-['Inter']">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#20C5D9] animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
                   Intelligent Travel Concierge
                 </p>
               </div>

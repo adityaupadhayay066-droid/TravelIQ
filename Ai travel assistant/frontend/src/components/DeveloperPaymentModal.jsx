@@ -474,7 +474,7 @@ export default function DeveloperPaymentModal({ isOpen, onClose, item, org, onPa
         <div className="w-full md:w-5/12 bg-[#F7F8FA] dark:bg-[#121921] p-6 sm:p-7 border-b md:border-b-0 md:border-r border-[#E3E7EA] dark:border-[#293644] flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 rounded-xl bg-[#101B2D] text-[#20C5D9] border border-[#20C5D9]/30 flex items-center justify-center font-extrabold text-xs shadow">
+              <div className="w-8 h-8 rounded-xl bg-[#0B132B] text-sky-400 border border-slate-700/80 flex items-center justify-center font-extrabold text-xs shadow">
                 AE
               </div>
               <div>

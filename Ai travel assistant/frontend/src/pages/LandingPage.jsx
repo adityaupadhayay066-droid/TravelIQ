@@ -342,16 +342,16 @@ export default function LandingPage() {
           
           {/* Hero Headline & Supporting Statement */}
           <div className="max-w-3xl mb-7 sm:mb-9 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EEF2F4] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#20C5D9] text-xs font-semibold tracking-wide mb-3">
-              <span className="w-2 h-2 rounded-full bg-[#20C5D9] animate-pulse"></span>
-              <span>AEVORA Intelligent Travel Assistant</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-medium tracking-wide mb-3 backdrop-blur-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 dark:bg-sky-400"></span>
+              <span>Intelligent Travel & Mobility Platform</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight leading-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
-              Discover a <span className="text-[#20C5D9] bg-gradient-to-r from-[#20C5D9] to-[#42D6B5] bg-clip-text text-transparent">smarter way</span> to travel.
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white font-['Sora']">
+              Discover a <span className="text-sky-600 dark:text-sky-400">smarter way</span> to travel.
             </h1>
 
-            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed max-w-2xl font-['Inter']">
+            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl font-['Inter']">
               Explore routes, compare transportation options and plan your next journey with intelligent travel assistance.
             </p>
 
@@ -362,16 +362,16 @@ export default function LandingPage() {
                   const elem = document.getElementById('search-booking-panel');
                   if (elem) elem.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-[#20C5D9] to-[#42D6B5] text-[#101B2D] font-bold text-sm shadow-md hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer flex items-center gap-2"
               >
                 <Compass className="w-4 h-4" />
                 <span>Plan Your Journey</span>
               </button>
               <Link
                 to="/destinations"
-                className="px-5 py-2.5 rounded-lg bg-white/10 dark:bg-white/5 hover:bg-white/20 dark:hover:bg-white/10 text-[#101B2D] dark:text-white font-semibold text-sm border border-gray-300 dark:border-gray-700 transition-all flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-200 dark:border-slate-700/80 shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2"
               >
-                <MapPin className="w-4 h-4 text-[#20C5D9]" />
+                <MapPin className="w-4 h-4 text-sky-500" />
                 <span>Explore Destinations</span>
               </Link>
             </div>
@@ -402,11 +402,11 @@ export default function LandingPage() {
                     }}
                     className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                       isSelected
-                        ? 'border-[#244C66] text-[#244C66] dark:border-[#75A4C4] dark:text-[#75A4C4] bg-white dark:bg-[#1B242E]'
-                        : 'border-transparent text-[#66737D] dark:text-[#9CAAB5] hover:text-[#202A32] dark:hover:text-[#F0F4F7]'
+                        ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400 bg-white dark:bg-[#1B242E]'
+                        : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isSelected ? 'text-[#244C66] dark:text-[#75A4C4]' : 'text-[#89939B]'}`} />
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'}`} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -595,7 +595,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                      className="w-full h-[58px] rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
                     >
                       {isSearching ? (
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -763,7 +763,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                      className="w-full h-[58px] rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
                     >
                       {isSearching ? (
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -998,7 +998,7 @@ export default function LandingPage() {
 
             {/* Smart Alternative Option */}
             <div className="lg:col-span-7 bg-white dark:bg-[#1B242E] rounded-xl p-5 border border-[#244C66] dark:border-[#75A4C4] shadow-xs flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-0.5 bg-[#101B2D] text-[#20C5D9] text-[10px] font-bold rounded-bl-lg border-l border-b border-[#20C5D9]/30">
+              <div className="absolute top-0 right-0 px-3 py-0.5 bg-slate-900 text-sky-400 text-[10px] font-bold rounded-bl-lg border-l border-b border-sky-500/30">
                 ★ AEVORA Alternative
               </div>
 
@@ -1373,74 +1373,74 @@ export default function LandingPage() {
       {/* 11.1 WHY AEVORA? */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#20C5D9] mb-1">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">
             <span>Unified Travel Intelligence & Mobility</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-['Sora']">
             Why AEVORA?
           </h2>
-          <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-1.5 font-['Inter']">
-            Discover a smarter way to travel with algorithmic multi-modal transit intelligence, verified schedules, and proactive AI assistance.
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 font-['Inter']">
+            Discover a smarter way to travel with algorithmic multi-modal transit intelligence, verified schedules, and proactive travel assistance.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <Compass className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Intelligent Route Planning</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Intelligent Route Planning</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Algorithmic multi-modal routing evaluating rail, road, and air in real time with verified interchange transfers.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <Train className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Multi-Transport Discovery</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Multi-Transport Discovery</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Unified cross-modal search across verified rail networks, domestic flights, and interstate bus corridors.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <IndianRupee className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Smart Fare Comparison</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Smart Fare Comparison</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Transparent fare breakdown with dynamic analytics, class-by-class comparison, and zero hidden surcharges.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Personalized Travel Assistance</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Personalized Travel Assistance</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Voice and conversational AI tuned for trip recommendations, itinerary customization, and real-time support.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <MapPin className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Local Transportation Insights</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Local Transportation Insights</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Station twin navigation, first-to-last-mile connectivity, and verified platform transfer directions.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl border border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#101B2D] shadow-xs space-y-2.5">
-            <div className="w-9 h-9 rounded-lg bg-[#E6FAF5] dark:bg-[#122838] text-[#20C5D9] flex items-center justify-center font-bold">
+          <div className="p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2.5">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold">
               <Clock className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">Real-Time Travel Information</h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white font-['Sora']">Real-Time Travel Information</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               GPS train status, delay probability forecasts, and active station timetable verification.
             </p>
           </div>

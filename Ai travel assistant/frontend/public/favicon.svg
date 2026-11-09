@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
     <linearGradient id="aevora-fav-grad" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#20C5D9" />
-      <stop offset="100%" stop-color="#42D6B5" />
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#38BDF8" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="#101B2D" />
+  <rect width="64" height="64" rx="16" fill="#0B132B" />
   <path d="M32 10 L14 52 L22.5 52 L32 28 L41.5 52 L50 52 L32 10 Z" fill="url(#aevora-fav-grad)" />
   <path d="M21 39 L47 31 L41 36 L25 41 Z" fill="#FFFFFF" opacity="0.95" />
   <polygon points="32,23 35.5,28 32,33 28.5,28" fill="#FFFFFF" />
-  <circle cx="47" cy="31" r="2.5" fill="#42D6B5" />
+  <circle cx="47" cy="31" r="2.5" fill="#38BDF8" />
 </svg>

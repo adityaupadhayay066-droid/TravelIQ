@@ -880,9 +880,9 @@ export default function AdminDashboard() {
           </div>
           <div>
             <span className="font-extrabold text-xl tracking-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
-              AEV<span className="text-[#20C5D9]">ORA</span>
+              AEV<span className="text-sky-500">ORA</span>
             </span>
-            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-[#20C5D9] bg-[#E6FAF5] dark:bg-[#122838] border border-[#20C5D9]/30 px-2.5 py-0.5 rounded-full uppercase">
+            <span className="ml-2.5 text-[10px] font-bold tracking-widest text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-sky-500/30 px-2.5 py-0.5 rounded-full uppercase">
               Admin Center
             </span>
           </div>

@@ -1,21 +1,21 @@
 /**
  * AEVORA Design System Brand Utilities
- * Core palette:
- * - Midnight Navy: #101B2D
- * - Electric Cyan: #20C5D9
- * - Aurora Teal:   #42D6B5
- * - Cloud White:   #F4F7FB
- * - Slate Grey:    #64748B
+ * Professional Aerospace & Modern Mobility Palette:
+ * - Midnight Navy: #0B132B
+ * - Ocean Sky Blue: #0284C7
+ * - Sky Highlight:  #38BDF8
+ * - Cloud White:    #F8FAFC
+ * - Slate Grey:     #64748B
  */
 
 :root {
-  --aevora-navy: #101B2D;
-  --aevora-cyan: #20C5D9;
-  --aevora-teal: #42D6B5;
-  --aevora-cloud: #F4F7FB;
+  --aevora-navy: #0B132B;
+  --aevora-cyan: #0284C7;
+  --aevora-teal: #38BDF8;
+  --aevora-cloud: #F8FAFC;
   --aevora-surface: #FFFFFF;
   --aevora-slate: #64748B;
-  --aevora-gradient: linear-gradient(135deg, #20C5D9 0%, #42D6B5 100%);
+  --aevora-gradient: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
 }
 
 .font-heading {
@@ -27,22 +27,22 @@
 }
 
 .bg-aevora-navy {
-  background-color: #101B2D;
+  background-color: #0B132B;
 }
 
 .text-aevora-cyan {
-  color: #20C5D9;
+  color: #0284C7;
 }
 
 .text-aevora-teal {
-  color: #42D6B5;
+  color: #38BDF8;
 }
 
 .bg-aevora-gradient {
-  background: linear-gradient(135deg, #20C5D9 0%, #42D6B5 100%);
+  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
 }
 
 .border-aevora-cyan {
-  border-color: #20C5D9;
+  border-color: #0284C7;
 }
 

@@ -12,21 +12,21 @@ export const BRAND = {
   version: '2.4.0',
 
   colors: {
-    primary: '#101B2D',       // Midnight Navy
-    primaryAccent: '#20C5D9', // Electric Cyan
-    secondaryAccent: '#42D6B5', // Aurora Teal
-    background: '#F4F7FB',    // Cloud White
-    surface: '#FFFFFF',       // Pure White
-    secondaryText: '#64748B', // Slate Grey
-    darkSurface: '#101B2D',   // Dark Surface
+    primary: '#0B132B',         // Deep Midnight Navy
+    primaryAccent: '#0284C7',   // Aerospace Sky Blue
+    secondaryAccent: '#38BDF8', // Crisp Sky Highlight
+    background: '#F8FAFC',      // Crisp Cloud White
+    surface: '#FFFFFF',         // Pure White
+    secondaryText: '#64748B',   // Slate Grey
+    darkSurface: '#0F172A',     // Obsidian Slate
     borderLight: '#E2E8F0',
     borderDark: '#1E293B',
   },
 
   gradients: {
-    primary: 'linear-gradient(135deg, #20C5D9 0%, #42D6B5 100%)',
-    navyGlow: 'linear-gradient(135deg, #101B2D 0%, #1A2E4C 100%)',
-    surfaceGlow: 'linear-gradient(180deg, rgba(32, 197, 217, 0.08) 0%, rgba(66, 214, 181, 0.02) 100%)',
+    primary: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)',
+    navyGlow: 'linear-gradient(135deg, #0B132B 0%, #1E293B 100%)',
+    surfaceGlow: 'linear-gradient(180deg, rgba(2, 132, 199, 0.05) 0%, rgba(56, 189, 248, 0.01) 100%)',
   },
 
   typography: {

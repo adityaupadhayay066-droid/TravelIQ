@@ -99,7 +99,7 @@ export default function Signup() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4">
             <span className="font-extrabold text-3xl tracking-tight text-[#101B2D] dark:text-[#F8FAFC] font-['Sora']">
-              AEV<span className="text-[#20C5D9]">ORA</span>
+              AEV<span className="text-sky-500">ORA</span>
             </span>
           </Link>
           <h2 className="text-2xl font-bold text-[#101B2D] dark:text-[#F8FAFC] mb-2 font-['Sora']">Create Account</h2>

@@ -816,11 +816,11 @@ export function generateHotelInvoiceHTML(booking = {}) {
         <!-- High-Definition AEVORA Logo Badge -->
         <div class="traveliq-logo-icon">
           <svg width="30" height="30" viewBox="0 0 64 64" fill="none">
-            <rect width="64" height="64" rx="14" fill="#101B2D" />
-            <path d="M32 10 L14 52 L22.5 52 L32 28 L41.5 52 L50 52 L32 10 Z" fill="#20C5D9" />
+            <rect width="64" height="64" rx="14" fill="#0B132B" />
+            <path d="M32 10 L14 52 L22.5 52 L32 28 L41.5 52 L50 52 L32 10 Z" fill="#0284C7" />
             <path d="M21 39 L47 31 L41 36 L25 41 Z" fill="#FFFFFF" />
             <polygon points="32,23 35.5,28 32,33 28.5,28" fill="#FFFFFF" />
-            <circle cx="47" cy="31" r="2.5" fill="#42D6B5" />
+            <circle cx="47" cy="31" r="2.5" fill="#38BDF8" />
           </svg>
         </div>
 

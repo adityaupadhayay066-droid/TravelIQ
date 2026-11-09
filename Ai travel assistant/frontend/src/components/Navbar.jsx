@@ -452,7 +452,7 @@ export default function Navbar() {
                   className="h-8.5 flex items-center gap-2 px-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] hover:bg-[#F7F8FA] dark:hover:bg-[#162029] transition-colors cursor-pointer"
                   aria-expanded={activeDropdown === 'profile'}
                 >
-                  <div className="w-5.5 h-5.5 rounded-md bg-[#244C66] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="w-5.5 h-5.5 rounded-md bg-sky-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
                     {user.name ? user.name[0].toUpperCase() : 'U'}
                   </div>
                   <span className="text-xs font-semibold text-[#202A32] dark:text-[#F0F4F7] max-w-[110px] truncate hidden sm:inline">
@@ -545,7 +545,7 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => openAuthModal('signup')}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#244C66] hover:bg-[#193B51] rounded-lg transition-colors shadow-xs cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg transition-colors shadow-xs cursor-pointer"
                 >
                   Sign Up
                 </button>

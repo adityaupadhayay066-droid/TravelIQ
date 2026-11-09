@@ -1,24 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" fill="none">
   <defs>
     <linearGradient id="aevora-light-grad" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#20C5D9" />
-      <stop offset="100%" stop-color="#42D6B5" />
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#38BDF8" />
     </linearGradient>
   </defs>
 
   <!-- Monogram Icon -->
   <g transform="translate(4, 4)">
-    <rect width="56" height="56" rx="14" fill="#101B2D" />
+    <rect width="56" height="56" rx="14" fill="#0B132B" />
     <path d="M28 9 L12 47 L19.5 47 L28 25 L36.5 47 L44 47 L28 9 Z" fill="url(#aevora-light-grad)" />
     <path d="M18 35 L41 28 L36 33 L22 37 Z" fill="#FFFFFF" opacity="0.95" />
     <polygon points="28,21 31,25.5 28,30 25,25.5" fill="#FFFFFF" />
-    <circle cx="41" cy="28" r="2.2" fill="#42D6B5" />
+    <circle cx="41" cy="28" r="2.2" fill="#38BDF8" />
   </g>
 
   <!-- Wordmark "AEVORA" -->
-  <text x="74" y="38" font-family="'Sora', 'Inter', -apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="3" fill="#101B2D">AEVORA</text>
+  <text x="74" y="38" font-family="'Sora', 'Inter', -apple-system, sans-serif" font-size="28" font-weight="800" letter-spacing="3" fill="#0F172A">AEVORA</text>
   
   <!-- Subtle Tagline / Positioning -->
-  <text x="75" y="52" font-family="'Inter', -apple-system, sans-serif" font-size="9" font-weight="600" letter-spacing="2.5" fill="#0E8A99">TRAVEL INTELLIGENCE</text>
+  <text x="75" y="52" font-family="'Inter', -apple-system, sans-serif" font-size="9" font-weight="500" letter-spacing="2.5" fill="#64748B">TRAVEL INTELLIGENCE</text>
 </svg>
-

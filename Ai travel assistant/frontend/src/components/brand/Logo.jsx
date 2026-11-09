@@ -29,7 +29,7 @@ export const Logo = ({
   const renderIcon = () => (
     <div
       style={{ width: iconSize, height: iconSize }}
-      className="relative flex-shrink-0 flex items-center justify-center rounded-xl bg-[#101B2D] p-1.5 shadow-md shadow-[#20C5D9]/10 border border-[#20C5D9]/20 group-hover:border-[#20C5D9]/50 transition-all duration-300"
+      className="relative flex-shrink-0 flex items-center justify-center rounded-xl bg-[#0B132B] p-1.5 shadow-sm border border-slate-700/50 group-hover:border-sky-500/50 transition-all duration-200"
     >
       <svg
         viewBox="0 0 64 64"
@@ -39,14 +39,14 @@ export const Logo = ({
       >
         <defs>
           <linearGradient id="aevora-comp-grad" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#20C5D9" />
-            <stop offset="100%" stopColor="#42D6B5" />
+            <stop offset="0%" stopColor="#0284C7" />
+            <stop offset="100%" stopColor="#38BDF8" />
           </linearGradient>
         </defs>
         <path d="M32 10 L14 52 L22.5 52 L32 28 L41.5 52 L50 52 L32 10 Z" fill="url(#aevora-comp-grad)" />
         <path d="M21 39 L47 31 L41 36 L25 41 Z" fill="#FFFFFF" opacity="0.95" />
         <polygon points="32,23 35.5,28 32,33 28.5,28" fill="#FFFFFF" />
-        <circle cx="47" cy="31" r="2.5" fill="#42D6B5" />
+        <circle cx="47" cy="31" r="2.5" fill="#38BDF8" />
       </svg>
     </div>
   );
@@ -58,18 +58,17 @@ export const Logo = ({
         <span
           className={`font-['Sora'] font-extrabold tracking-[0.14em] uppercase ${fontSize} ${
             theme === 'light'
-              ? 'text-[#101B2D]'
+              ? 'text-slate-900'
               : theme === 'dark'
               ? 'text-white'
-              : 'text-gray-900 dark:text-white'
+              : 'text-slate-900 dark:text-white'
           }`}
         >
           {BRAND.name}
         </span>
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#20C5D9] animate-pulse" />
       </div>
       {withTagline && (
-        <span className="text-[9px] font-semibold tracking-[0.18em] uppercase text-[#20C5D9] mt-0.5">
+        <span className="text-[9px] font-medium tracking-[0.22em] uppercase text-slate-400 dark:text-slate-400 mt-0.5">
           Travel Intelligence
         </span>
       )}
@@ -81,7 +80,7 @@ export const Logo = ({
       {(variant === 'full' || variant === 'icon' || variant === 'badge') && renderIcon()}
       {(variant === 'full' || variant === 'wordmark') && renderWordmark()}
       {variant === 'badge' && (
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#20C5D9]/10 text-[#20C5D9] border border-[#20C5D9]/30">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-500 border border-sky-500/30">
           PRO
         </span>
       )}

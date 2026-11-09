@@ -286,7 +286,7 @@ export default function AIVoiceAssistant() {
                             style={{
                                 width: 6,
                                 height: 6,
-                                background: '#20C5D9',
+                                background: '#0284C7',
                                 borderRadius: '1px',
                                 animation: 'pulse 2s ease-in-out infinite',
                             }}
@@ -374,7 +374,7 @@ export default function AIVoiceAssistant() {
                                     className="flex items-center gap-1"
                                     style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}
                                 >
-                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#20C5D9' }} />
+                                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0284C7' }} />
                                     AEVORA AI
                                 </span>
                             </div>
