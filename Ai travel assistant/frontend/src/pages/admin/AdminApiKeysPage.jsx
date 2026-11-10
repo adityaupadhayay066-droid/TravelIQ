@@ -23,10 +23,6 @@ export default function AdminApiKeysPage() {
   const [orgFormData, setOrgFormData] = useState({ plan_tier: 'free', monthly_quota: 100, is_active: true });
   const [savingOrg, setSavingOrg] = useState(false);
 
-  useEffect(() => {
-    fetchAdminData();
-  }, []);
-
   const fetchAdminData = async () => {
     setLoading(true);
     try {
@@ -44,6 +40,10 @@ export default function AdminApiKeysPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
 
   const handleEditKeySubmit = async (e) => {
     e.preventDefault();

@@ -27,6 +27,13 @@ export default function AIVoiceAssistant() {
     const synthesisUtteranceRef = useRef(null);
     const containerRef = useRef(null);
 
+    // Stop listening / cancel
+    const stopListening = () => {
+        if (recognitionRef.current) recognitionRef.current.stop();
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        setStatus('idle');
+    };
+
     // Sync state with Chatbot so Voice Assistant does not block the chat input/text
     useEffect(() => {
         const handleChatState = (e) => {
@@ -218,13 +225,6 @@ export default function AIVoiceAssistant() {
             setStatus('error');
             setErrorMsg('Speech recognition API is unavailable in this browser. Please type your query below.');
         }
-    };
-
-    // Stop listening / cancel
-    const stopListening = () => {
-        if (recognitionRef.current) recognitionRef.current.stop();
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
-        setStatus('idle');
     };
 
     const togglePanel = () => {

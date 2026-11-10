@@ -352,8 +352,6 @@ export default function HotelBookingModal({
     };
   }, [selectedRoom, hotel, nights, unitsCount, mealPlan, guestsCount, appliedCoupon]);
 
-  if (!isOpen || !hotel) return null;
-
   const handleApplyCoupon = (c) => {
     const couponToApply = typeof c === 'string' ? COUPONS.find(item => item.code === c.toUpperCase()) : c;
     if (!couponToApply) {
@@ -658,6 +656,8 @@ export default function HotelBookingModal({
     };
     printHotelInvoice(fullBookingData, autoPrint);
   };
+
+  if (!isOpen || !hotel) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
