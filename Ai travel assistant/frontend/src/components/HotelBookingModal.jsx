@@ -107,7 +107,7 @@ export default function HotelBookingModal({
       setDigiLockerLoading(false);
       setDigiLockerStatusMsg('');
       setDigiLockerStep(2);
-      toast.success('UIDAI 6-Digit e-KYC OTP sent to linked mobile (Demo OTP: 482910)', { icon: '📲', duration: 4000 });
+      toast.success('UIDAI 6-Digit e-KYC OTP sent to linked mobile (Demo OTP: 482910)', { duration: 4000 });
     }, 700);
   };
 
@@ -123,7 +123,7 @@ export default function HotelBookingModal({
       setDigiLockerLoading(false);
       setDigiLockerStatusMsg('');
       setDigiLockerStep(3); // Show certificate preview
-      toast.success('Identity verified with Govt of India DigiLocker Registry! 🛡️', { icon: '✅' });
+      toast.success('Identity verified with Govt of India DigiLocker Registry!');
     }, 900);
   };
 
@@ -132,7 +132,7 @@ export default function HotelBookingModal({
     setGovIdNumber(digiLockerAadhaar || '5829 1948 4829');
     setGovIdVerified(true);
     setIsDigiLockerOpen(false);
-    toast.success('Govt ID Linked & Verified! You can now complete your booking.', { icon: '🛡️', duration: 4000 });
+    toast.success('Govt ID Linked & Verified! You can now complete your booking.', { duration: 4000 });
   };
 
   // Payment & Coupons (MMT & OYO Style Dummy Gateway)
@@ -218,7 +218,7 @@ export default function HotelBookingModal({
       setGovIdNumber('5829 1948 4829');
       setGovIdVerified(true);
       setShowGovIdOtpInput(false);
-      toast.success('Aadhaar e-KYC Verified via DigiLocker! 🛡️', { icon: '✅', duration: 4000 });
+      toast.success('Aadhaar e-KYC Verified via DigiLocker!', { duration: 4000 });
     }, 1300);
   };
 
@@ -261,7 +261,7 @@ export default function HotelBookingModal({
     }
 
     setShowGovIdOtpInput(true);
-    toast.success(`Sandbox KYC OTP sent to mobile linked with ${govIdType}! (Use demo OTP: 4829)`, { icon: '📲', duration: 4500 });
+    toast.success(`Sandbox KYC OTP sent to mobile linked with ${govIdType}! (Use demo OTP: 4829)`, { duration: 4500 });
   };
 
   const handleVerifyGovIdOtp = (otpVal) => {
@@ -275,7 +275,7 @@ export default function HotelBookingModal({
       setIsVerifyingGovId(false);
       setGovIdVerified(true);
       setShowGovIdOtpInput(false);
-      toast.success(`${govIdType} successfully authenticated & verified with Govt Registry! 🛡️`, { icon: '✅' });
+      toast.success(`${govIdType} successfully authenticated & verified with Govt Registry!`);
     }, 600);
   };
 
@@ -298,7 +298,7 @@ export default function HotelBookingModal({
         setGovIdVerifyStatusText('');
         setGovIdVerified(true);
         if (!govIdNumber) setGovIdNumber('5829 1948 4829');
-        toast.success('Document OCR Authenticated: Verified Govt ID! 🛡️', { icon: '✅' });
+        toast.success('Document OCR Authenticated: Verified Govt ID!');
       }, 1100);
     }
   };
@@ -364,7 +364,7 @@ export default function HotelBookingModal({
     }
     setAppliedCoupon(couponToApply);
     setCouponCode(couponToApply.code);
-    toast.success(`Coupon ${couponToApply.code} applied! Saved discount!`, { icon: '🎉' });
+    toast.success(`Coupon ${couponToApply.code} applied! Saved discount!`);
   };
 
   const toggleSpecialRequest = (req) => {
@@ -407,12 +407,12 @@ export default function HotelBookingModal({
     setCardHolder(guestName || 'Verified Traveler');
     setCardExpiry('12/28');
     setCardCvv('849');
-    toast.success('Demo Visa Sandbox Card autofilled!', { icon: '💳' });
+    toast.success('Demo Visa Sandbox Card autofilled!');
   };
 
   const handleAutofillDemoUpi = (vpa) => {
     setUpiId(vpa);
-    toast.success(`UPI ID ${vpa} selected!`, { icon: '⚡' });
+    toast.success(`UPI ID ${vpa} selected!`);
   };
 
   const handleSimulateScanAndPay = async () => {
@@ -478,7 +478,6 @@ export default function HotelBookingModal({
     // 4. Mandatory Government ID Verification (KYC Compliance)
     if (!govIdVerified) {
       toast.error('Government ID authentication is mandatory. Please verify via DigiLocker or OTP.', {
-        icon: '🛡️',
         duration: 4000
       });
       setStep(3);
@@ -561,7 +560,7 @@ export default function HotelBookingModal({
         const booked = res.data.reservation;
         setConfirmedBooking(booked);
         setStep(4);
-        toast.success('Stay Confirmed! E-Voucher Ready.', { icon: '🏨', duration: 4000 });
+        toast.success('Stay Confirmed! E-Voucher Ready.', { duration: 4000 });
         
         // Save to LocalStorage for persistent offline & My Trips access
         try {
@@ -609,7 +608,7 @@ export default function HotelBookingModal({
       };
       setConfirmedBooking(fallbackBooking);
       setStep(4);
-      toast.success('Stay Confirmed! E-Voucher Ready.', { icon: '🏨' });
+      toast.success('Stay Confirmed! E-Voucher Ready.');
     } finally {
       setIsSubmitting(false);
     }
@@ -682,7 +681,7 @@ export default function HotelBookingModal({
                     ? 'bg-[#E58A3A]/15 text-[#E58A3A] border-[#E58A3A]/30' 
                     : 'bg-[#14532D]/15 text-[#14532D] dark:text-[#A7D7C5] border-[#14532D]/30'
                 }`}>
-                  {hotel.isHostel ? '🎒 Backpacker Hostel & Pods' : (hotel.category || 'Hotel & Suites')}
+                  {hotel.isHostel ? 'Backpacker Hostel & Pods' : (hotel.category || 'Hotel & Suites')}
                 </span>
                 <span className="text-xs text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1 font-medium">
                   <MapPin className="w-3.5 h-3.5" /> <span className="capitalize">{hotel.city}</span>
@@ -1168,11 +1167,11 @@ export default function HotelBookingModal({
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                         {[
-                          { id: 'Aadhaar Card', label: '🇮🇳 Aadhaar (UIDAI)' },
-                          { id: 'Passport', label: '🛂 Passport' },
-                          { id: 'Driving License', label: '🚗 Driving License' },
-                          { id: 'Voter ID', label: '🗳️ Voter ID (EPIC)' },
-                          { id: 'PAN Card', label: '🏢 PAN Card' }
+                          { id: 'Aadhaar Card', label: 'Aadhaar (UIDAI)' },
+                          { id: 'Passport', label: 'Passport' },
+                          { id: 'Driving License', label: 'Driving License' },
+                          { id: 'Voter ID', label: 'Voter ID (EPIC)' },
+                          { id: 'PAN Card', label: 'PAN Card' }
                         ].map((doc) => {
                           const isSel = govIdType === doc.id;
                           return (
@@ -1380,9 +1379,10 @@ export default function HotelBookingModal({
                       key={idx}
                       type="button"
                       onClick={() => handleApplyCoupon(c)}
-                      className="text-[10px] font-semibold bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] px-2 py-0.5 rounded-md hover:bg-[#14532D] hover:text-white transition-colors"
+                      className="text-xs font-medium bg-[#F0F4F7] dark:bg-[#233240] text-[#14532D] dark:text-[#F0F4F7] px-2 py-0.5 rounded-md hover:bg-[#14532D] hover:text-white transition-colors flex items-center gap-1"
                     >
-                      🏷️ {c.code} ({c.label})
+                      <Tag className="w-3 h-3" />
+                      <span>{c.code} ({c.label})</span>
                     </button>
                   ))}
                 </div>
@@ -1394,8 +1394,9 @@ export default function HotelBookingModal({
                   <label className="text-xs font-bold text-[#14532D] dark:text-white flex items-center gap-1.5">
                     <CreditCard className="w-3.5 h-3.5 text-[#14532D]" /> Select Payment Method
                   </label>
-                  <span className="text-[10px] font-bold text-[#15803D] bg-[#15803D]/10 px-2 py-0.5 rounded">
-                    🛡️ 100% Safe Sandbox Mode
+                  <span className="text-xs font-semibold text-[#15803D] bg-[#15803D]/10 px-2 py-0.5 rounded flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>Sandbox Mode</span>
                   </span>
                 </div>
 

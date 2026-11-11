@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Users, CheckCircle, Plus, Minus, 
   Train as TrainIcon, Plane, Bus, Receipt, 
-  ArrowRight, ArrowLeft, ShieldCheck, Sparkles, AlertCircle,
-  Smartphone, QrCode, Copy, Check, RefreshCw, Zap,
+  ArrowRight, ArrowLeft, ArrowDown, ShieldCheck, Sparkles, AlertCircle,
+  Smartphone, QrCode, Copy, Check, RefreshCw, Zap, CreditCard, Wallet, Lock, FileText,
   Building2, Bed, Home, Star, MapPin, ExternalLink, Filter, CheckCircle2, Tag, Coffee
 } from 'lucide-react';
 import QRCode from 'qrcode';
@@ -647,43 +647,51 @@ export default function BookingModal({ train, onClose }) {
                 {/* Confirmed Stay Notification Banner */}
                 {confirmedStay ? (
                   <div className="w-full max-w-md mt-3.5 p-3.5 bg-[#DCFCE7]/80 dark:bg-[#14532D]/40 border border-[#86EFAC] dark:border-[#15803D] rounded-xl text-left flex items-start gap-3 shadow-xs">
-                    <div className="p-2 bg-[#15803D] text-white rounded-lg text-sm">🏨</div>
+                    <div className="p-2 bg-[#15803D] text-white rounded-lg text-sm flex items-center justify-center">
+                      <Building2 className="w-4 h-4" />
+                    </div>
                     <div className="space-y-0.5 text-xs">
                       <p className="font-bold text-[#14532D] dark:text-[#86EFAC] flex items-center gap-1.5">
                         <span>Stay Reserved in {destinationCity}</span>
-                        <span className="text-[9px] bg-[#15803D] text-white px-1.5 py-0.2 rounded font-mono font-bold">CONFIRMED</span>
+                        <span className="text-[10px] bg-[#15803D] text-white px-1.5 py-0.5 rounded font-mono font-bold">CONFIRMED</span>
                       </p>
                       <p className="font-semibold text-[#1F2933] dark:text-white text-xs">{confirmedStay.hotelName}</p>
-                      <p className="text-[#64748B] dark:text-[#94A3B8] text-[11px]">Ref: {confirmedStay.id || confirmedStay.bookingReference} • {confirmedStay.roomType || 'Standard Room'}</p>
+                      <p className="text-[#64748B] dark:text-[#94A3B8] text-xs">Ref: {confirmedStay.id || confirmedStay.bookingReference} • {confirmedStay.roomType || 'Standard Room'}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="w-full max-w-md mt-3.5 p-3 bg-[#FFFDF7] dark:bg-[#121921] border border-[#E58A3A]/40 rounded-xl text-left flex items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xl">🏨</span>
+                      <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                        <Building2 className="w-4 h-4" />
+                      </div>
                       <div>
                         <p className="text-xs font-bold text-[#14532D] dark:text-white">Need a Stay in {destinationCity}?</p>
-                        <p className="text-[10px] text-[#64748B] dark:text-[#94A3B8]">Dorms from ₹399/bed • Homestays from ₹999</p>
+                        <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Dorms from ₹399/bed • Homestays from ₹999</p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-[#E58A3A] bg-[#E58A3A]/10 px-2 py-1 rounded-md border border-[#E58A3A]/30 shrink-0">
-                      <span className="hidden sm:inline">Select on Right 👉</span>
-                      <span className="sm:hidden">Browse Below 👇</span>
+                    <span className="text-xs font-bold text-[#E58A3A] bg-[#E58A3A]/10 px-2 py-1 rounded-md border border-[#E58A3A]/30 shrink-0 flex items-center gap-1">
+                      <span className="hidden sm:inline">Select on Right</span>
+                      <span className="sm:hidden">Browse Below</span>
+                      <ArrowRight className="w-3 h-3 hidden sm:inline" />
+                      <ArrowDown className="w-3 h-3 sm:hidden" />
                     </span>
                   </div>
                 )}
 
-                {/* n8n AI Briefing Card */}
+                {/* AI Briefing Card */}
                 <div className="w-full max-w-md mt-3.5 p-3.5 bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl text-left flex items-start gap-3 shadow-sm">
-                  <div className="p-2 bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] rounded-lg text-lg">🤖</div>
+                  <div className="p-2 bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] rounded-lg">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
                   <div className="space-y-1 text-xs">
                     <p className="font-semibold text-[#244C66] dark:text-[#F7F8FA] flex items-center gap-2">
-                      <span>AI Journey Briefing Dispatched</span>
-                      <span className="text-[9px] bg-[#4F7D62]/15 text-[#4F7D62] border border-[#4F7D62]/30 px-1.5 py-0.5 rounded font-mono font-semibold">
-                        ⚡ automated
+                      <span>Journey Briefing Dispatched</span>
+                      <span className="text-xs bg-[#4F7D62]/15 text-[#4F7D62] border border-[#4F7D62]/30 px-1.5 py-0.5 rounded font-mono font-medium">
+                        Verified
                       </span>
                     </p>
-                    <p className="text-[#66736F] dark:text-[#A3B0AB] text-[11px] leading-relaxed">
+                    <p className="text-[#66736F] dark:text-[#A3B0AB] text-xs leading-relaxed">
                       Your personalized itinerary advisory, delay forecast, and live station packing checklist have been generated.
                     </p>
                   </div>
@@ -698,7 +706,8 @@ export default function BookingModal({ train, onClose }) {
                     }}
                     className="flex-1 px-4 py-2.5 bg-[#244C66] hover:bg-[#193B51] dark:bg-[#F0F4F7] dark:hover:bg-[#FFFFFF] dark:text-[#121921] text-white font-semibold text-xs rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    📄 View E-Ticket
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>View E-Ticket</span>
                   </button>
                   <button 
                     onClick={onClose}
@@ -1044,23 +1053,27 @@ export default function BookingModal({ train, onClose }) {
                     {/* Pay Options Tabs */}
                     <div className="flex border-b border-[#E3E7EA] dark:border-[#293644] gap-2 pb-1 overflow-x-auto">
                       {[
-                        { id: 'qr', label: '📷 Scan & Pay QR' },
-                        { id: 'upi', label: '📱 Instant UPI' },
-                        { id: 'card', label: '💳 Credit / Debit Card' },
-                        { id: 'wallet', label: '👛 Travel Wallet' }
-                      ].map((tab) => (
-                        <button
-                          key={tab.id}
-                          onClick={() => setPaymentTab(tab.id)}
-                          className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                            paymentTab === tab.id
-                              ? 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#244C66]/30 dark:border-[#F0F4F7]/30'
-                              : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      ))}
+                        { id: 'qr', label: 'Scan & Pay QR', icon: QrCode },
+                        { id: 'upi', label: 'Instant UPI', icon: Smartphone },
+                        { id: 'card', label: 'Credit / Debit Card', icon: CreditCard },
+                        { id: 'wallet', label: 'Travel Wallet', icon: Wallet }
+                      ].map((tab) => {
+                        const TabIcon = tab.icon;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setPaymentTab(tab.id)}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                              paymentTab === tab.id
+                                ? 'bg-[#F0F4F7] dark:bg-[#233240] text-[#244C66] dark:text-[#F0F4F7] border border-[#244C66]/30 dark:border-[#F0F4F7]/30'
+                                : 'text-[#66736F] dark:text-[#A3B0AB] hover:text-[#263238] dark:hover:text-[#F7F8FA]'
+                            }`}
+                          >
+                            <TabIcon className="w-3.5 h-3.5" />
+                            <span>{tab.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Tab Content */}
@@ -1313,7 +1326,8 @@ export default function BookingModal({ train, onClose }) {
                           </>
                         ) : (
                           <>
-                            🔒 Pay ₹{totalFare.toLocaleString()} & Confirm Ticket
+                            <Lock className="w-4 h-4" />
+                            Pay ₹{totalFare.toLocaleString()} & Confirm Ticket
                           </>
                         )}
                       </button>
@@ -1342,12 +1356,12 @@ export default function BookingModal({ train, onClose }) {
                         <h4 className="text-sm font-bold text-[#263238] dark:text-[#F7F8FA] font-heading">
                           Stays in {destinationCity}
                         </h4>
-                        <p className="text-[10px] text-[#66736F] dark:text-[#A3B0AB]">
+                        <p className="text-xs text-[#66736F] dark:text-[#A3B0AB]">
                           Hostels, Dorms, Homestays & Hotels
                         </p>
                       </div>
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#15803D]/15 text-[#15803D] border border-[#15803D]/30">
+                    <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#15803D]/15 text-[#15803D] border border-[#15803D]/30">
                       0% Prepay
                     </span>
                   </div>
@@ -1355,16 +1369,16 @@ export default function BookingModal({ train, onClose }) {
                   {/* Category Tabs */}
                   <div className="flex items-center gap-1.5 mt-3 overflow-x-auto pb-1 no-scrollbar">
                     {[
-                      { id: 'all', label: '🌟 All' },
-                      { id: 'hostel', label: '🎒 Dorms' },
-                      { id: 'homestay', label: '🏡 Homestays' },
-                      { id: 'hotel', label: '🏨 Hotels' }
+                      { id: 'all', label: 'All Stays' },
+                      { id: 'hostel', label: 'Dorms & Pods' },
+                      { id: 'homestay', label: 'Homestays' },
+                      { id: 'hotel', label: 'Hotels' }
                     ].map(tab => (
                       <button
                         key={tab.id}
                         type="button"
                         onClick={() => setStayCategory(tab.id)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap transition-colors cursor-pointer border ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
                           stayCategory === tab.id
                             ? 'bg-[#14532D] text-white border-[#14532D] shadow-xs'
                             : 'bg-white dark:bg-[#1B242E] text-[#64748B] dark:text-[#A3B0AB] border-[#E3E7EA] dark:border-[#293644] hover:border-[#14532D]'
@@ -1399,14 +1413,14 @@ export default function BookingModal({ train, onClose }) {
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.2 rounded-full border ${
+                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                                   isHostel 
                                     ? 'bg-[#E58A3A]/15 text-[#E58A3A] border-[#E58A3A]/30' 
                                     : isHomestay 
                                     ? 'bg-[#15803D]/15 text-[#15803D] border-[#15803D]/30'
                                     : 'bg-[#2F80A8]/15 text-[#2F80A8] border-[#2F80A8]/30'
                                 }`}>
-                                  {isHostel ? '🎒 Dorm / Pod' : isHomestay ? '🏡 Homestay' : '🏨 Hotel'}
+                                  {isHostel ? 'Dorm / Pod' : isHomestay ? 'Homestay' : 'Hotel'}
                                 </span>
                                 {hotel.rating && (
                                   <span className="text-[10px] font-bold text-[#D97706] flex items-center gap-0.5">
@@ -1500,11 +1514,12 @@ export default function BookingModal({ train, onClose }) {
                 {/* AI Recommendation Box */}
                 <div className="bg-[#F0F4F7] dark:bg-[#233240] border border-[#E3E7EA] dark:border-[#293644] rounded-xl p-4 text-left space-y-3 relative overflow-hidden">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider flex items-center gap-1.5">
-                      🤖 AI Journey Insights
+                    <h4 className="text-xs font-bold text-[#244C66] dark:text-[#F0F4F7] uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Journey Insights</span>
                     </h4>
-                    <span className="text-[9px] bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] font-mono px-1.5 py-0.5 rounded font-bold">
-                      V2.5 Model
+                    <span className="text-xs bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7] font-mono px-1.5 py-0.5 rounded font-medium">
+                      Verified
                     </span>
                   </div>
 
@@ -1582,7 +1597,7 @@ export default function BookingModal({ train, onClose }) {
           onBookingSuccess={(bookedStay) => {
             setConfirmedStay(bookedStay);
             setSelectedHotelForBooking(null);
-            toast.success(`🎉 Stay reserved at ${bookedStay.hotelName || selectedHotelForBooking.name}!`, { duration: 4000 });
+            toast.success(`Stay reserved at ${bookedStay.hotelName || selectedHotelForBooking.name}!`, { duration: 4000 });
           }}
         />
       )}
