@@ -347,10 +347,10 @@ const SUPPORTED_CLASSES = ['1A', '2A', '3A', '3E', 'SL', 'CC', 'EC', '2S', 'COMB
 // POST /api/profile/bookings — Create a new user booking with authoritative fare calculation
 const createBooking = async (req, res) => {
   const { 
-    source_station_code = 'NDLS',
-    destination_station_code = 'CSTM',
-    train_number = '12951',
-    travel_class = '3A',
+    source_station_code,
+    destination_station_code,
+    train_number,
+    travel_class,
     ticket_fare,
     booking_date,
     passengers = [],
@@ -371,6 +371,20 @@ const createBooking = async (req, res) => {
       return res.status(400).json({
         message: `Direct ticketing is currently supported for Trains only. Direct booking for '${transportType}' is unavailable.`
       });
+    }
+
+    // 0a. Strict required parameter validation (Zero Hallucination / Zero Fallback)
+    if (!source_station_code || typeof source_station_code !== 'string' || !source_station_code.trim()) {
+      return res.status(400).json({ message: 'Origin station code (source_station_code) is strictly required.' });
+    }
+    if (!destination_station_code || typeof destination_station_code !== 'string' || !destination_station_code.trim()) {
+      return res.status(400).json({ message: 'Destination station code (destination_station_code) is strictly required.' });
+    }
+    if (!train_number || !String(train_number).trim()) {
+      return res.status(400).json({ message: 'Train number (train_number) is strictly required.' });
+    }
+    if (!travel_class || typeof travel_class !== 'string' || !travel_class.trim()) {
+      return res.status(400).json({ message: 'Travel class (travel_class) is strictly required.' });
     }
 
     // 0b. Journey date validation

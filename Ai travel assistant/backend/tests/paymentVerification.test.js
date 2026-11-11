@@ -201,11 +201,13 @@ async function runPaymentVerificationTests() {
 
     // ─── Test 7: Hotel Booking with No Verified Payment ───
     await test('Hotel booking with no verified payment remains PENDING (never marked PAID)', () => {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      const dayAfter = new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0];
       const reservation = createReservation(1, {
         hotelName: 'Taj Bengal',
         city: 'Kolkata',
-        checkInDate: '2026-11-10',
-        checkOutDate: '2026-11-12',
+        checkInDate: tomorrow,
+        checkOutDate: dayAfter,
         guestName: 'Jane Doe',
         guestEmail: 'jane@example.com',
         guestPhone: '+91 9876543210',

@@ -1102,10 +1102,13 @@ const createBooking = async (req, res) => {
 
         let effectiveTripId = trip_id;
         if (!effectiveTripId) {
+            if (!source_station_code || !destination_station_code) {
+                return res.status(400).json({ success: false, message: 'Origin and destination station codes are required when creating a new trip.' });
+            }
             const trip = await Trip.create({
                 user_id,
-                source: source_station_code || 'NDLS',
-                destination: destination_station_code || 'CNB',
+                source: source_station_code,
+                destination: destination_station_code,
                 travel_date: new Date(),
                 status: 'Planned'
             });

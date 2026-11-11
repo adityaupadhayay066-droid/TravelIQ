@@ -279,9 +279,8 @@ export default function Navbar() {
             <Logo size="md" withTagline={true} />
           </div>
 
-          {/* CENTER: TRAVEL CATEGORY TABS (Visible only after login/signup) */}
-          {user && (
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
+          {/* CENTER: TRAVEL CATEGORY TABS (MakeMyTrip / Skyscanner layout) */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
               {visibleCategories.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory === cat.id;
@@ -376,7 +375,6 @@ export default function Navbar() {
               );
             })}
           </nav>
-          )}
 
           {/* RIGHT: CONTROLS & USER ACCOUNT ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">

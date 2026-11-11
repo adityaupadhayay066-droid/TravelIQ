@@ -342,39 +342,17 @@ export default function LandingPage() {
           
           {/* Hero Headline & Supporting Statement */}
           <div className="max-w-3xl mb-7 sm:mb-9 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-medium tracking-wide mb-3 backdrop-blur-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 dark:bg-sky-400"></span>
-              <span>Intelligent Travel & Mobility Platform</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#EEF2F4] dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] text-[#66737D] dark:text-[#9CAAB5] text-xs font-medium tracking-wide mb-3">
+              <span>AEVORA Intelligent Travel Assistant</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white font-['Sora']">
-              Discover a <span className="text-sky-600 dark:text-sky-400">smarter way</span> to travel.
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-bold tracking-tight leading-tight text-[#202A32] dark:text-[#F0F4F7]">
+              Every journey starts <span className="text-[#244C66] dark:text-[#75A4C4]">smarter</span>.
             </h1>
 
-            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl font-['Inter']">
-              Explore routes, compare transportation options and plan your next journey with intelligent travel assistance.
+            <p className="mt-2.5 sm:mt-3 text-base sm:text-lg text-[#66737D] dark:text-[#9CAAB5] leading-relaxed max-w-2xl">
+              Discover better routes, compare verified trains, flights, and buses, and plan your journey with confidence.
             </p>
-
-            {/* Hero CTAs */}
-            <div className="mt-5 flex flex-wrap items-center justify-center sm:justify-start gap-3">
-              <button
-                onClick={() => {
-                  const elem = document.getElementById('search-booking-panel');
-                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer flex items-center gap-2"
-              >
-                <Compass className="w-4 h-4" />
-                <span>Plan Your Journey</span>
-              </button>
-              <Link
-                to="/destinations"
-                className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-200 dark:border-slate-700/80 shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2"
-              >
-                <MapPin className="w-4 h-4 text-sky-500" />
-                <span>Explore Destinations</span>
-              </Link>
-            </div>
           </div>
 
           {/* ================================================================
@@ -595,7 +573,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="w-full h-[58px] rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
                     >
                       {isSearching ? (
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -763,7 +741,7 @@ export default function LandingPage() {
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="w-full h-[58px] rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-sky-600/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
+                      className="w-full h-[58px] rounded-xl bg-gradient-to-r from-[#244C66] to-[#1E3F54] hover:from-[#1B3A4F] hover:to-[#173040] dark:from-[#2A5978] dark:to-[#1E3F54] text-white font-bold text-sm tracking-wide shadow-md shadow-[#244C66]/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group whitespace-nowrap"
                     >
                       {isSearching ? (
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

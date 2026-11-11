@@ -144,26 +144,30 @@ export default function BookingModal({ train, onClose }) {
   useEffect(() => {
     const fetchBookingAi = async () => {
       if (!train) return;
+      const trainNum = train.train_number || train.number;
+      if (!trainNum) return;
       setLoadingAi(true);
       try {
-        const trainNum = train.train_number || train.number || '12301';
         const classCode = selectedClass || availableClasses[0] || '3A';
+        const src = train.source_station_code || train.source_code || train.source || train.depStation || '';
+        const dst = train.destination_station_code || train.destination_code || train.dest || train.arrStation || '';
+        const routeStr = src && dst ? `${src}-${dst}` : undefined;
         const [delayRes, occRes] = await Promise.all([
           api.post('/ai/predict-delay', {
             train_number: trainNum,
-            route: 'DEL-MUM',
+            route: routeStr,
             day_of_week: new Date().getDay() + 1,
             month: new Date().getMonth() + 1,
             season: 2,
             weather: 'Clear'
-          }).catch(() => ({ data: { expected_arrival_delay_mins: 12 } })),
+          }).catch(() => ({ data: { expected_arrival_delay_mins: 0 } })),
           api.post('/ai/predict-occupancy', {
             train_number: trainNum,
             class_code: classCode,
             month: new Date().getMonth() + 1,
             day_of_week: new Date().getDay() + 1,
             season_code: 2
-          }).catch(() => ({ data: { coach_occupancy_percent: 74 } }))
+          }).catch(() => ({ data: { coach_occupancy_percent: 70 } }))
         ]);
         
         const rec = availableClasses.find(c => c === '3A' || c === 'Economy' || c === 'CC') || availableClasses[0] || '3A';
@@ -337,7 +341,8 @@ export default function BookingModal({ train, onClose }) {
   // Generate dynamic crisp QR code
   useEffect(() => {
     if (totalFare > 0) {
-      const dummyPayload = `upi://pay?pa=${DUMMY_UPI_ID}&pn=AEVORA%20Bookings&am=${totalFare}&cu=INR&tn=TicketReservation_${train?.train_number || '12301'}_${Date.now()}`;
+      const trainRef = train?.train_number || train?.number || 'TICKET';
+      const dummyPayload = `upi://pay?pa=${DUMMY_UPI_ID}&pn=AEVORA%20Bookings&am=${totalFare}&cu=INR&tn=TicketReservation_${trainRef}_${Date.now()}`;
       QRCode.toDataURL(dummyPayload, {
         width: 480,
         margin: 2,
@@ -449,18 +454,25 @@ export default function BookingModal({ train, onClose }) {
         (train.source && train.source.length <= 5 ? train.source : null) ||
         (train.depStation && train.depStation.length <= 5 ? train.depStation : null) ||
         (train.legs && train.legs[0] && (train.legs[0].origin_station_code || train.legs[0].source_code || train.legs[0].origin)) ||
-        train.depStation || train.source || 'NDLS';
+        train.depStation || train.source;
 
       const dstCode = train.destination_station_code || train.destination_code || train.dest_station_code || train.dest_code ||
         (train.dest && train.dest.length <= 5 ? train.dest : null) ||
         (train.arrStation && train.arrStation.length <= 5 ? train.arrStation : null) ||
         (train.legs && train.legs[train.legs.length - 1] && (train.legs[train.legs.length - 1].dest_station_code || train.legs[train.legs.length - 1].destination_code || train.legs[train.legs.length - 1].destination)) ||
-        train.arrStation || train.dest || 'MMCT';
+        train.arrStation || train.dest;
+
+      const trainNumber = train.train_number || train.number;
+
+      if (!srcCode || !dstCode || !trainNumber) {
+        setIsProcessing(false);
+        return toast.error("Booking failed: Missing verified origin, destination, or train number.");
+      }
 
       const bookingPayload = {
         source_station_code: srcCode,
         destination_station_code: dstCode,
-        train_number: train.train_number || train.number || '12301',
+        train_number: trainNumber,
         travel_class: selectedClass,
         ticket_fare: totalFare,
         booking_date: new Date(),
@@ -561,9 +573,11 @@ export default function BookingModal({ train, onClose }) {
               </div>
               <h2 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] mt-0.5">
                 {train?.train_name || train?.name || 'Express Service'} 
-                <span className="font-mono text-xs text-[#66736F] dark:text-[#A3B0AB] ml-2">
-                  (#{train?.train_number || train?.number || '12301'})
-                </span>
+                {(train?.train_number || train?.number) && (
+                  <span className="font-mono text-xs text-[#66736F] dark:text-[#A3B0AB] ml-2">
+                    (#{train?.train_number || train?.number})
+                  </span>
+                )}
               </h2>
             </div>
           </div>

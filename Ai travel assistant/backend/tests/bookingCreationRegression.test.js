@@ -560,6 +560,74 @@ async function runBookingCreationRegressionTests() {
       assert.ok(resBlocked.data.message.includes('Pending booking limit reached'));
     });
 
+    // ─── Test 22: Missing source station code is rejected (Zero Hallucination / No NDLS Fallback) ───
+    await test('22. Missing source_station_code is strictly rejected with 400 without falling back to NDLS', async () => {
+      const res = createMockRes();
+      await createBooking({
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          destination_station_code: 'CSTM',
+          train_number: '12952',
+          travel_class: '3A',
+          passengers: [{ name: 'Test Traveler', age: 30 }]
+        }
+      }, res);
+
+      assert.strictEqual(res.statusCode, 400, 'Must return 400 when source_station_code is missing');
+      assert.ok(res.data.message.includes('source_station_code') || res.data.message.includes('Origin station code'), 'Must cite missing origin station');
+    });
+
+    // ─── Test 23: Missing destination station code is rejected (Zero Hallucination / No CSTM Fallback) ───
+    await test('23. Missing destination_station_code is strictly rejected with 400 without falling back to CSTM', async () => {
+      const res = createMockRes();
+      await createBooking({
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'NDLS',
+          train_number: '12952',
+          travel_class: '3A',
+          passengers: [{ name: 'Test Traveler', age: 30 }]
+        }
+      }, res);
+
+      assert.strictEqual(res.statusCode, 400, 'Must return 400 when destination_station_code is missing');
+      assert.ok(res.data.message.includes('destination_station_code') || res.data.message.includes('Destination station code'), 'Must cite missing destination station');
+    });
+
+    // ─── Test 24: Missing train number is rejected (Zero Hallucination / No 12951 Fallback) ───
+    await test('24. Missing train_number is strictly rejected with 400 without falling back to 12951', async () => {
+      const res = createMockRes();
+      await createBooking({
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'NDLS',
+          destination_station_code: 'CSTM',
+          travel_class: '3A',
+          passengers: [{ name: 'Test Traveler', age: 30 }]
+        }
+      }, res);
+
+      assert.strictEqual(res.statusCode, 400, 'Must return 400 when train_number is missing');
+      assert.ok(res.data.message.includes('train_number') || res.data.message.includes('Train number'), 'Must cite missing train number');
+    });
+
+    // ─── Test 25: Missing travel class is rejected (Zero Hallucination / No 3A Fallback) ───
+    await test('25. Missing travel_class is strictly rejected with 400 without falling back to 3A', async () => {
+      const res = createMockRes();
+      await createBooking({
+        user: { id: testUser.id, email: testUser.email },
+        body: {
+          source_station_code: 'NDLS',
+          destination_station_code: 'CSTM',
+          train_number: '12952',
+          passengers: [{ name: 'Test Traveler', age: 30 }]
+        }
+      }, res);
+
+      assert.strictEqual(res.statusCode, 400, 'Must return 400 when travel_class is missing');
+      assert.ok(res.data.message.includes('travel_class') || res.data.message.includes('Travel class'), 'Must cite missing travel class');
+    });
+
   } finally {
     // Clean up test user's data
     if (testUser) {
