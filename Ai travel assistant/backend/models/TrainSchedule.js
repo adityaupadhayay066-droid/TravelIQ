@@ -31,6 +31,10 @@ const TrainSchedule = sequelize.define('TrainSchedule', {
   stop_sequence: {
     type: DataTypes.INTEGER,
     allowNull: false
+  },
+  distance_from_source: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
 }, {
   tableName: 'train_schedules',

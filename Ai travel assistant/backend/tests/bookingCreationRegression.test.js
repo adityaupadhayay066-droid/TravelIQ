@@ -172,7 +172,7 @@ async function runBookingCreationRegressionTests() {
           destination_station_code: 'CSTM',
           train_number: '99999', // Unknown train, but valid stations with coordinates
           travel_class: '3A',
-          passengers: [{ name: 'Solo Traveler' }]
+          passengers: [{ name: 'Solo Traveler', age: 30 }]
         }
       };
       const res = createMockRes();
@@ -191,7 +191,7 @@ async function runBookingCreationRegressionTests() {
           destination_station_code: 'CSTM',
           train_number: '12951',
           travel_class: 'ZZ',
-          passengers: [{ name: 'Traveler' }]
+          passengers: [{ name: 'Traveler', age: 30 }]
         }
       };
       const res = createMockRes();

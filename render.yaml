@@ -13,6 +13,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: TRUST_PROXY
+        value: "1"
       - key: DB_HOST
         sync: false
       - key: DB_USER
@@ -34,8 +36,14 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: ADMIN_SEED_EMAIL
-        value: adityaupadhayay066@gmail.com
+        sync: false
       - key: ADMIN_SEED_PASSWORD
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
@@ -53,7 +61,10 @@ services:
     plan: free
     envVars:
       - key: INTERNAL_SERVICE_KEY
-        sync: false
+        fromService:
+          type: web
+          name: traveliq-backend
+          envVarKey: INTERNAL_SERVICE_KEY
       - key: GEMINI_API_KEY
         sync: false
       - key: DB_HOST

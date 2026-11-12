@@ -107,6 +107,34 @@ const CLASS_CONFIG = {
       { maxKm: 1500, rate: 2.80 },
       { maxKm: Infinity, rate: 2.55 }
     ]
+  },
+  'EC': {
+    name: 'Executive Chair Car',
+    isAC: true,
+    minFare: 520,
+    reservationFee: 60,
+    superfastFee: 75,
+    baseRatePerKm: 2.35,
+    telescopicRates: [
+      { maxKm: 300, rate: 2.35 },
+      { maxKm: 750, rate: 2.10 },
+      { maxKm: 1500, rate: 1.90 },
+      { maxKm: Infinity, rate: 1.75 }
+    ]
+  },
+  'UR': {
+    name: 'Unreserved General',
+    isAC: false,
+    minFare: 30,
+    reservationFee: 0,
+    superfastFee: 15,
+    baseRatePerKm: 0.18,
+    telescopicRates: [
+      { maxKm: 300, rate: 0.18 },
+      { maxKm: 750, rate: 0.15 },
+      { maxKm: 1500, rate: 0.12 },
+      { maxKm: Infinity, rate: 0.10 }
+    ]
   }
 };
 
@@ -137,7 +165,8 @@ function estimateRailDistance(lat1, lon1, lat2, lon2) {
  * @returns {Object} Comprehensive fare breakdown
  */
 function calculateRailwayFare({ distanceKm, travelClass = '3A', isSuperfast = true, passengers = 1 }) {
-  const normClass = String(travelClass).trim().toUpperCase();
+  const rawClass = String(travelClass).trim().toUpperCase();
+  const normClass = rawClass === 'GENERAL' ? 'UR' : rawClass;
   const config = CLASS_CONFIG[normClass] || CLASS_CONFIG['3A'];
   const dist = Math.max(15, Number(distanceKm) || 100);
   const pax = Math.max(1, parseInt(passengers) || 1);
@@ -285,47 +314,60 @@ async function calculateJourneyRailwayFare({
     throw err;
   }
 
-  // Calculate actual segment distance along the ordered stops between origin and destination
+  // Calculate actual segment distance: prefer official schedule distance_from_source when available
   const routeSlice = stops.slice(srcStopIndex, dstStopIndex + 1);
   let totalDistanceKm = 0;
-  let validSegments = 0;
+  let distanceSource = 'coordinates';
 
-  for (let i = 0; i < routeSlice.length - 1; i++) {
-    const curr = routeSlice[i];
-    const next = routeSlice[i + 1];
+  if (
+    srcStop.distance_from_source !== null &&
+    srcStop.distance_from_source !== undefined &&
+    dstStop.distance_from_source !== null &&
+    dstStop.distance_from_source !== undefined &&
+    Number(dstStop.distance_from_source) > Number(srcStop.distance_from_source)
+  ) {
+    totalDistanceKm = Number(dstStop.distance_from_source) - Number(srcStop.distance_from_source);
+    distanceSource = 'schedule';
+  } else {
+    let validSegments = 0;
 
-    const [stnCurr, stnNext] = await Promise.all([
-      Station.findOne({ where: { station_code: curr.station_code } }),
-      Station.findOne({ where: { station_code: next.station_code } })
-    ]);
+    for (let i = 0; i < routeSlice.length - 1; i++) {
+      const curr = routeSlice[i];
+      const next = routeSlice[i + 1];
 
-    if (stnCurr?.latitude && stnNext?.latitude) {
-      const segDist = estimateRailDistance(
-        parseFloat(stnCurr.latitude),
-        parseFloat(stnCurr.longitude),
-        parseFloat(stnNext.latitude),
-        parseFloat(stnNext.longitude)
-      );
-      if (segDist > 0) {
-        totalDistanceKm += segDist;
-        validSegments++;
+      const [stnCurr, stnNext] = await Promise.all([
+        Station.findOne({ where: { station_code: curr.station_code } }),
+        Station.findOne({ where: { station_code: next.station_code } })
+      ]);
+
+      if (stnCurr?.latitude && stnNext?.latitude) {
+        const segDist = estimateRailDistance(
+          parseFloat(stnCurr.latitude),
+          parseFloat(stnCurr.longitude),
+          parseFloat(stnNext.latitude),
+          parseFloat(stnNext.longitude)
+        );
+        if (segDist > 0) {
+          totalDistanceKm += segDist;
+          validSegments++;
+        }
       }
     }
-  }
 
-  // Fallback to origin-to-destination coordinate distance if intermediate stops lack coordinates
-  if (totalDistanceKm <= 0 || validSegments === 0) {
-    const [stnSrc, stnDst] = await Promise.all([
-      Station.findOne({ where: { station_code: srcStop.station_code } }),
-      Station.findOne({ where: { station_code: dstStop.station_code } })
-    ]);
-    if (stnSrc?.latitude && stnDst?.latitude) {
-      totalDistanceKm = estimateRailDistance(
-        parseFloat(stnSrc.latitude),
-        parseFloat(stnSrc.longitude),
-        parseFloat(stnDst.latitude),
-        parseFloat(stnDst.longitude)
-      );
+    // Fallback to origin-to-destination coordinate distance if intermediate stops lack coordinates
+    if (totalDistanceKm <= 0 || validSegments === 0) {
+      const [stnSrc, stnDst] = await Promise.all([
+        Station.findOne({ where: { station_code: srcStop.station_code } }),
+        Station.findOne({ where: { station_code: dstStop.station_code } })
+      ]);
+      if (stnSrc?.latitude && stnDst?.latitude) {
+        totalDistanceKm = estimateRailDistance(
+          parseFloat(stnSrc.latitude),
+          parseFloat(stnSrc.longitude),
+          parseFloat(stnDst.latitude),
+          parseFloat(stnDst.longitude)
+        );
+      }
     }
   }
 
@@ -366,6 +408,8 @@ async function calculateJourneyRailwayFare({
     destStationCode: dstStop.station_code,
     sourceStopSequence: srcStop.stop_sequence,
     destStopSequence: dstStop.stop_sequence,
+    sourceDepartureTime: srcStop.departure_time || null,
+    distanceSource,
     intermediateStopsCount: routeSlice.length - 2,
     isCalculatedFare: true,
     providerConfirmed: false

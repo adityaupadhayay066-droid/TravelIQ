@@ -387,7 +387,12 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Travel class (travel_class) is strictly required.' });
     }
 
-    // 0b. Journey date validation
+    // 0b. Journey date validation (using IST / Asia/Kolkata timezone)
+    const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+    const nowIst = new Date(Date.now() + IST_OFFSET_MS);
+    const todayStr = nowIst.toISOString().slice(0, 10);
+    const currentIstTime = nowIst.toISOString().slice(11, 19); // HH:MM:SS
+
     const rawDate = req.body.journey_date !== undefined ? req.body.journey_date : (req.body.departure_date !== undefined ? req.body.departure_date : booking_date);
     let journeyDate = null;
     if (rawDate !== undefined && rawDate !== null && rawDate !== '') {
@@ -399,11 +404,10 @@ const createBooking = async (req, res) => {
       if (isNaN(parsedDate.getTime())) {
         return res.status(400).json({ message: 'Invalid journey_date format.' });
       }
-      const todayStr = new Date().toISOString().slice(0, 10);
       if (dateStr < todayStr) {
         return res.status(400).json({ message: 'Journey date cannot be in the past.' });
       }
-      const maxDateStr = new Date(Date.now() + 120 * 86400000).toISOString().slice(0, 10);
+      const maxDateStr = new Date(Date.now() + IST_OFFSET_MS + 120 * 86400000).toISOString().slice(0, 10);
       if (dateStr > maxDateStr) {
         return res.status(400).json({ message: 'Journey date cannot exceed the 120 days advance booking window (120-day limit).' });
       }
@@ -411,7 +415,7 @@ const createBooking = async (req, res) => {
     } else if (rawDate === '') {
       return res.status(400).json({ message: 'journey_date cannot be empty.' });
     } else {
-      journeyDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+      journeyDate = new Date(Date.now() + IST_OFFSET_MS + 86400000).toISOString().slice(0, 10);
     }
 
     // 0c. Strict Passenger validation & Count Derivation
@@ -457,15 +461,15 @@ const createBooking = async (req, res) => {
         return res.status(400).json({ message: `Passenger #${i + 1} name cannot exceed 100 characters.` });
       }
 
-      let ageNum = 30;
-      if (p.age !== undefined && p.age !== null && p.age !== '') {
-        ageNum = Number(p.age);
-        if (!Number.isInteger(ageNum) || isNaN(ageNum)) {
-          return res.status(400).json({ message: `Passenger #${i + 1} age must be an integer.` });
-        }
-        if (ageNum < 1 || ageNum > 120) {
-          return res.status(400).json({ message: `Passenger age must be a valid age between 1 and 120.` });
-        }
+      if (p.age === undefined || p.age === null || p.age === '') {
+        return res.status(400).json({ message: `Passenger #${i + 1} age is strictly required.` });
+      }
+      const ageNum = Number(p.age);
+      if (!Number.isInteger(ageNum) || isNaN(ageNum)) {
+        return res.status(400).json({ message: `Passenger #${i + 1} age must be an integer.` });
+      }
+      if (ageNum < 1 || ageNum > 120) {
+        return res.status(400).json({ message: `Passenger age must be a valid age between 1 and 120.` });
       }
 
       let gender = 'Male';
@@ -677,6 +681,20 @@ const createBooking = async (req, res) => {
         });
       }
 
+      // Class availability validation against train_fares (reject classes not offered by this train)
+      const trainFareRows = await TrainFare.findAll({
+        where: { train_number: normalizedTrain },
+        attributes: ['class_code']
+      });
+      if (trainFareRows.length > 0) {
+        const offeredClasses = trainFareRows.map(r => String(r.class_code || '').trim().toUpperCase()).filter(Boolean);
+        if (!offeredClasses.includes(normalizedClass)) {
+          return res.status(400).json({
+            message: `Class '${normalizedClass}' is not offered on Train #${normalizedTrain} (${targetTrainObj.train_name}). Available classes: ${offeredClasses.join(', ')}.`
+          });
+        }
+      }
+
       // Calculate authoritative journey-dependent fare (strictly validates stop order, sequence, distance)
       const journeyFareData = await calculateJourneyRailwayFare({
         trainNumber: normalizedTrain,
@@ -685,6 +703,17 @@ const createBooking = async (req, res) => {
         travelClass: (normalizedClass === 'COMBINED' || normalizedClass === 'STANDARD') ? '3A' : normalizedClass,
         passengers: 1
       });
+
+      // Departure time validation: reject bookings for today if the train has already departed from origin in IST
+      if (journeyDate === todayStr && journeyFareData.sourceDepartureTime) {
+        const rawDep = String(journeyFareData.sourceDepartureTime).trim();
+        const depTimeNorm = rawDep.length === 5 ? `${rawDep}:00` : rawDep.slice(0, 8);
+        if (/^\d{2}:\d{2}:\d{2}$/.test(depTimeNorm) && depTimeNorm <= currentIstTime) {
+          return res.status(400).json({
+            message: `Train #${normalizedTrain} (${targetTrainObj.train_name}) has already departed from ${journeyFareData.sourceStationCode || sourceCode} at ${depTimeNorm.slice(0, 5)} IST for ${journeyDate}.`
+          });
+        }
+      }
 
       farePerPassenger = journeyFareData.farePerPassenger;
     } else {
@@ -727,23 +756,28 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Invalid calculated ticket fare.' });
     }
 
-    // 5b. Concurrency-safe per-user pending booking limit (P1 requirement)
+    // 5b & 6. Atomic pending cap enforcement + database creation within transaction boundaries
     const MAX_PENDING_BOOKINGS = parseInt(process.env.MAX_PENDING_BOOKINGS_PER_USER) || 5;
-    const currentPendingCount = await Booking.count({
-      where: {
-        user_id: req.user.id,
-        booking_status: 'Pending'
-      }
-    });
-
-    if (currentPendingCount >= MAX_PENDING_BOOKINGS) {
-      return res.status(429).json({
-        message: `Pending booking limit reached (${MAX_PENDING_BOOKINGS}). Please complete payment or cancel existing pending bookings before creating new ones.`
-      });
-    }
-
-    // 6. Atomic database creation within transaction boundaries
     const result = await sequelize.transaction(async (t) => {
+      // Lock the user row to serialize concurrent booking requests per user
+      await User.findByPk(req.user.id, { lock: t.LOCK.UPDATE, transaction: t });
+
+      const currentPendingCount = await Booking.count({
+        where: {
+          user_id: req.user.id,
+          booking_status: 'Pending'
+        },
+        transaction: t
+      });
+
+      if (currentPendingCount >= MAX_PENDING_BOOKINGS) {
+        const capErr = new Error(
+          `Pending booking limit reached (${MAX_PENDING_BOOKINGS}). Please complete payment or cancel existing pending bookings before creating new ones.`
+        );
+        capErr.statusCode = 429;
+        throw capErr;
+      }
+
       const trip = await Trip.create({
         user_id: req.user.id,
         source: sourceCode,
@@ -874,15 +908,19 @@ const cancelBooking = async (req, res) => {
     }
 
     const wasPaid = booking.payment_status === 'Paid';
+    let refundBreakdown = null;
 
     await sequelize.transaction(async (t) => {
       if (wasPaid) {
+        const { computeCancellationRefund } = require('./paymentController');
+        refundBreakdown = await computeCancellationRefund(booking, booking.ticket_fare);
+
         await transitionBookingState({
           bookingId: booking.id,
           targetBookingStatus: 'Cancelled',
           targetPaymentStatus: 'Refund Pending',
           actor: { id: req.user.id, role: 'USER' },
-          reason: 'User cancelled paid booking',
+          reason: `User cancelled paid booking (${refundBreakdown.policyTier}: refund ₹${refundBreakdown.refundAmount}, fee ₹${refundBreakdown.cancellationCharge})`,
           existingTransaction: t
         });
 
@@ -894,6 +932,7 @@ const cancelBooking = async (req, res) => {
 
         if (txn) {
           txn.status = 'Refund Pending';
+          txn.refund_amount = refundBreakdown.refundAmount;
           await txn.save({ transaction: t });
         }
       } else {
@@ -931,7 +970,12 @@ const cancelBooking = async (req, res) => {
       message: wasPaid 
         ? 'Reservation cancelled and refund initiated.' 
         : 'Reservation cancelled successfully. No refund required for unpaid booking.',
-      booking
+      booking,
+      ...(refundBreakdown ? {
+        refund_amount: refundBreakdown.refundAmount,
+        cancellation_charge: refundBreakdown.cancellationCharge,
+        policy_tier: refundBreakdown.policyTier
+      } : {})
     });
   } catch (error) {
     console.error('Cancel booking error:', error.message);

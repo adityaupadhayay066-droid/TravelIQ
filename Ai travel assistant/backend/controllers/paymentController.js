@@ -457,9 +457,98 @@ const handlePaymentWebhook = async (req, res) => {
         message: 'Cannot process payment webhook: Booking has been cancelled.'
       });
     }
-    if (booking.booking_status === 'Expired') {
-      return res.status(400).json({
-        message: 'Cannot process payment webhook: Booking has expired.'
+
+    const isBookingExpired =
+      booking.booking_status === 'Expired' ||
+      (booking.booking_status === 'Pending' && booking.expires_at && new Date(booking.expires_at) < new Date());
+
+    if (isBookingExpired) {
+      const payloadHashExp = crypto.createHash('sha256').update(rawPayloadBytes).digest('hex');
+      let reconciledTxnId = null;
+
+      await sequelize.transaction(async (t) => {
+        const lockedBooking = await Booking.findByPk(booking_id, { lock: t.LOCK.UPDATE, transaction: t });
+
+        if (lockedBooking.booking_status === 'Pending' && lockedBooking.expires_at && new Date(lockedBooking.expires_at) < new Date()) {
+          await transitionBookingState({
+            bookingId: lockedBooking.id,
+            targetBookingStatus: 'Expired',
+            targetPaymentStatus: lockedBooking.payment_status,
+            actor: { id: 1, role: 'WEBHOOK_GATEWAY' },
+            reason: 'Booking hold expired prior to payment webhook arrival',
+            existingTransaction: t
+          });
+        }
+
+        let txn = null;
+        if (order_id) {
+          txn = await Transaction.findOne({ where: { order_id }, lock: t.LOCK.UPDATE, transaction: t });
+        }
+        if (!txn && payment_id) {
+          txn = await Transaction.findOne({ where: { payment_id }, lock: t.LOCK.UPDATE, transaction: t });
+        }
+        if (!txn) {
+          txn = await Transaction.findOne({ where: { booking_id: lockedBooking.id }, lock: t.LOCK.UPDATE, transaction: t });
+        }
+
+        if (txn) {
+          txn.status = PAYMENT_STATUSES.REFUND_PENDING;
+          txn.amount = expectedAmount;
+          if (payment_id && !txn.payment_id) txn.payment_id = payment_id;
+          await txn.save({ transaction: t });
+        } else {
+          txn = await Transaction.create({
+            user_id: lockedBooking.user_id,
+            booking_id: lockedBooking.id,
+            order_id: order_id || `LATE_EXP_${crypto.randomBytes(6).toString('hex')}`,
+            payment_id: payment_id || null,
+            transaction_id: payload.transaction_id || `TXN_EXP_${crypto.randomBytes(6).toString('hex')}`,
+            amount: expectedAmount,
+            currency: 'INR',
+            payment_method: 'Gateway Webhook (Expired Hold)',
+            status: PAYMENT_STATUSES.REFUND_PENDING
+          }, { transaction: t });
+        }
+        reconciledTxnId = txn.transaction_id;
+
+        if (lockedBooking.payment_status !== PAYMENT_STATUSES.REFUND_PENDING && lockedBooking.payment_status !== PAYMENT_STATUSES.REFUNDED) {
+          await transitionBookingState({
+            bookingId: lockedBooking.id,
+            targetBookingStatus: 'Expired',
+            targetPaymentStatus: PAYMENT_STATUSES.REFUND_PENDING,
+            actor: { id: 1, role: 'WEBHOOK_GATEWAY' },
+            reason: `Late payment webhook reconciled on expired booking ${payment_id || order_id || ''}; auto-refund queued`,
+            existingTransaction: t
+          });
+        }
+
+        if (event_id) {
+          await ProcessedWebhookEvent.create({
+            event_id,
+            event_type: payload.event || 'payment.captured',
+            provider: 'razorpay',
+            order_id: order_id || null,
+            payment_id: payment_id || null,
+            payload_hash: payloadHashExp,
+            status: 'reconciled_expired_refund_pending'
+          }, { transaction: t });
+        }
+
+        await PaymentLog.create({
+          user_id: lockedBooking.user_id,
+          event_type: 'WEBHOOK_EXPIRED_BOOKING_RECONCILED',
+          payment_method: 'Gateway Webhook (Verified)',
+          details: `Payment ${payment_id || order_id || reconciledTxnId} received for expired booking #${booking_id}. Recorded transaction and initiated automatic refund.`
+        }, { transaction: t });
+      });
+
+      return res.status(200).json({
+        message: 'Payment received for expired booking. Transaction recorded and automatic refund initiated for reconciliation.',
+        booking_id: Number(booking_id),
+        transaction_id: reconciledTxnId,
+        booking_status: 'Expired',
+        payment_status: PAYMENT_STATUSES.REFUND_PENDING,
+        refund_initiated: true
       });
     }
 
@@ -598,6 +687,69 @@ const handlePaymentWebhook = async (req, res) => {
  * Never reports refund completed unless verified against gateway.
  * POST /api/payment/refund
  */
+/**
+ * Authoritative IRCTC-style time-based cancellation charge & refund policy.
+ */
+async function computeCancellationRefund(booking, paidAmount) {
+  const amount = Math.max(0, Number(paidAmount) || 0);
+  if (booking.booking_status === 'Expired') {
+    return {
+      refundAmount: amount,
+      cancellationCharge: 0,
+      policyTier: 'EXPIRED_HOLD_AUTO_REFUND',
+      hoursBeforeDeparture: null
+    };
+  }
+
+  const CLASS_FLAT_FEE = {
+    '1A': 240, 'EC': 240, '2A': 200, '3A': 180, '3E': 180, 'CC': 180, 'SL': 120, '2S': 60, 'UR': 60, 'GENERAL': 60
+  };
+  const cls = String(booking.travel_class || '3A').trim().toUpperCase();
+  const paxCount = Math.max(1, Number(booking.total_passengers) || 1);
+  const minFlatFee = Math.min(amount, (CLASS_FLAT_FEE[cls] || 120) * paxCount);
+
+  let hoursBeforeDeparture = null;
+  if (booking.journey_date) {
+    let depTimeStr = '00:00:00';
+    if (booking.train_number && booking.source_station_code) {
+      const stop = await TrainSchedule.findOne({
+        where: { train_number: String(booking.train_number).trim(), station_code: String(booking.source_station_code).trim().toUpperCase() },
+        attributes: ['departure_time']
+      });
+      if (stop?.departure_time) {
+        const raw = String(stop.departure_time).trim();
+        depTimeStr = raw.length === 5 ? `${raw}:00` : raw.slice(0, 8);
+      }
+    }
+    const dateStr = String(booking.journey_date).slice(0, 10);
+    const depDate = new Date(`${dateStr}T${depTimeStr}+05:30`);
+    if (!isNaN(depDate.getTime())) {
+      hoursBeforeDeparture = (depDate.getTime() - Date.now()) / 3600000;
+    }
+  }
+
+  let cancellationCharge;
+  let policyTier;
+  if (hoursBeforeDeparture === null || hoursBeforeDeparture > 48) {
+    cancellationCharge = minFlatFee;
+    policyTier = 'MORE_THAN_48H_FLAT_FEE';
+  } else if (hoursBeforeDeparture >= 12) {
+    cancellationCharge = Math.max(minFlatFee, Math.round(amount * 0.25));
+    policyTier = '12H_TO_48H_25_PCT';
+  } else if (hoursBeforeDeparture >= 4) {
+    cancellationCharge = Math.max(minFlatFee, Math.round(amount * 0.50));
+    policyTier = '4H_TO_12H_50_PCT';
+  } else {
+    cancellationCharge = amount;
+    policyTier = 'LESS_THAN_4H_NO_REFUND';
+  }
+
+  cancellationCharge = Math.min(amount, Math.max(0, cancellationCharge));
+  const refundAmount = Math.max(0, Math.round((amount - cancellationCharge) * 100) / 100);
+
+  return { refundAmount, cancellationCharge, policyTier, hoursBeforeDeparture };
+}
+
 const processRefund = async (req, res) => {
   try {
     const { booking_id, reason } = req.body;
@@ -652,19 +804,22 @@ const processRefund = async (req, res) => {
         throw new Error('ALREADY_REFUNDED');
       }
 
+      const refundCalc = await computeCancellationRefund(lockedBooking, transaction.amount);
+      const refundAmount = refundCalc.refundAmount;
+
       const hasLiveGateway = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
       let refundId = null;
       let isSimulated = !hasLiveGateway || !transaction.payment_id?.startsWith('pay_');
 
-      if (hasLiveGateway && transaction.payment_id?.startsWith('pay_')) {
+      if (refundAmount > 0 && hasLiveGateway && transaction.payment_id?.startsWith('pay_')) {
         try {
           const authHeader = 'Basic ' + Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString('base64');
           const refundResponse = await axios.post(
             `https://api.razorpay.com/v1/payments/${transaction.payment_id}/refund`,
             {
-              amount: Math.round(Number(transaction.amount) * 100),
+              amount: Math.round(refundAmount * 100),
               speed: 'optimum',
-              notes: { booking_id: String(booking_id), reason: reason || 'Customer requested refund' }
+              notes: { booking_id: String(booking_id), reason: reason || 'Customer requested refund', policy_tier: refundCalc.policyTier }
             },
             {
               headers: {
@@ -688,7 +843,7 @@ const processRefund = async (req, res) => {
 
       transaction.status = PAYMENT_STATUSES.REFUNDED;
       transaction.refund_id = refundId;
-      transaction.refund_amount = transaction.amount;
+      transaction.refund_amount = refundAmount;
       await transaction.save({ transaction: t });
 
       lockedBooking.payment_status = 'Refunded';
@@ -699,10 +854,10 @@ const processRefund = async (req, res) => {
         user_id: req.user.id,
         event_type: isSimulated ? 'SIMULATED_REFUND_COMPLETED' : 'REFUND_COMPLETED',
         payment_method: transaction.payment_method,
-        details: reason || `Refund processed for booking #${booking_id} (Refund ID: ${refundId}${isSimulated ? ' - Simulated' : ''})`
+        details: reason || `Refund processed for booking #${booking_id}: ₹${refundAmount} refunded, ₹${refundCalc.cancellationCharge} cancellation fee (${refundCalc.policyTier}) (Refund ID: ${refundId}${isSimulated ? ' - Simulated' : ''})`
       }, { transaction: t });
 
-      return { transaction, refundId, isSimulated };
+      return { transaction, refundId, isSimulated, refundAmount, cancellationCharge: refundCalc.cancellationCharge, policyTier: refundCalc.policyTier };
     });
 
     return res.status(200).json({
@@ -712,6 +867,9 @@ const processRefund = async (req, res) => {
       status: PAYMENT_STATUSES.REFUNDED,
       refund_id: refundResult.refundId,
       booking_id,
+      refund_amount: refundResult.refundAmount,
+      cancellation_charge: refundResult.cancellationCharge,
+      policy_tier: refundResult.policyTier,
       simulated: refundResult.isSimulated,
       gateway_confirmed: !refundResult.isSimulated
     });
@@ -1236,6 +1394,7 @@ module.exports = {
   createTransaction,
   handlePaymentWebhook,
   processRefund,
+  computeCancellationRefund,
   getPaymentStatus,
   getReceiptPDF,
   PAYMENT_STATUSES

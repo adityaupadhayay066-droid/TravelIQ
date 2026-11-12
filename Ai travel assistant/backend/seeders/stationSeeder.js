@@ -173,12 +173,26 @@ const seedStations = async (options = {}) => {
     });
   }
 
-  // 3. Check existing count: If already fully seeded, skip re-bulk insertion
+  // 3. Check existing count: If already fully seeded, verify coordinates aren't stale before skipping
   const currentCount = await Station.count();
   if (!force && currentCount >= metrics.validRecords) {
+    const jat = await Station.findOne({ where: { station_code: 'JAT' }, attributes: ['latitude'] });
+    const hasStaleCoords = jat && jat.latitude !== null && Number(jat.latitude) < 25;
+    if (!hasStaleCoords) {
+      metrics.insertedOrExistingCount = currentCount;
+      metrics.finalDatabaseCount = currentCount;
+      console.log(`✅ [Station Seeder] Stations verified: ${currentCount} stations present in database.`);
+      return metrics;
+    }
+    console.log('⏳ [Station Seeder] Detected stale station coordinates. Updating coordinates from verified dataset...');
+    const chunkSize = 500;
+    for (let i = 0; i < validStations.length; i += chunkSize) {
+      const chunk = validStations.slice(i, i + chunkSize);
+      await Station.bulkCreate(chunk, { updateOnDuplicate: ['latitude', 'longitude', 'state'] });
+    }
     metrics.insertedOrExistingCount = currentCount;
     metrics.finalDatabaseCount = currentCount;
-    console.log(`✅ [Station Seeder] Stations verified: ${currentCount} stations present in database.`);
+    console.log(`✅ [Station Seeder] Station coordinates updated for ${currentCount} stations.`);
     return metrics;
   }
 

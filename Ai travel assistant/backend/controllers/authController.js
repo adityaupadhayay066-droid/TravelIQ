@@ -185,7 +185,7 @@ async function createSessionAndLog(user, deviceId, userAgent, ipAddress, isTrust
 
 // ─── Helper: Build user response object ───
 function buildUserResponse(user, sessionId, deviceId) {
-    const isSuperAdminUser = user.admin_role === 'super_admin' || user.email === 'adityaupadhayay066@gmail.com' || user.email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com');
+    const isSuperAdminUser = user.role === 'admin' && user.admin_role === 'super_admin';
     return {
         id: user.id,
         name: user.name,
@@ -320,8 +320,6 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'An account with this email address already exists.' });
         }
 
-        const isSuperAdminEmail = email.toLowerCase().trim() === 'adityaupadhayay066@gmail.com' || email.toLowerCase().trim() === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com').toLowerCase().trim();
-
         const user = await User.create({
             name: name.trim(),
             email: email.toLowerCase().trim(),
@@ -331,8 +329,8 @@ const registerUser = async (req, res) => {
             phone_verified: false,
             two_factor_enabled: false,
             account_status: 'active',
-            role: isSuperAdminEmail ? 'admin' : 'user',
-            admin_role: isSuperAdminEmail ? 'super_admin' : null
+            role: 'user',
+            admin_role: null
         });
 
         // ─── Direct login post-registration ───
@@ -593,6 +591,12 @@ const adminLogin = async (req, res) => {
             });
         }
 
+        if (!user.email_verified) {
+            return res.status(403).json({
+                message: 'Email verification is required before logging into the administrator portal.'
+            });
+        }
+
         if (user.account_status === 'deleted' || user.account_status === 'deactivated') {
             return res.status(403).json({ message: 'This administrator account has been disabled.' });
         }
@@ -762,7 +766,7 @@ const registerAdmin = async (req, res) => {
     }
 
     // 1. Authorization: Only allow via existing Super Admin session or valid one-time provisioning secret
-    const isSuperAdminCaller = req.user && req.user.role === 'admin' && (req.user.admin_role === 'super_admin' || req.user.email === 'adityaupadhayay066@gmail.com' || req.user.email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com'));
+    const isSuperAdminCaller = req.user && req.user.role === 'admin' && req.user.admin_role === 'super_admin';
     const serverProvisioningToken = process.env.ADMIN_PROVISIONING_TOKEN || process.env.ADMIN_SECRET_KEY;
     const providedToken = req.headers['x-admin-provisioning-token'] || adminSecret;
 

@@ -6,32 +6,40 @@ const { User } = require('../models');
  */
 async function seedAdmin() {
     try {
-        const adminEmail = process.env.ADMIN_SEED_EMAIL || 'adityaupadhayay066@gmail.com';
+        const adminEmail = process.env.ADMIN_SEED_EMAIL;
         const adminPassword = process.env.ADMIN_SEED_PASSWORD;
 
-        if (adminEmail && adminPassword && adminPassword.length >= 6) {
-            const cleanEmail = adminEmail.toLowerCase().trim();
-            const existingUser = await User.findOne({ where: { email: cleanEmail } });
-            if (existingUser) {
-                if (existingUser.role !== 'admin' || existingUser.admin_role !== 'super_admin') {
-                    await existingUser.update({ role: 'admin', admin_role: 'super_admin', account_status: 'active' });
-                    console.log(`✅ [Admin Seeder] Verified ${cleanEmail} as Super Admin`);
-                }
-            } else {
-                await User.create({
-                    name: cleanEmail.includes('aditya') ? 'Aditya Upadhayay' : 'System Administrator',
-                    email: cleanEmail,
-                    password: adminPassword,
-                    role: 'admin',
-                    admin_role: 'super_admin',
-                    account_status: 'active',
-                    email_verified: true,
-                    phone_verified: false,
-                    two_factor_enabled: false
-                });
-                console.log(`✅ [Admin Seeder] Created Super Admin account for: ${cleanEmail}`);
-            }
+        if (!adminEmail || !adminPassword) {
+            return;
         }
+
+        if (adminPassword.length < 10) {
+            console.warn('⚠️ [Admin Seeder] ADMIN_SEED_PASSWORD must be at least 10 characters. Skipping admin seed.');
+            return;
+        }
+
+        const cleanEmail = adminEmail.toLowerCase().trim();
+        const existingUser = await User.findOne({ where: { email: cleanEmail } });
+        if (existingUser) {
+            // Security: Never auto-promote an existing user account on boot.
+            if (existingUser.role !== 'admin') {
+                console.warn(`⚠️ [Admin Seeder] Account ${cleanEmail} already exists with role '${existingUser.role}'. Skipping auto-promotion.`);
+            }
+            return;
+        }
+
+        await User.create({
+            name: 'System Administrator',
+            email: cleanEmail,
+            password: adminPassword,
+            role: 'admin',
+            admin_role: 'super_admin',
+            account_status: 'active',
+            email_verified: true,
+            phone_verified: false,
+            two_factor_enabled: false
+        });
+        console.log(`✅ [Admin Seeder] Created Super Admin account for: ${cleanEmail}`);
     } catch (error) {
         console.error('⚠️ Admin seeder warning:', error.message);
     }

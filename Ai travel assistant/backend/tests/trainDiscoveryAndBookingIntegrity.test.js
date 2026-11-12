@@ -68,7 +68,7 @@ async function runIntegrityTests() {
           train_number: '12802',
           travel_class: '3A',
           booking_date: futureDate,
-          passengers: [{ name: 'Aditya' }]
+          passengers: [{ name: 'Aditya', age: 28 }]
         }
       };
       const res = createMockRes();
@@ -90,7 +90,7 @@ async function runIntegrityTests() {
           destination_station_code: 'TATA',
           train_number: '12301',
           travel_class: '3A',
-          passengers: [{ name: 'Aditya' }]
+          passengers: [{ name: 'Aditya', age: 28 }]
         }
       };
       const res = createMockRes();
@@ -109,7 +109,7 @@ async function runIntegrityTests() {
           destination_station_code: 'TATA',
           train_number: '88888',
           travel_class: '3A',
-          passengers: [{ name: 'Aditya' }]
+          passengers: [{ name: 'Aditya', age: 28 }]
         }
       };
       const res = createMockRes();

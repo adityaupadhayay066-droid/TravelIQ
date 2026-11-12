@@ -1056,6 +1056,8 @@ const seedTrains = async () => {
                     const departure_time = row['departure']?.trim() || null;
                     const day_count = parseInt(row['day']) || 1;
                     const stop_sequence = parseInt(row['id']) || 0;
+                    const rawDist = row['distance'] !== undefined ? parseInt(row['distance']) : NaN;
+                    const distance_from_source = !isNaN(rawDist) && rawDist >= 0 ? rawDist : null;
 
                     if (!train_number || !station_code) return;
 
@@ -1069,7 +1071,8 @@ const seedTrains = async () => {
                         arrival_time,
                         departure_time,
                         day_count,
-                        stop_sequence
+                        stop_sequence,
+                        distance_from_source
                     });
                 })
                 .on('end', resolve)

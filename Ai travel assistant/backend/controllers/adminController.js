@@ -260,8 +260,7 @@ const ROLE_HIERARCHY = {
 function getRoleLevel(user) {
     if (!user) return 0;
     if (user.role === 'admin') {
-        const isSuperAdminEmail = (email) => email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') || email === 'adityaupadhayay066@gmail.com';
-        const adminRole = user.admin_role || (isSuperAdminEmail(user.email) ? 'super_admin' : 'admin');
+        const adminRole = user.admin_role || 'admin';
         return ROLE_HIERARCHY[adminRole] || ROLE_HIERARCHY.admin;
     }
     if (user.role === 'user') return ROLE_HIERARCHY.user;
@@ -1311,8 +1310,7 @@ const getAdminAccounts = async (req, res) => {
 
 const updateAdminRole = async (req, res) => {
     try {
-        const isSuperAdminEmail = (email) => email === (process.env.ADMIN_SEED_EMAIL || 'admin@traveliq.com') || email === 'adityaupadhayay066@gmail.com';
-        const requesterAdminRole = req.user?.admin_role || (isSuperAdminEmail(req.user?.email) ? 'super_admin' : 'admin');
+        const requesterAdminRole = req.user?.admin_role || 'admin';
         if (requesterAdminRole !== 'super_admin') {
             return res.status(403).json({
                 success: false,

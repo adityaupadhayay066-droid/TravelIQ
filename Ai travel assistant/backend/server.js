@@ -266,6 +266,11 @@ sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
   .then(async () => {
     console.log('✅ MySQL Database synchronized with alter schema successfully.');
     
+    // Ensure distance_from_source column exists on train_schedules for existing databases
+    try {
+      await sequelize.query('ALTER TABLE train_schedules ADD COLUMN distance_from_source INT NULL');
+    } catch (_) { /* column already exists */ }
+
     // Ensure train_stops view is created for deterministic routing
     try {
       await sequelize.query(`
