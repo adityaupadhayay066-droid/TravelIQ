@@ -517,12 +517,15 @@ const markDeviceAsTrusted = async (req, res) => {
 };
 
 const triggerSOS = async (req, res) => {
-    const { latitude, longitude, emergency_type = 'General' } = req.body;
+    const { latitude, longitude, emergency_type = 'General', location_name, note } = req.body;
     try {
         const user = await User.findByPk(req.user.id);
+        const locDesc = location_name || (latitude && longitude ? `LAT: ${latitude}, LNG: ${longitude}` : 'Unknown Coordinates');
         const details = {
-            message: `CRITICAL SOS TRIGGERED: passenger ${user.name} reported a ${emergency_type} emergency.`,
+            message: `CRITICAL SOS TRIGGERED: passenger ${user.name} reported a ${emergency_type} emergency at ${locDesc}.`,
             emergency_type,
+            location_name: location_name || null,
+            note: note || null,
             responder_status: 'Dispatched',
             rp_helpline: '182 / 112',
             timestamp: new Date()
@@ -532,11 +535,11 @@ const triggerSOS = async (req, res) => {
             user_id: req.user.id,
             alert_type: 'SOS_DISPATCHED',
             ip_address: req.ip || '127.0.0.1',
-            location: latitude && longitude ? `LAT: ${latitude}, LNG: ${longitude}` : 'Unknown Coordinates',
+            location: location_name ? `${location_name} (${latitude}, ${longitude})` : (latitude && longitude ? `LAT: ${latitude}, LNG: ${longitude}` : 'Unknown Coordinates'),
             details
         });
 
-        console.log(`[SOS ALARM] User ${user.email} triggered SOS at [${latitude}, ${longitude}]. Dispatching RPF Responder...`);
+        console.log(`[SOS ALARM] User ${user.email} triggered SOS at [${latitude}, ${longitude}] (${locDesc}). Dispatching RPF Responder...`);
 
         // Trigger dynamic notification to administrator
         sendEmail({
@@ -547,7 +550,9 @@ const triggerSOS = async (req, res) => {
                 <p><strong>Passenger Name:</strong> ${user.name}</p>
                 <p><strong>Email Address:</strong> ${user.email}</p>
                 <p><strong>Emergency Nature:</strong> ${emergency_type}</p>
+                <p><strong>Reported Location:</strong> ${locDesc}</p>
                 <p><strong>Locked GPS Coordinates:</strong> ${latitude && longitude ? `${latitude}, ${longitude}` : 'Unknown'}</p>
+                ${note ? `<p><strong>Passenger Note / Coach / Berth:</strong> ${note}</p>` : ''}
                 <p><strong>Dispatched Team:</strong> Railway Protection Force (RPF) Responder Team Locked.</p>
                 <p>Please log in to the TravelIQ Administration Panel immediately to track GIS telemetry.</p>
             `

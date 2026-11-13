@@ -4,13 +4,14 @@ import {
   User, Settings, LogOut, Menu, X, Sun, Moon, Sparkles, Train, 
   Compass, Utensils, MapPin, Building2, Navigation, Leaf, Brain, 
   Bot, Mic, Globe2, BarChart3, Network, Cpu, ChevronDown, ChevronRight, 
-  Search, Bell, ArrowRight, Check, Shield, HelpCircle, Key, Plane, Bus,
+  Search, Bell, ArrowRight, Check, Shield, ShieldAlert, HelpCircle, Key, Plane, Bus,
   CalendarDays, Ticket, Briefcase, Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import Logo from './brand/Logo';
+import EmergencySOSModal from './EmergencySOSModal';
 
 /* ==========================================================================
    PRIMARY TRAVEL CATEGORIES (MakeMyTrip / Skyscanner inspired, TravelIQ identity)
@@ -77,6 +78,7 @@ const EXPLORE_MENU_ITEMS = [
 ];
 
 const SEARCHABLE_ITEMS = [
+  { title: 'Emergency SOS & Helpline Dispatch', category: 'Safety', to: '#sos', icon: ShieldAlert },
   { title: 'Search Flights, Trains & Buses', category: 'Booking', to: '/dashboard', icon: Compass },
   { title: 'Hotel Recommendations & Stays', category: 'Hotels', to: '/hotels', icon: Building2 },
   { title: 'Explore 50+ Indian Destinations', category: 'Destinations', to: '/destinations', icon: MapPin },
@@ -84,6 +86,7 @@ const SEARCHABLE_ITEMS = [
   { title: 'Station Food & Meal Delivery', category: 'Food', to: '/dashboard/food', icon: Utensils },
   { title: 'B2B Developer Hub & API Keys', category: 'Developers', to: '/dashboard/developer', icon: Key },
   { title: 'My Booked Trips & Tickets', category: 'Account', to: '/dashboard/my-trips', icon: CalendarDays },
+  { title: 'Account Security & Biometrics', category: 'Security', to: '/dashboard/security', icon: Shield },
   { title: 'AI Workspace Command Center', category: 'AI Tools', to: '/dashboard/ai-workspace', icon: Sparkles },
   { title: '3D Railway Station Twin', category: 'Visual Tools', to: '/dashboard/station-3d', icon: Building2 },
   { title: 'Customer Support & Helpdesk', category: 'Support', to: '/support', icon: HelpCircle }
@@ -105,6 +108,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [isSosOpen, setIsSosOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const navContainerRef = useRef(null);
@@ -442,6 +446,16 @@ export default function Navbar() {
               {effectiveTheme === 'dark' ? <Sun className="w-4 h-4 text-[#C87E58]" /> : <Moon className="w-4 h-4 text-[#66737D]" />}
             </button>
 
+            {/* Emergency SOS Button */}
+            <button
+              onClick={() => setIsSosOpen(true)}
+              className="h-8.5 px-2.5 sm:px-3 flex items-center gap-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 text-rose-600 dark:text-rose-400 border border-rose-500/30 transition-all cursor-pointer font-bold text-xs shrink-0"
+              title="Emergency SOS Dispatch (RPF & Police)"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 animate-pulse text-rose-600 dark:text-rose-400 shrink-0" />
+              <span className="tracking-wide font-extrabold">SOS</span>
+            </button>
+
             {/* Profile Dropdown OR Guest Login/Signup */}
             {user ? (
               <div className="relative">
@@ -510,6 +524,23 @@ export default function Navbar() {
                           <span>Developer Hub & API Keys</span>
                           <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 bg-[#EAF0F4] dark:bg-[#233240] text-[#244C66] dark:text-[#75A4C4] rounded">B2B</span>
                         </Link>
+                        <Link
+                          to="/dashboard/security"
+                          onClick={() => setActiveDropdown(null)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F7F8FA] dark:hover:bg-[#162029] text-[#202A32] dark:text-[#F0F4F7] transition-colors font-medium"
+                        >
+                          <Shield className="w-3.5 h-3.5 text-[#89939B]" />
+                          <span>Security Center</span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => { setActiveDropdown(null); setIsSosOpen(true); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-colors font-semibold text-left cursor-pointer"
+                        >
+                          <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                          <span>Emergency SOS</span>
+                          <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 bg-rose-500/15 text-rose-600 dark:text-rose-400 rounded">24x7</span>
+                        </button>
                         <Link
                           to="/dashboard/settings"
                           onClick={() => setActiveDropdown(null)}
@@ -677,6 +708,17 @@ export default function Navbar() {
                 <HelpCircle className="w-4 h-4 text-[#244C66]" />
                 <span>Support & Helpdesk</span>
               </Link>
+              <button
+                type="button"
+                onClick={() => { setIsMobileMenuOpen(false); setIsSosOpen(true); }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 text-sm font-bold transition-colors cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                  <span>Emergency SOS Dispatch</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-600 text-white">24x7</span>
+              </button>
             </div>
 
             {/* User Account / Auth Actions */}
@@ -757,7 +799,11 @@ export default function Navbar() {
                       key={idx}
                       onClick={() => {
                         setIsCommandOpen(false);
-                        navigate(item.to);
+                        if (item.to === '#sos') {
+                          setIsSosOpen(true);
+                        } else {
+                          navigate(item.to);
+                        }
                       }}
                       className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-[#F7F8FA] dark:hover:bg-[#162029] transition-colors text-left group cursor-pointer"
                     >
@@ -783,6 +829,9 @@ export default function Navbar() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Emergency SOS Dispatch Modal */}
+      <EmergencySOSModal isOpen={isSosOpen} onClose={() => setIsSosOpen(false)} />
     </>
   );
 }

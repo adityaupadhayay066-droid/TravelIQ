@@ -253,6 +253,44 @@ export default function Dashboard() {
     return sortedResults.filter(r => r.route_type === 'Connecting' || r.direct === false);
   }, [sortedResults]);
 
+  const handleBookLeg = (leg, legNum, conn) => {
+    const serviceNo = leg.service_number || leg.train_number || leg.number;
+    if (!serviceNo || String(serviceNo).includes('INTER-TERMINAL') || leg.is_cluster_transfer) {
+      toast.info("This is a local station transfer segment. No rail reservation required.");
+      return;
+    }
+
+    const serviceTitle = leg.service_name || leg.train_name || leg.name || `Train #${serviceNo}`;
+    const originStn = leg.from_station || leg.from || leg.origin || (legNum === 1 ? (getStationCode(source) || 'Origin') : (conn?.transfer_station || 'Hub'));
+    const destStn = leg.to_station || leg.to || leg.destination || (legNum === 1 ? (conn?.transfer_station || 'Hub') : (getStationCode(dest) || 'Destination'));
+    const depTime = leg.departure_time_clock || leg.departure || leg.dep_time || '00:00';
+    const arrTime = leg.arrival_time_clock || leg.arrival || leg.arr_time || '00:00';
+
+    const legItem = {
+      train_number: String(serviceNo).trim(),
+      train_name: serviceTitle,
+      name: serviceTitle,
+      source_station_code: originStn,
+      destination_station_code: destStn,
+      source_code: originStn,
+      destination_code: destStn,
+      depStation: getStationName(originStn) || originStn,
+      arrStation: getStationName(destStn) || destStn,
+      depTime,
+      arrTime,
+      journey_date: date,
+      departure_date: date,
+      fares: leg.fares || (leg.price ? { '3A': leg.price, 'SL': Math.round(leg.price * 0.45) } : { '3A': 950, 'SL': 380 }),
+      price: leg.price || null,
+      classes: leg.classes || (leg.fares ? Object.keys(leg.fares) : ['3A', '2A', 'SL']),
+      running_days: 'Daily',
+      type: 'Train',
+      leg_badge: `Leg ${legNum}: ${originStn} → ${destStn}`
+    };
+
+    setSelectedTrainForBooking(legItem);
+  };
+
   return (
     <div className="w-full bg-[#F7F8FA] dark:bg-[#121B24] text-[#202A32] dark:text-[#F8FAFC] pb-20 transition-colors">
       
@@ -800,12 +838,15 @@ export default function Dashboard() {
                               const depTime = leg.departure_time_clock || leg.departure || leg.dep_time || 'Time unavailable';
                               const arrTime = leg.arrival_time_clock || leg.arrival || leg.arr_time || 'Time unavailable';
                               const serviceNo = leg.service_number || leg.train_number || leg.number;
+                              const legNum = legIdx === 0 ? 1 : (leg.leg_number || legIdx + 1);
+                              const legPrice = leg.price || (leg.fares && Object.keys(leg.fares).length > 0 ? Math.min(...Object.values(leg.fares)) : null);
+                              const isBookable = serviceNo && !String(serviceNo).includes('INTER-TERMINAL') && !leg.is_cluster_transfer;
 
                               return (
-                                <div key={legIdx} className="p-3 rounded-xl border border-slate-200 dark:border-[#293644] bg-slate-50 dark:bg-[#121921]/60 flex items-center justify-between gap-3 text-xs">
+                                <div key={legIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-[#293644] bg-slate-50 dark:bg-[#121921]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                                    <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 text-teal-600 flex items-center justify-center font-bold text-xs shrink-0">
-                                      {legIdx === 0 ? '1' : (leg.leg_number || legIdx + 1)}
+                                    <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 text-teal-600 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                                      {legNum}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <div className="flex items-center gap-2 flex-wrap">
@@ -820,33 +861,59 @@ export default function Dashboard() {
                                     </div>
                                   </div>
 
-                                  <div className="text-right shrink-0">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200 block whitespace-nowrap">{depTime} – {arrTime}</span>
-                                    <span className="text-[10px] text-emerald-600 block font-semibold">Seats Available</span>
+                                  <div className="flex items-center justify-between sm:justify-end gap-3.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-800">
+                                    <div className="text-left sm:text-right">
+                                      <span className="font-bold text-slate-800 dark:text-slate-200 block whitespace-nowrap">{depTime} – {arrTime}</span>
+                                      <div className="flex items-center gap-2">
+                                        {legPrice && (
+                                          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                            ₹{legPrice.toLocaleString('en-IN')}
+                                          </span>
+                                        )}
+                                        <span className="text-[10px] text-emerald-600 font-semibold">Seats Available</span>
+                                      </div>
+                                    </div>
+
+                                    {isBookable && (
+                                      <button
+                                        onClick={() => handleBookLeg(leg, legNum, conn)}
+                                        className="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                                      >
+                                        Book Leg {legNum}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
 
-                          {/* Alternative Action & Notes (Option B: Search-Only for Multi-Leg Routes) */}
+                          {/* Alternative Action & Notes (IRCTC Individual Leg Booking) */}
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                             <div className="flex items-center gap-1.5 text-slate-500">
-                              <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span>Separate tickets required for each journey leg.</span>
+                              <Info className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                              <span>IRCTC rule: Multi-train journeys require a separate PNR ticket per leg.</span>
                             </div>
 
-                            <div className="flex items-center gap-2 self-end sm:self-auto">
-                              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-800/40">
-                                Multi-Leg (Search Only)
-                              </span>
-                              <button
-                                disabled
-                                title="Direct single-ticket booking is unavailable for multi-leg itineraries. Please search and book each leg individually."
-                                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-semibold text-xs cursor-not-allowed opacity-75"
-                              >
-                                Book Legs Individually
-                              </button>
+                            <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+                              {legs.filter(l => l.type !== 'Layover' && (l.service_number || l.train_number) && !String(l.service_number || l.train_number).includes('INTER-TERMINAL')).map((trainLeg, idx) => {
+                                const legNumber = idx + 1;
+                                const legTrainNo = trainLeg.service_number || trainLeg.train_number;
+                                return (
+                                  <button
+                                    key={idx}
+                                    onClick={() => handleBookLeg(trainLeg, legNumber, conn)}
+                                    className={`px-3.5 py-2 rounded-xl font-bold text-xs cursor-pointer transition-all flex items-center gap-1.5 shadow-2xs ${
+                                      idx === 0
+                                        ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                                        : 'bg-white dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-500/40'
+                                    }`}
+                                  >
+                                    <span>Book Leg {legNumber} (#{legTrainNo})</span>
+                                    <ArrowRight className="w-3.5 h-3.5" />
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
 

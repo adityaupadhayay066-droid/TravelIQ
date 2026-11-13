@@ -566,10 +566,15 @@ export default function BookingModal({ train, onClose }) {
               {transportIcon()}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#244C66]/10 dark:bg-[#F0F4F7]/10 text-[#244C66] dark:text-[#F0F4F7]">
                   {transportType} Booking
                 </span>
+                {train?.leg_badge && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                    {train.leg_badge}
+                  </span>
+                )}
               </div>
               <h2 className="text-base sm:text-lg font-bold text-[#263238] dark:text-[#F7F8FA] mt-0.5">
                 {train?.train_name || train?.name || 'Express Service'} 

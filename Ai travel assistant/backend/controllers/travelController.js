@@ -368,19 +368,47 @@ const searchRoutes = async (req, res) => {
                         }
                     }
 
-                    const normalizedLegs = (conn.legs || []).map(l => ({
-                        ...l,
-                        train_name: l.service_name || l.train_name || l.name,
-                        service_name: l.service_name || l.train_name || l.name,
-                        service_number: l.service_number || l.train_number || l.number,
-                        from: l.from_station || l.from || l.origin,
-                        from_station: l.from_station || l.from || l.origin,
-                        to: l.to_station || l.to || l.destination,
-                        to_station: l.to_station || l.to || l.destination,
-                        departure: l.departure_time_clock || l.departure || l.dep_time,
-                        departure_time_clock: l.departure_time_clock || l.departure || l.dep_time,
-                        arrival: l.arrival_time_clock || l.arrival || l.arr_time,
-                        arrival_time_clock: l.arrival_time_clock || l.arrival || l.arr_time
+                    const normalizedLegs = await Promise.all((conn.legs || []).map(async (l) => {
+                        const trainNo = String(l.service_number || l.train_number || l.number || '').trim();
+                        let legFares = null;
+                        let legPrice = l.fare || null;
+                        let legClasses = [];
+
+                        if (trainNo && !trainNo.includes('INTER-TERMINAL')) {
+                            const fareRecords = await TrainFare.findAll({
+                                where: { train_number: trainNo },
+                                attributes: ['class_code', 'fare']
+                            });
+                            if (fareRecords && fareRecords.length > 0) {
+                                legFares = {};
+                                for (const fr of fareRecords) {
+                                    const code = String(fr.class_code).toUpperCase().trim();
+                                    legFares[code] = fr.fare;
+                                    legClasses.push(`${code} - ₹${Number(fr.fare).toLocaleString('en-IN')}`);
+                                }
+                                if (!legPrice) {
+                                    legPrice = legFares['SL'] || legFares['3A'] || legFares['2S'] || Math.min(...Object.values(legFares));
+                                }
+                            }
+                        }
+
+                        return {
+                            ...l,
+                            train_name: l.service_name || l.train_name || l.name,
+                            service_name: l.service_name || l.train_name || l.name,
+                            service_number: trainNo || l.service_number,
+                            from: l.from_station || l.from || l.origin,
+                            from_station: l.from_station || l.from || l.origin,
+                            to: l.to_station || l.to || l.destination,
+                            to_station: l.to_station || l.to || l.destination,
+                            departure: l.departure_time_clock || l.departure || l.dep_time,
+                            departure_time_clock: l.departure_time_clock || l.departure || l.dep_time,
+                            arrival: l.arrival_time_clock || l.arrival || l.arr_time,
+                            arrival_time_clock: l.arrival_time_clock || l.arrival || l.arr_time,
+                            fares: legFares,
+                            price: legPrice,
+                            classes: legClasses
+                        };
                     }));
 
                     finalTrains.push({
