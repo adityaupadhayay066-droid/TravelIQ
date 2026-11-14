@@ -283,8 +283,9 @@ export default function Navbar() {
             <Logo size="md" withTagline={true} />
           </div>
 
-          {/* CENTER: TRAVEL CATEGORY TABS (MakeMyTrip / Skyscanner layout) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
+          {/* CENTER: TRAVEL CATEGORY TABS (MakeMyTrip / Skyscanner layout - Visible only after login/signup) */}
+          {user && (
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 h-full whitespace-nowrap">
               {visibleCategories.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory === cat.id;
@@ -379,22 +380,25 @@ export default function Navbar() {
               );
             })}
           </nav>
+        )}
 
           {/* RIGHT: CONTROLS & USER ACCOUNT ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">
             
-            {/* Command search trigger (Cmd+K) */}
-            <button
-              onClick={() => setIsCommandOpen(true)}
-              className="hidden md:flex items-center gap-2 h-8.5 px-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] text-xs text-[#66737D] dark:text-[#9CAAB5] hover:border-[#CAD3DA] hover:bg-white dark:hover:bg-[#1B242E] transition-colors cursor-pointer"
-              title="Search routes & destinations (⌘K)"
-            >
-              <Search className="w-3.5 h-3.5 text-[#89939B]" />
-              <span className="font-medium hidden xl:inline text-[#66737D] dark:text-[#9CAAB5]">Search...</span>
-              <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded text-[#89939B]">
-                ⌘K
-              </kbd>
-            </button>
+            {/* Command search trigger (Cmd+K) - Visible only after login/signup */}
+            {user && (
+              <button
+                onClick={() => setIsCommandOpen(true)}
+                className="hidden md:flex items-center gap-2 h-8.5 px-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] text-xs text-[#66737D] dark:text-[#9CAAB5] hover:border-[#CAD3DA] hover:bg-white dark:hover:bg-[#1B242E] transition-colors cursor-pointer"
+                title="Search routes & destinations (⌘K)"
+              >
+                <Search className="w-3.5 h-3.5 text-[#89939B]" />
+                <span className="font-medium hidden xl:inline text-[#66737D] dark:text-[#9CAAB5]">Search...</span>
+                <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium bg-white dark:bg-[#1B242E] border border-[#E3E7EA] dark:border-[#293644] rounded text-[#89939B]">
+                  ⌘K
+                </kbd>
+              </button>
+            )}
 
             {/* Notifications Popover (if user logged in) */}
             {user && (
@@ -631,14 +635,16 @@ export default function Navbar() {
             transition={{ duration: 0.18 }}
             className={`lg:hidden fixed ${user ? 'top-[108px] max-h-[calc(100vh-108px)]' : 'top-[64px] max-h-[calc(100vh-64px)]'} left-0 right-0 overflow-y-auto bg-white dark:bg-[#1B242E] border-b border-[#E3E7EA] dark:border-[#293644] z-40 p-4 space-y-4 shadow-xl`}
           >
-            {/* Quick Command search trigger on mobile */}
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); setIsCommandOpen(true); }}
-              className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] text-xs text-[#66737D]"
-            >
-              <Search className="w-4 h-4 text-[#89939B]" />
-              <span>Search destinations, routes, trains...</span>
-            </button>
+            {/* Quick Command search trigger on mobile (Visible only after login/signup) */}
+            {user && (
+              <button
+                onClick={() => { setIsMobileMenuOpen(false); setIsCommandOpen(true); }}
+                className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-[#E3E7EA] dark:border-[#293644] bg-[#F7F8FA] dark:bg-[#162029] text-xs text-[#66737D]"
+              >
+                <Search className="w-4 h-4 text-[#89939B]" />
+                <span>Search destinations, routes, trains...</span>
+              </button>
+            )}
 
             {/* Travel Categories List (Visible only after login/signup) */}
             {user && (
